@@ -1,52 +1,52 @@
-
-
-mod ens;            //Custom module to use ens program
-use ens::ens::fetch_ens_name;
-use ethcontract::{contract, contract::Event, web3::types::{H160, H256, BlockNumber}};
+use ethcontract::{contract, contract::Event, Address, web3::types::{H160, H256, BlockNumber}};
 use futures::StreamExt;
-use std::error::Error;
+use std::{error::Error, str::FromStr};
+use std::string::String;
 use tokio::time::{sleep, Duration};
 use web3::transports::Http;
 use web3::Web3;
 use sqlx::postgres::{PgPoolOptions,PgRow};
 use sqlx::{FromRow,Row};
+use std::fs;
+use serde::{Deserialize, Serialize};
+use ethcontract::prelude::*;
 
 
 
 // contract!("ens_registry_with_fallback.json");
-contract!("ENSRegistryWithFallback.json");
+contract!("abi/abi_1.json");
 
 
  fn main() -> Result<(), Box<dyn Error>> {
+    let networkDetails:String = fs::read_to_string(r"/home/nksajwani/metawork-labs/indexer-database/config/network.json")?.parse()?;
+    let networkDetails = serde_json::from_str::<serde_json::Value>(&networkDetails);
+    let networkEndpoint = match networkDetails {
+        Ok(object) => object["1"]["networkRpcUrl"].to_string(),
+        Err(e) => e.to_string()
+    };
+    // println!("{:?}", &networkEndpoint[1..networkEndpoint.len() - 1]);
     
+    
+    // println!("{:?}",networkDetails);
+    // let networkEndpoint: String = networkDetails
+    let networkEndpoint = &networkEndpoint[1..networkEndpoint.len() - 1];
 
-     get_logs();
+    let contractDetails: String = fs::read_to_string(r"/home/nksajwani/metawork-labs/indexer-database/config/global.json")?.parse()?;
+    let contractDetails = serde_json::from_str::<serde_json::Value>(&contractDetails);
+    let contractChainId;
+    let mut contractAddress = "".to_string();
+    match contractDetails {
+        Ok(object) => {
+            contractAddress = object["ens"]["contract_address"].to_string();
+            contractChainId = object["ens"]["chainId"].to_string()
+        },
+        Err(e) => {println!("{:?}", e);}
+    };
+    contractAddress = contractAddress[1..contractAddress.len() - 1].to_string();
+    println!("{:?}", contractAddress);
+    let contractAddress = Address::from_str(&contractAddress).expect("Failed to convert to address type");
+    get_logs(&networkEndpoint, contractAddress);
 
-    // Configure your Ethereum network provider and contract
-    // let transport = Http::new("https://goerli.infura.io/v3/c108a133505241de9e2c48894d23e483")?;
-    // let web3 = Web3::new(transport);
-    // let contract_address: H160 = "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e".parse()?;
-    // let contract = ENSRegistryWithFallback::at(&web3, contract_address);
-    // // Subscribe to all events
-    // let event_stream = contract.all_events().from_block(BlockNumber::from(9103406)).stream();
-    // let mut event_stream = Box::pin(event_stream);
-    // loop {
-    //     match event_stream.next().await {
-    //         Some(Ok(log)) => {
-    //             // Handle the event
-    //             println!("Received event: {:?}", log);
-    //         }
-    //         Some(Err(e)) => {
-    //             eprintln!("Error: {}", e);
-    //         }
-    //         None => {
-    //             println!("Stream ended, reconnecting...");
-    //             sleep(Duration::from_secs(2)).await;   
-    //             event_stream = Box::pin(contract.all_events().from_block(BlockNumber::from(9103406)).stream());
-    //         }
-    //     }
-    // }
-     
 
      Ok(())
 }
@@ -54,17 +54,18 @@ contract!("ENSRegistryWithFallback.json");
 
 //Function to get Logs of events
 #[tokio::main]
-async fn get_logs()-> Result<(), Box<dyn Error>>{
-
-    let transport = Http::new("https://mainnet.infura.io/v3/c108a133505241de9e2c48894d23e483")?;
+async fn get_logs(networkEndpoint: &str, contractAddress: Address)-> Result<(), Box<dyn Error>>{
+    
+    let transport = Http::new(&networkEndpoint)?;
     let web3 = Web3::new(transport);
-    let contract_address: H160 = "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e".parse()?;
+    let contract_address: H160 = contractAddress;
 
     // let _ = fetch_ens_name().await;
 
     let contract = ENSRegistryWithFallback::at(&web3, contract_address);
-    // Subscribe to all events
+    //Subscribe to all events
     let event_stream = contract.all_events().from_block(BlockNumber::from(17547614)).stream();
+    
     let mut event_stream = Box::pin(event_stream);
 
     loop {
@@ -72,15 +73,16 @@ async fn get_logs()-> Result<(), Box<dyn Error>>{
             Some(Ok(log)) => {
 
                 // Handle the event
-                // println!("Received event: {:?}", log.data);
+                println!("Received event: {:?}", log.data);
                 // println!("{:?}", &log.added().unwrap());
                 let to_address=log.meta.as_ref().unwrap().address.to_string();
+                // let to_address=log.meta.as_ref().unwrap().address.to_string();
                 let block_no:i64=log.meta.as_ref().unwrap().block_number.try_into().unwrap();
                 let txn_hash:String=log.meta.as_ref().unwrap().transaction_hash.to_string();
                 println!("TO Address: {:?}", &to_address);
                 println!("Block Number: {:?}", &block_no);
-                println!("Transaction Hash: {:?}", &log.meta.as_ref().unwrap().transaction_hash);
-                add_to_db(to_address,block_no,txn_hash).await?;
+                println!("Transaction Hash: {}", txn_hash);
+                // add_to_db(to_address,block_no,txn_hash).await?;
                 // println!("Received event: {:?}", log);
                 
             }
@@ -113,8 +115,9 @@ pub struct MyEvent{
 async fn add_to_db(to_address:String,block_no:i64,txn_hash:String) -> Result<(),sqlx::Error>{
 
 //Create instance
-    let pool=PgPoolOptions::new().max_connections(5).connect("postgres://postgres:g[@password]@localhost/test").await?;
-
+    println!("Inside add to db");
+    let pool=PgPoolOptions::new().max_connections(5).connect("postgres://postgres:1994@localhost/test").await?;
+    println!("{:?}", pool);
 //Create table
         sqlx::query(
             r#"

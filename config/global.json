@@ -1,0 +1,22 @@
+{
+  "ens": {
+    "contract_address": "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
+    "chainId": "1",
+    "methods": {
+      "setOwner": {
+        "entityType": "ens-profile"
+      }
+    },
+    "entities": {
+      "ens-profile": ["setOwner"]
+    }
+  },
+  "poap": {
+    "contract_address": "0x22c1f6050e56d2876009903609a2cc3fef83b415",
+    "chainId": "1"
+  },
+  "mintKudos": {
+    "contract_address": "0x60576A64851C5B42e8c57E3E4A5cF3CF4eEb2ED6",
+    "chainId": "137"
+  }
+}
