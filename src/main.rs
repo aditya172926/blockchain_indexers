@@ -86,63 +86,63 @@ async fn get_logs(networkEndpoint: &str, contractAddress: Address) -> Result<(),
             },
         };
     }
-    
+
     Ok(())
 }
 
-#[derive(Debug, FromRow)]
-pub struct MyEvent {
-    id: i64,
-    // from:String,
-    to: String, //EOA or Contract address
-    block_number: i64,
-}
-
-// async fn add_to_db(to_address:String,block_no:i64,txn_hash:String) -> Result<(),sqlx::Error>{
-
-// //Create instance
-//     println!("Inside add to db");
-//     let pool=PgPoolOptions::new().max_connections(5).connect("postgres://postgres:1994@localhost/test").await?;
-//     println!("{:?}", pool);
-// //Create table
-//         sqlx::query(
-//             r#"
-//         CREATE TABLE IF NOT EXISTS event (
-//         id bigserial,
-//         "to" text,
-//         block_number int,
-//         Txn_Hash text
-//         );"#,
-//         )
-//         .execute(&pool)
-//         .await?;
-
-// //insert new event
-
-//     let row: (i64,) = sqlx::query_as(
-//         r#"
-//         INSERT INTO event ( "to", block_number, txn_hash)
-//         VALUES ($1, $2, $3)
-//         RETURNING id
-//         "#
-//     )
-//     .bind(to_address)
-//     .bind(block_no)
-//     .bind(txn_hash)
-//     .fetch_one(&pool)
-//     .await?;
-
-// //Fetch data
-
-//     // let select_query = sqlx::query_as::<_, MyEvent>(
-//     //     r#"
-//     //     SELECT id, "to", block_number
-//     //     FROM event
-//     //     "#
-//     // );
-
-// 	// let events: Vec<MyEvent> = select_query.fetch_all(&pool).await?;
-// 	// println!("\n=== select events with query.map...: \n{:?}", events);
-
-//     Ok(())
+// #[derive(Debug, FromRow)]
+// pub struct MyEvent {
+//     id: i64,
+//     // from:String,
+//     to: String, //EOA or Contract address
+//     block_number: i64,
 // }
+
+// // async fn add_to_db(to_address:String,block_no:i64,txn_hash:String) -> Result<(),sqlx::Error>{
+
+// // //Create instance
+// //     println!("Inside add to db");
+// //     let pool=PgPoolOptions::new().max_connections(5).connect("postgres://postgres:1994@localhost/test").await?;
+// //     println!("{:?}", pool);
+// // //Create table
+// //         sqlx::query(
+// //             r#"
+// //         CREATE TABLE IF NOT EXISTS event (
+// //         id bigserial,
+// //         "to" text,
+// //         block_number int,
+// //         Txn_Hash text
+// //         );"#,
+// //         )
+// //         .execute(&pool)
+// //         .await?;
+
+// // //insert new event
+
+// //     let row: (i64,) = sqlx::query_as(
+// //         r#"
+// //         INSERT INTO event ( "to", block_number, txn_hash)
+// //         VALUES ($1, $2, $3)
+// //         RETURNING id
+// //         "#
+// //     )
+// //     .bind(to_address)
+// //     .bind(block_no)
+// //     .bind(txn_hash)
+// //     .fetch_one(&pool)
+// //     .await?;
+
+// // //Fetch data
+
+// //     // let select_query = sqlx::query_as::<_, MyEvent>(
+// //     //     r#"
+// //     //     SELECT id, "to", block_number
+// //     //     FROM event
+// //     //     "#
+// //     // );
+
+// // 	// let events: Vec<MyEvent> = select_query.fetch_all(&pool).await?;
+// // 	// println!("\n=== select events with query.map...: \n{:?}", events);
+
+// //     Ok(())
+// // }
