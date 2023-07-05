@@ -15,3 +15,4 @@ eyre = "0.3"
 sqlx = {version="0.6.3", features=["runtime-tokio-rustls","postgres"]}
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+hex = "0.4.3"

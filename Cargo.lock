@@ -2176,6 +2176,7 @@ dependencies = [
  "ethers",
  "eyre 0.3.10",
  "futures",
+ "hex",
  "serde",
  "serde_json",
  "sqlx",

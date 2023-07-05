@@ -3,7 +3,7 @@ use ethcontract::{
     contract,
     web3::types::{BlockNumber, H160, H256},
     Address
-};
+}; 
 use serde::{Deserialize, Serialize};
 use sqlx::postgres::{PgPoolOptions, PgRow};
 use sqlx::{FromRow, Row};
@@ -15,6 +15,8 @@ use web3::transports::Http;
 use web3::Web3;
 use futures::join;
 use futures::stream::StreamExt;
+mod transactions;
+
 
 // contract!("ens_registry_with_fallback.json");
 contract!("abi/abi_1.json");
@@ -29,7 +31,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         Err(e) => e.to_string(),
     };
     // println!("{:?}", &networkEndpoint[1..networkEndpoint.len() - 1]);
-
+    
     // println!("{:?}",networkDetails);
     // let networkEndpoint: String = networkDetails
     let networkEndpoint = &networkEndpoint[1..networkEndpoint.len() - 1];
@@ -51,7 +53,11 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!("{:?}", contractAddress);
     let contractAddress =
         Address::from_str(&contractAddress).expect("Failed to convert to address type");
-    get_logs(&networkEndpoint, contractAddress);
+
+    // temporarily commenting the get_logs function
+    // get_logs(&networkEndpoint, contractAddress);
+
+    transactions::get_transaction_data();
 
     Ok(())
 }
