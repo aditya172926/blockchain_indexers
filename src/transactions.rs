@@ -1,6 +1,6 @@
 use ethers::{
     providers::{Http, Middleware, Provider},
-    types::{H256},
+    types::{H256, Address},
 };
 use ethers::abi::{Abi, Function, Token};
 
@@ -75,15 +75,30 @@ pub async fn get_transaction_data() {
     let decoded_inputs = function.decode_input(&input_bytes).expect("failed to decode inputs");
     println!("The decoded inputs are {:?}", decoded_inputs);
 
-    // let param1: u128 = ethers::abi::Token::into(decoded_inputs[0]);
+      
+    let vec_tokens = match &decoded_inputs[0] {
+      Token::Tuple(tokens) => tokens.to_owned(),
+      _ => panic!("Unexpected token type"),
+    };
+  
+    println!("The vec tokens are {:?}", vec_tokens);
 
-
-    /// problem starts here below
-
-    let param1: u64 = match &decoded_inputs[0] {
+    let param1: u64 = match &vec_tokens[0] {
         Token::Uint(value) => value.to_owned().as_u64(), _ => panic!("unexpected token type"),
     };
 
     println!("The param 1 is {:?}", param1);
-    // println!("First Param {:?}", ethers::abi::Token::into(decoded_inputs[0].clone()));
+
+    let param2: String = match &vec_tokens[1] {
+      Token::String(value) => value.to_owned().to_string(), _ => panic!("unexpected token type"),
+    };
+
+    println!("The param 2 is {:?}", param2);
+
+    let param3: Address = match &vec_tokens[2] {
+      Token::Address(value) => value.to_owned(), _ => panic!("unexpected token type"),
+    };
+
+    println!("The param 3 is {:?}", param3);
+    
 }
