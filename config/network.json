@@ -2,5 +2,9 @@
     "1": {
         "networkName": "mainnet",
         "networkRpcUrl": "https://mainnet.infura.io/v3/c108a133505241de9e2c48894d23e483"
+    },
+    "137": {
+        "networkName": "polygon",
+        "networkRpcUrl": "https://rpc-mainnet.maticvigil.com"
     }
 }

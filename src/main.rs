@@ -1,14 +1,14 @@
+use ethcontract::contract;
 use ethcontract::prelude::*;
-use ethcontract::{
-    contract,
-}; 
 use ethers::{
+    abi::Abi,
     contract::Contract,
-    types::{Address, U256,H160},
-    abi::Abi
+    types::{Address, H160, U256},
 };
 
 use ethers::providers::Provider;
+use futures::join;
+use futures::stream::StreamExt;
 use serde::{Deserialize, Serialize};
 use sqlx::postgres::{PgPoolOptions, PgRow};
 use sqlx::{FromRow, Row};
@@ -19,99 +19,81 @@ use std::{error::Error, str::FromStr};
 use tokio::time::{sleep, Duration};
 use web3::transports::Http;
 use web3::Web3;
-use futures::join;
-use futures::stream::StreamExt;
+mod connect_network;
 mod transactions;
-
 
 // contract!("ens_registry_with_fallback.json");
 contract!("abi/abi_1.json");
 
 // type Bytes32 = ArrayVec<u8, 32>
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn Error>> {
+    let network_endpoint: String = connect_network::get_network_rpc("137").await;
 
-fn main() -> Result<(), Box<dyn Error>> {
-    let networkDetails: String = fs::read_to_string(r"config/network.json")?.parse()?;
-    let networkDetails = serde_json::from_str::<serde_json::Value>(&networkDetails);
-    let networkEndpoint = match networkDetails {
-        Ok(object) => object["1"]["networkRpcUrl"].to_string(),
-        Err(e) => e.to_string(),
-    };
-    // println!("{:?}", &networkEndpoint[1..networkEndpoint.len() - 1]);
-    
-    // println!("{:?}",networkDetails);
-    // let networkEndpoint: String = networkDetails
-    let networkEndpoint = &networkEndpoint[1..networkEndpoint.len() - 1];
-
-    let contractDetails: String = fs::read_to_string(r"config/global.json")?.parse()?;
-    let contractDetails = serde_json::from_str::<serde_json::Value>(&contractDetails);
-    let contractChainId;
-    let mut contractAddress = "".to_string();
-    match contractDetails {
+    let contract_meta_data: String = fs::read_to_string(r"config/global.json")?.parse()?;
+    let contract_meta_data = serde_json::from_str::<serde_json::Value>(&contract_meta_data);
+    let contract_chain_id: String;
+    let mut contract_address: String = "".to_string();
+    match contract_meta_data {
         Ok(object) => {
-            contractAddress = object["ens"]["contract_address"].to_string();
-            contractChainId = object["ens"]["chainId"].to_string()
+            contract_address = object["ens"]["contract_address"].to_string();
+            contract_chain_id = object["ens"]["chainId"].to_string();
         }
         Err(e) => {
             println!("{:?}", e);
         }
     };
-    contractAddress = contractAddress[1..contractAddress.len() - 1].to_string();
-    println!("{:?}", contractAddress);
-    let contractAddress =
-        Address::from_str(&contractAddress).expect("Failed to convert to address type");
+    contract_address = contract_address[1..contract_address.len() - 1].to_string();
+    println!("{:?}", contract_address);
+    // let contract_address =
+    //     Address::from_str(&contractAddress).expect("Failed to convert to address type");
 
-    // temporarily commenting the get_logs function
     println!("--------------------------------------------------------------");
-    get_logs(&networkEndpoint, contractAddress);
-
+    let _ = get_logs(network_endpoint, contract_address);
     // transactions::get_transaction_data();
 
     Ok(())
 }
 
 //Function to get Logs of events
-#[tokio::main]
-async fn get_logs(networkEndpoint: &str, contractAddress: Address) -> Result<(), Box<dyn Error>> {
+async fn get_logs(
+    network_endpoint: String,
+    contract_address: String,
+) -> Result<(), Box<dyn Error>> {
     // let transport = Http::new(&networkEndpoint)?;
     // let web3 = Web3::new(transport);
     // let contract_address: H160 = contractAddress;
     let rpc_url = "https://lingering-delicate-choice.discover.quiknode.pro/68f9e3726efe97ee2b6a7c8417f6f5d12ab713c6/";
     let provider = Provider::try_from(rpc_url)?;
+    let etherscan_api_token = "ER9VKT8AXAI2WTPSCRNANN69W67V7PRU59".to_string();
 
-
-    let etherscan_api_token="ER9VKT8AXAI2WTPSCRNANN69W67V7PRU59".to_string();
-    let contract_address = "0x231d3559aa848Bf10366fB9868590F01d34bF240".to_string();
-
-
-    let api_url=format!("https://api.etherscan.io/api?module=contract&action=getabi&address={}&apikey={}",contract_address,etherscan_api_token);
+    let api_url = format!(
+        "https://api.etherscan.io/api?module=contract&action=getabi&address={}&apikey={}",
+        contract_address, etherscan_api_token
+    );
 
     let response = reqwest::get(&api_url).await?;
 
-    let mut fetched_abi="na".to_string();
-
+    let mut fetched_abi = "na".to_string();
 
     if response.status().is_success() {
-
         // Read the response body as a string
 
         let response_body = response.text().await?;
 
         // Parse the response body as JSON
         let json: serde_json::Value = serde_json::from_str(&response_body)?;
-        
-        fetched_abi=json["result"].as_str().unwrap().to_owned();
+
+        fetched_abi = json["result"].as_str().unwrap().to_owned();
     } else {
         println!("Request failed with status code: {}", response.status());
     }
 
     let abi: Abi = serde_json::from_str(&fetched_abi).unwrap();
-    let address:H160=contract_address.parse()?;
+    let address: H160 = contract_address.parse()?;
 
-
-    let contract_instance=Contract::new(address,abi,Arc::new(provider.clone()));
-    println!("{:?}",contract_instance);
-
-
+    let contract_instance = Contract::new(address, abi, Arc::new(provider.clone()));
+    println!("{:?}", contract_instance);
 
     // let _ = fetch_ens_name().await;
     // let contract_abi = include_bytes!("../abi/abi_1.json");
@@ -128,13 +110,13 @@ async fn get_logs(networkEndpoint: &str, contractAddress: Address) -> Result<(),
     //     .stream()
     //     .boxed();
 
-    let logs = contract_instance
-    .event()
-    .from_block(0u64)
-    .query()
-    .await?;
+    // let logs = contract_instance
+    // .event()
+    // .from_block(0u64)
+    // .query()
+    // .await?;
 
-// println!("{:?}", logs);
+    // println!("{:?}", logs);
 
     // loop {
     //     join! {
