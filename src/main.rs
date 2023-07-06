@@ -30,15 +30,8 @@ contract!("abi/abi_1.json");
 fn main() -> Result<(), Box<dyn Error>> {
     let network_endpoint: String = utils::get_network_rpc("1");
     let contract_address: String = utils::get_contract_metadata(&"ens".to_string());
-
-    println!("{:?}", contract_address);
-    // let contract_address =
-    //     Address::from_str(&contractAddress).expect("Failed to convert to address type");
-
-    println!("--------------------------------------------------------------%");
     let _ = get_logs(network_endpoint, &contract_address);
     // transactions::get_transaction_data();
-
     Ok(())
 }
 
@@ -46,7 +39,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 async fn get_logs(network_endpoint: String, contract_address: &str) -> Result<(), Box<dyn Error>> {
     let transport: Http = Http::new(&network_endpoint)?;
     let web3: Web3<Http> = Web3::new(transport);
-    
+
     let response: Result<reqwest::Response, reqwest::Error> = utils::fetch_contract_abi("mainnet".to_string(), contract_address).await;
     // let contract_abi: Result<String, reqwest::Error>;
     let mut fetched_abi: String = String::new();
@@ -71,7 +64,9 @@ async fn get_logs(network_endpoint: String, contract_address: &str) -> Result<()
     }
 
     let abi = serde_json::from_str(&fetched_abi).unwrap();
-    println!("Here is the abi {:?}", abi);
+
+    // ----------------------------------------------------------------------
+
     let address: ethcontract::H160 = contract_address.parse()?;
 
     let contract_instance = Instance::at(web3, abi, address);
@@ -79,7 +74,6 @@ async fn get_logs(network_endpoint: String, contract_address: &str) -> Result<()
     println!("Contract address {:?}", address);
     println!("--------------------------------------------------------");
     println!("1. Contract initialized");
-    // let contract2: Instance = Instance::with_deployment_info(&web3, contract_abi.to_vec(), contract_address, None);
 
     // Subscribe to all events
     let mut event_streams = contract_instance
