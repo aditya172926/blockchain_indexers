@@ -44,41 +44,34 @@ fn main() -> Result<(), Box<dyn Error>> {
 
 #[tokio::main]
 async fn get_logs(network_endpoint: String, contract_address: &str) -> Result<(), Box<dyn Error>> {
-    let transport = Http::new(&network_endpoint)?;
-    let web3 = Web3::new(transport);
-
-    utils::fetch_contract_abi("mainnet".to_string(), contract_address).await;
-
-    // let contract_address: H160 = contractAddress;
-    // let rpc_url = "https://lingering-delicate-choice.discover.quiknode.pro/68f9e3726efe97ee2b6a7c8417f6f5d12ab713c6/";
-    // let provider = Provider::try_from(rpc_url)?;
-
-    let etherscan_api_token = "ER9VKT8AXAI2WTPSCRNANN69W67V7PRU59".to_string();
-
-    let api_url: String = format!(
-        "https://api.etherscan.io/api?module=contract&action=getabi&address={}&apikey={}",
-        contract_address, etherscan_api_token
-    );
-
-    let response = reqwest::get(&api_url).await?;
-
+    let transport: Http = Http::new(&network_endpoint)?;
+    let web3: Web3<Http> = Web3::new(transport);
+    
+    let response: Result<reqwest::Response, reqwest::Error> = utils::fetch_contract_abi("mainnet".to_string(), contract_address).await;
+    // let contract_abi: Result<String, reqwest::Error>;
     let mut fetched_abi: String = String::new();
 
-    if response.status().is_success() {
-        // Read the response body as a string
-
-        let response_body = response.text().await?;
-
-        // Parse the response body as JSON
-        let json: serde_json::Value = serde_json::from_str(&response_body)?;
-
-        fetched_abi = json["result"].as_str().unwrap().to_owned();
-        println!("The fetched abi is {:?}", fetched_abi);
-    } else {
-        println!("Request failed with status code: {}", response.status());
+    match response{
+        Ok(object) => {
+            // contract_abi = object.text().await;
+            // println!("The contract abi returned is {:?}", contract_abi);
+            if object.status().is_success() {
+                // Read the response body as a string
+                let response_body: String = object.text().await?;
+                // Parse the response body as JSON
+                let json: serde_json::Value = serde_json::from_str(&response_body)?;
+                fetched_abi = json["result"].as_str().unwrap().to_owned();
+            } else {
+                println!("Request failed with status code: {}", object.status());
+            }
+        }
+        Err(e) => {
+            println!("Error in fetching contract abi {:?}", e);
+        }
     }
 
     let abi = serde_json::from_str(&fetched_abi).unwrap();
+    println!("Here is the abi {:?}", abi);
     let address: ethcontract::H160 = contract_address.parse()?;
 
     let contract_instance = Instance::at(web3, abi, address);
