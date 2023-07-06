@@ -59,5 +59,4 @@ pub async fn fetch_contract_abi(network_name: String, contract_address: &str) ->
     let response: Result<reqwest::Response, reqwest::Error> = reqwest::get(&api_url).await;
     // let mut fetched_abi: reqwest::Response = Default::default();
     return response;
-
 }

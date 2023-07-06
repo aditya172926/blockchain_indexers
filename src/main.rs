@@ -30,47 +30,51 @@ contract!("abi/abi_1.json");
 fn main() -> Result<(), Box<dyn Error>> {
     let network_endpoint: String = utils::get_network_rpc("1");
     let contract_address: String = utils::get_contract_metadata(&"ens".to_string());
-    let _ = get_logs(network_endpoint, &contract_address);
+    let fetched_abi: String = initialize_node(&network_endpoint, &contract_address);
+    let _ = get_logs(network_endpoint, &contract_address, fetched_abi);
     // transactions::get_transaction_data();
     Ok(())
 }
 
 #[tokio::main]
-async fn get_logs(network_endpoint: String, contract_address: &str) -> Result<(), Box<dyn Error>> {
-    let transport: Http = Http::new(&network_endpoint)?;
+async fn initialize_node(network_endpoint: &str, contract_address:&str) -> String {
+    let transport: Http = Http::new(&network_endpoint).expect("Error");
     let web3: Web3<Http> = Web3::new(transport);
 
-    let response: Result<reqwest::Response, reqwest::Error> = utils::fetch_contract_abi("mainnet".to_string(), contract_address).await;
+    let response: Result<reqwest::Response, reqwest::Error> = utils::fetch_contract_abi("mainnet".to_string(), &contract_address).await;
     // let contract_abi: Result<String, reqwest::Error>;
     let mut fetched_abi: String = String::new();
 
     match response{
         Ok(object) => {
-            // contract_abi = object.text().await;
-            // println!("The contract abi returned is {:?}", contract_abi);
             if object.status().is_success() {
                 // Read the response body as a string
-                let response_body: String = object.text().await?;
+                let response_body: String = object.text().await.expect("Error");
                 // Parse the response body as JSON
-                let json: serde_json::Value = serde_json::from_str(&response_body)?;
+                let json: serde_json::Value = serde_json::from_str(&response_body).expect("error");
                 fetched_abi = json["result"].as_str().unwrap().to_owned();
             } else {
                 println!("Request failed with status code: {}", object.status());
             }
+            return fetched_abi;
         }
         Err(e) => {
             println!("Error in fetching contract abi {:?}", e);
+            return "Error".to_string();
         }
     }
+}
 
+#[tokio::main]
+async fn get_logs(network_endpoint: String, contract_address: &str, fetched_abi:String) -> Result<(), Box<dyn Error>> {
+    let transport: Http = Http::new(&network_endpoint)?;
+    let web3: Web3<Http> = Web3::new(transport);
     let abi = serde_json::from_str(&fetched_abi).unwrap();
-
+    println!("The contract abi unwrapped is {:?}", abi);
     // ----------------------------------------------------------------------
 
     let address: ethcontract::H160 = contract_address.parse()?;
-
     let contract_instance = Instance::at(web3, abi, address);
-
     println!("Contract address {:?}", address);
     println!("--------------------------------------------------------");
     println!("1. Contract initialized");

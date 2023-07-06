@@ -4,8 +4,9 @@ use ethers::{
 };
 use ethers::abi::{Abi, Function, Token};
 
+
 #[tokio::main]
-pub async fn get_transaction_data() {
+pub async fn get_transaction_data(abi: Abi, function_name: String, transaction_hash: String) {
     let abi_json = r#"[{
         "inputs": [
           {
