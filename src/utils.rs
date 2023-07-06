@@ -1,5 +1,6 @@
 use std::fs;
 use std::string::String;
+use std::fmt;
 use ethers::providers::Provider;
 
 pub fn get_network_rpc(network_id: &str) -> String {
@@ -34,5 +35,41 @@ pub fn get_contract_metadata(protocol_name: &str) -> String {
 
 pub async fn get_contract_instance(network_rpc: String) {
     let provider = Provider::try_from(network_rpc);
+
+}
+
+pub async fn fetch_contract_abi(network_name: String, contract_address: &str) -> reqwest::Response {
+    let file: String = fs::read_to_string(r"config/constants.json").expect("Error in reading the constants.json file");
+    let file_data = serde_json::from_str::<serde_json::Value>(&file);
+
+    let mut api: String = String::new();
+    match file_data {
+        Ok(object) => {
+            api = object[network_name]["_api"].to_string();
+        }
+        Err(e) => {
+            println!("{:?}", e);
+        }
+    }
+
+    let api_url = str::replace(&api, "{}", &contract_address);
+    println!("The api_url is {}", api_url);
+
+    let response = reqwest::get(&api_url).await;
+    // let mut fetched_abi: reqwest::Response = Default::default();
+
+    match response {
+        Ok(object) => {
+            // something
+            let fetched_abi = object;
+            // let json_data: serde_json::Value = serde_json::from_str(&response_data);
+            println!("The fetched abi is {:?}", fetched_abi);
+            return fetched_abi;
+        }
+        Err(e) => {
+            println!("Error in ABI response -> {:?}", e);
+            return e; // error here in return type
+        }
+    }
 
 }

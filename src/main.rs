@@ -20,7 +20,7 @@ use std::{error::Error, str::FromStr};
 use tokio::time::{sleep, Duration};
 use web3::transports::Http;
 use web3::Web3;
-mod connect_network;
+mod utils;
 mod transactions;
 
 // contract!("ens_registry_with_fallback.json");
@@ -28,24 +28,26 @@ contract!("abi/abi_1.json");
 
 // type Bytes32 = ArrayVec<u8, 32>
 fn main() -> Result<(), Box<dyn Error>> {
-    let network_endpoint: String = connect_network::get_network_rpc("1");
-    let contract_address: String = connect_network::get_contract_metadata(&"ens".to_string());
+    let network_endpoint: String = utils::get_network_rpc("1");
+    let contract_address: String = utils::get_contract_metadata(&"ens".to_string());
 
     println!("{:?}", contract_address);
     // let contract_address =
     //     Address::from_str(&contractAddress).expect("Failed to convert to address type");
 
     println!("--------------------------------------------------------------%");
-    let _ = get_logs(network_endpoint, contract_address);
+    let _ = get_logs(network_endpoint, &contract_address);
     // transactions::get_transaction_data();
 
     Ok(())
 }
 
 #[tokio::main]
-async fn get_logs(network_endpoint: String, contract_address: String) -> Result<(), Box<dyn Error>> {
+async fn get_logs(network_endpoint: String, contract_address: &str) -> Result<(), Box<dyn Error>> {
     let transport = Http::new(&network_endpoint)?;
     let web3 = Web3::new(transport);
+
+    utils::fetch_contract_abi("mainnet".to_string(), contract_address).await;
 
     // let contract_address: H160 = contractAddress;
     // let rpc_url = "https://lingering-delicate-choice.discover.quiknode.pro/68f9e3726efe97ee2b6a7c8417f6f5d12ab713c6/";
