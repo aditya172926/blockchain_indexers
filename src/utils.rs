@@ -38,7 +38,7 @@ pub async fn get_contract_instance(network_rpc: String) {
 
 }
 
-pub async fn fetch_contract_abi(network_name: String, contract_address: &str) -> reqwest::Response {
+pub async fn fetch_contract_abi(network_name: String, contract_address: &str) -> Result<reqwest::Response, reqwest::Error> {
     let file: String = fs::read_to_string(r"config/constants.json").expect("Error in reading the constants.json file");
     let file_data = serde_json::from_str::<serde_json::Value>(&file);
 
@@ -64,11 +64,11 @@ pub async fn fetch_contract_abi(network_name: String, contract_address: &str) ->
             let fetched_abi = object;
             // let json_data: serde_json::Value = serde_json::from_str(&response_data);
             println!("The fetched abi is {:?}", fetched_abi);
-            return fetched_abi;
+            return Ok(fetched_abi);
         }
         Err(e) => {
             println!("Error in ABI response -> {:?}", e);
-            return e; // error here in return type
+            return Err(e); // error here in return type
         }
     }
 
