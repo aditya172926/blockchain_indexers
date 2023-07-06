@@ -1,4 +1,5 @@
 use ethcontract::contract;
+use ethcontract::contract::Instance;
 use ethcontract::prelude::*;
 use ethers::{
     abi::Abi,
@@ -26,29 +27,15 @@ mod transactions;
 contract!("abi/abi_1.json");
 
 // type Bytes32 = ArrayVec<u8, 32>
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
-    let network_endpoint: String = connect_network::get_network_rpc("137").await;
+fn main() -> Result<(), Box<dyn Error>> {
+    let network_endpoint: String = connect_network::get_network_rpc("1");
+    let contract_address: String = connect_network::get_contract_metadata(&"ens".to_string());
 
-    let contract_meta_data: String = fs::read_to_string(r"config/global.json")?.parse()?;
-    let contract_meta_data = serde_json::from_str::<serde_json::Value>(&contract_meta_data);
-    let contract_chain_id: String;
-    let mut contract_address: String = "".to_string();
-    match contract_meta_data {
-        Ok(object) => {
-            contract_address = object["ens"]["contract_address"].to_string();
-            contract_chain_id = object["ens"]["chainId"].to_string();
-        }
-        Err(e) => {
-            println!("{:?}", e);
-        }
-    };
-    contract_address = contract_address[1..contract_address.len() - 1].to_string();
     println!("{:?}", contract_address);
     // let contract_address =
     //     Address::from_str(&contractAddress).expect("Failed to convert to address type");
 
-    println!("--------------------------------------------------------------");
+    println!("--------------------------------------------------------------%");
     let _ = get_logs(network_endpoint, contract_address);
     // transactions::get_transaction_data();
 
@@ -56,57 +43,43 @@ async fn main() -> Result<(), Box<dyn Error>> {
 }
 
 #[tokio::main]
-async fn get_logs(networkEndpoint: &str, contractAddress: String) -> Result<(), Box<dyn Error>> {
-    let transport = Http::new(&networkEndpoint)?;
+async fn get_logs(network_endpoint: String, contract_address: String) -> Result<(), Box<dyn Error>> {
+    let transport = Http::new(&network_endpoint)?;
     let web3 = Web3::new(transport);
 
-
     // let contract_address: H160 = contractAddress;
-    let rpc_url = "https://lingering-delicate-choice.discover.quiknode.pro/68f9e3726efe97ee2b6a7c8417f6f5d12ab713c6/";
-    let provider = Provider::try_from(rpc_url)?;
+    // let rpc_url = "https://lingering-delicate-choice.discover.quiknode.pro/68f9e3726efe97ee2b6a7c8417f6f5d12ab713c6/";
+    // let provider = Provider::try_from(rpc_url)?;
 
+    let etherscan_api_token = "ER9VKT8AXAI2WTPSCRNANN69W67V7PRU59".to_string();
 
-    let etherscan_api_token="ER9VKT8AXAI2WTPSCRNANN69W67V7PRU59".to_string();
-    let contract_address = contractAddress.to_string();
-    let abab = Source::etherscan("0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e").unwrap();
-    println!("the json{:?}",abab);
-
-
-    let api_url=format!("https://api.etherscan.io/api?module=contract&action=getabi&address={}&apikey={}",contract_address,etherscan_api_token);
+    let api_url: String = format!(
+        "https://api.etherscan.io/api?module=contract&action=getabi&address={}&apikey={}",
+        contract_address, etherscan_api_token
+    );
 
     let response = reqwest::get(&api_url).await?;
 
-    let mut fetched_abi="na".to_string();
-
+    let mut fetched_abi: String = String::new();
 
     if response.status().is_success() {
-
         // Read the response body as a string
 
         let response_body = response.text().await?;
 
         // Parse the response body as JSON
         let json: serde_json::Value = serde_json::from_str(&response_body)?;
-        
-        fetched_abi=json["result"].as_str().unwrap().to_owned();
+
+        fetched_abi = json["result"].as_str().unwrap().to_owned();
+        println!("The fetched abi is {:?}", fetched_abi);
     } else {
         println!("Request failed with status code: {}", response.status());
     }
 
     let abi = serde_json::from_str(&fetched_abi).unwrap();
-    let address:ethcontract::H160=contract_address.parse()?;
+    let address: ethcontract::H160 = contract_address.parse()?;
 
-
-    //  let contract_instance=Contract::new(address,abi,Arc::new(provider.clone()));
-    //  println!("{:?}",contract_instance);
-
-    let contract_instance=Instance::at(web3,abi,address);
-    
-
-
-    // let _ = fetch_ens_name().await;
-    // let contract_abi = include_bytes!("../abi/abi_1.json");
-    // let contract = ENSRegistryWithFallback::at(&web3, contract_address);
+    let contract_instance = Instance::at(web3, abi, address);
 
     println!("Contract address {:?}", address);
     println!("--------------------------------------------------------");
@@ -114,11 +87,13 @@ async fn get_logs(networkEndpoint: &str, contractAddress: String) -> Result<(), 
     // let contract2: Instance = Instance::with_deployment_info(&web3, contract_abi.to_vec(), contract_address, None);
 
     // Subscribe to all events
-    let mut event_streams = contract_instance.all_events().from_block(BlockNumber::from(17630615)).stream().boxed();
+    let mut event_streams = contract_instance
+        .all_events()
+        .from_block(BlockNumber::from(17630615))
+        .stream()
+        .boxed();
 
-
-
-println!("waiting for events.......");
+    println!("waiting for events.......");
     loop {
         join! {
             async {
