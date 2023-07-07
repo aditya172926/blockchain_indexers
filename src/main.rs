@@ -93,6 +93,14 @@ async fn get_logs(network_endpoint: String, contract_address: &str, fetched_abi:
                 let log = event_streams.next().await.expect("No events").expect("Error querying event").added();
                 let unwraped_log = log.unwrap();
                 println!("Received a new event log {:?}", unwraped_log);
+
+
+                let to=&unwraped_log.topics[2];
+                println!("Recipient Address:{:?}",to);
+
+                let amount=ethers::types::U256::from_big_endian(&unwraped_log.data[..32]);
+                println!("Amount:{:?}",amount);
+
             },
         };
     }
