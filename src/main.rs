@@ -29,28 +29,27 @@ contract!("abi/abi_1.json");
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let network_endpoint: String = utils::get_network_rpc("1");
-    let contract_address: String = utils::get_contract_metadata(&"uniswap".to_string());
+    let contract_address: String = utils::get_contract_metadata(&"ens".to_string());
     let fetched_abi: String = initialize_node(&network_endpoint, &contract_address).await;
-    // let _ = get_logs(network_endpoint, &contract_address, fetched_abi);
-    // transactions::get_transaction_data(&fetched_abi, "setOwner".to_string(), "0x6b69174c0969eda83feb75734fee22722b518aba79be76aaa839ae58fd44d58b".to_string());
-
-    //creating contract here due to errors while creating contract in getTxns function
-    let abi = serde_json::from_str(&fetched_abi).unwrap();
+    let abi: web3::ethabi::Contract = serde_json::from_str(&fetched_abi).unwrap();
+    // println!("The abi functions are {:?}", abi.functions);
+    // for function in &abi.functions {
+    //     println!("The contract function is {:?}", function); // prints the list of functions
+    // }
     let address: ethcontract::H160 = contract_address.parse()?;
     let transport: Http = Http::new(&network_endpoint)?;
     let web3: Web3<Http> = Web3::new(transport);
-
     let contract_instance = Instance::at(web3, abi, address);
 
-    getTxns(contract_instance).await;
+    getTxns(&fetched_abi, contract_instance).await;
 
-    // get_logs(network_endpoint, &contract_address, fetched_abi);
+    let _ = get_logs(network_endpoint, &contract_address, fetched_abi);
 
     Ok(())
 }
 
 
-async fn getTxns(contract:Instance<Http>){
+async fn getTxns(abi: &str, contract:Instance<Http>){
 
     let event_stream = contract.all_events().from_block(BlockNumber::from(17547614)).stream();
     println!("fetching...");
@@ -73,7 +72,7 @@ async fn getTxns(contract:Instance<Http>){
                 println!("TO Address: {:?}", &to_address);
                 println!("Block Number: {:?}", &block_no);
                 println!("Transaction Hash: {:?}", txnr);
-                transactions::get_transaction_data(txnr).await;
+                transactions::get_transaction_data(abi, txnr).await;
                 // add_to_db(to_address,block_no,txn_hash).await?;
                 // println!("Received event: {:?}", log);
             }
