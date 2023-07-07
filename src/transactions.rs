@@ -1,29 +1,26 @@
+use ethcontract::H256;
 use ethers::abi::{Abi, Function, Token};
+use ethers::types::H160;
 use ethers::{
     providers::{Http, Middleware, Provider},
-    types::{Address, H256},
+    types::{Address, Transaction},
 };
 
-#[tokio::main]
-pub async fn get_transaction_data(abi: &str, function_name: String, transaction_hash: String) {
-    let abi: Abi = serde_json::from_str(abi).expect("Failed to parse abi");
-    println!("The decoded abi is {:?}", abi);
-    let function: &Function = abi
-        .function(&function_name)
-        .expect("Function is not found in ABI");
-
-    println!("Running the transactions rust file {:?}", function.inputs);
+pub async fn get_transaction_data(transaction_hash: H160) {
     // connect to a network -> eg Polygon
+    println!("The transaction hash is {:?}", transaction_hash);
     let provider = Provider::<Http>::try_from("https://rpc-mainnet.maticvigil.com")
         .expect("Failed to connect with a Provider");
     println!("GOt the provider {:?}", provider);
 
-    let transaction_hash: H256 = transaction_hash
-        .parse()
-        .expect("Failed to parse transaction hash");
+    // let transaction_hash: H256 = transaction_hash
+    //     .parse()
+    //     .expect("Failed to parse transaction hash");
+
+    println!("The transaction hash is {:?}", transaction_hash);
 
     // getting the transaction details
-    let transaction = provider
+    let transaction: Option<ethers::types::Transaction> = provider
         .get_transaction(transaction_hash)
         .await
         .expect("Failed to get the transaction");
@@ -32,6 +29,20 @@ pub async fn get_transaction_data(abi: &str, function_name: String, transaction_
         .get_transaction_receipt(transaction_hash)
         .await
         .expect("Couldn't get the transaction receipt");
+
+    println!("The transaction receipt is {:?}", transaction_receipt);
+
+    
+}
+
+async fn get_transaction_inputs(abi: &str, function_name: String, transaction: Option<Transaction>) {
+    let abi: Abi = serde_json::from_str(abi).expect("Failed to parse abi");
+    println!("The decoded abi is {:?}", abi);
+    let function: &Function = abi
+        .function(&function_name)
+        .expect("Function is not found in ABI");
+
+    println!("Running the transactions rust file {:?}", function.inputs);
 
     let input_data: String = transaction.unwrap().input.to_string();
     let input_data = &input_data[10..]; // removing the transaction hash
