@@ -1,6 +1,7 @@
 {
   "ens": {
-    "contract_address": "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
+    // "contract_address": "0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e",
+    "contract_address": "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984",
     "chainId": "1",
     "methods": {
       "setOwner": {
