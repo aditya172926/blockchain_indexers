@@ -54,23 +54,41 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
 async fn getTxns(contract:Instance<Http>){
 
+    let rpc_url = "https://lingering-delicate-choice.discover.quiknode.pro/68f9e3726efe97ee2b6a7c8417f6f5d12ab713c6/";
+    let provider = Provider::try_from(rpc_url).unwrap();
+
+
+
     let event_stream = contract.all_events().from_block(BlockNumber::from(17547614)).stream();
     println!("fetching...");
     let mut event_stream = Box::pin(event_stream);
+   
     loop {
         match event_stream.next().await {
             Some(Ok(log)) => {
 
+
                 // Handle the event
-                println!("Received event: {:?}", log.data);
+                println!("Received event: {:?}", log);
                 // println!("{:?}", &log.added().unwrap());
-                let to_address=log.meta.as_ref().unwrap().address.to_string();
+                let to_address:H160=log.meta.as_ref().unwrap().address;
                 // let to_address=log.meta.as_ref().unwrap().address.to_string();
                 let block_no:i64=log.meta.as_ref().unwrap().block_number.try_into().unwrap();
-                let txn_hash:String=log.meta.as_ref().unwrap().transaction_hash.to_string();
+                let txn_hash=log.meta.as_ref().unwrap().transaction_hash.to_fixed_bytes();
+
+                let txnr=ethers::core::types::TxHash::from(txn_hash);
+
+                let txn=provider.get_transaction(txnr).await.unwrap();
+
+                println!("-------------------------------------------------------------------------------");
+                println!("COMPLETE TRANSACTION DETAILS:{:?}",txn);
+                println!("-------------------------------------------------------------------------------");
+
+
+
                 println!("TO Address: {:?}", &to_address);
                 println!("Block Number: {:?}", &block_no);
-                println!("Transaction Hash: {}", txn_hash);
+                println!("Transaction Hash: {:?}", txn_hash);
                 // add_to_db(to_address,block_no,txn_hash).await?;
                 // println!("Received event: {:?}", log);
                 
