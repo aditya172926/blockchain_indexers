@@ -29,10 +29,10 @@ contract!("abi/abi_1.json");
 // type Bytes32 = ArrayVec<u8, 32>
 fn main() -> Result<(), Box<dyn Error>> {
     let network_endpoint: String = utils::get_network_rpc("1");
-    let contract_address: String = utils::get_contract_metadata(&"ens".to_string());
+    let contract_address: String = utils::get_contract_metadata(&"uniswap".to_string());
     let fetched_abi: String = initialize_node(&network_endpoint, &contract_address);
-    // let _ = get_logs(network_endpoint, &contract_address, fetched_abi);
-    transactions::get_transaction_data(&fetched_abi, "post".to_string(), "0x6b69174c0969eda83feb75734fee22722b518aba79be76aaa839ae58fd44d58b".to_string());
+    let _ = get_logs(network_endpoint, &contract_address, fetched_abi);
+    // transactions::get_transaction_data(&fetched_abi, "post".to_string(), "0x6b69174c0969eda83feb75734fee22722b518aba79be76aaa839ae58fd44d58b".to_string());
     Ok(())
 }
 
