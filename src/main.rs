@@ -1,87 +1,78 @@
-pub mod nft_data{
+#[allow(unused_imports)]
+#[allow(dead_code)]
 
-    
-    use std::sync::Arc;
+use std::fmt::Debug;
+use std::fs::File;
+use std::net::SocketAddr;
+use std::error::Error;
+use std::fs;
+mod getEvents;
+use getEvents::getEvents::fetch;
 
-    use ethers::{
-        contract::Contract,
-        providers::{Provider},
-        types::{Address, U256,H160},
-         abi::Abi
-    };
-    use serde_json::Value;
-    
-    
-pub async fn getNftData(address:String,r_abi:&str) -> Result<(), Box<dyn std::error::Error>> {
+#[allow(unused)]
 
-    println!("Running nft");
+use sqlx::postgres::{PgPoolOptions,PgRow};
+use sqlx::{FromRow,Row};
+use ethers::{
+    providers::{Provider, Http, Middleware},
+    types::{Address, Log, BlockNumber, Filter}, prelude::account::Sort, utils::hex::{self, encode, ToHex},
+    abi::Abi
+};
+use ethcontract::{contract, contract::Event, web3::types::{H160, H256}};
+use ethers::core::types::Chain;
+use ethers::etherscan::Client;
+use ethers::etherscan::account::TxListParams;
+use reqwest;
+mod nft;
+use nft::nft_data::getNftData;
+use serde_json::{Value, from_str};
 
-        // Replace with your Ethereum node URL
-        let rpc_url = "https://lingering-delicate-choice.discover.quiknode.pro/68f9e3726efe97ee2b6a7c8417f6f5d12ab713c6/";
-        let provider = Provider::try_from(rpc_url)?;
+pub struct EventSchema{
+    id:i64,
+    sender:String,
+    recipient:String,
+    contract_used:String,
+    value:String,
+    block_number:String,
+    txn_hash:String,
+}
+
+
+
+
+#[tokio::main]
+async fn main() -> eyre::Result<()> {
+
+    let contract_address = "0x231d3559aa848Bf10366fB9868590F01d34bF240".to_string();
+
+    let etherscan_api_token="ER9VKT8AXAI2WTPSCRNANN69W67V7PRU59".to_string();
+
+
+    let api_url=format!("https://api.etherscan.io/api?module=contract&action=getabi&address={}&apikey={}",contract_address,etherscan_api_token);
+
+    let response = reqwest::get(&api_url).await?;
+
+    let mut fetched_abi="na".to_string();
+
+
+    if response.status().is_success() {
+        // Read the response body as a string
+        let response_body = response.text().await?;
+
+        // Parse the response body as JSON
+        let json: serde_json::Value = serde_json::from_str(&response_body)?;
         
-        // NFT contract address
-        let contract_address:H160 = address.parse()?;
-
-        let abi: Abi = serde_json::from_str(r_abi).unwrap();
-
-
-    let contract_instance=Contract::new(contract_address,abi,Arc::new(provider.clone()));
-
-    // NFT token ID
-    let token_id = U256::from(2210); // Replace with the actual token ID
-
-    let owner: String = contract_instance
-    .method::<_, String>("name", ())?
-    .call()
-    .await?;
+        fetched_abi=json["result"].as_str().unwrap().to_owned();
+    } else {
+        println!("Request failed with status code: {}", response.status());
+    }
+    // println!("{:?}",fetched_abi);
+    getNftData(contract_address,&fetched_abi).await;
 
 
-    let symbol: String = contract_instance
-    .method::<_, String>("symbol", ())?
-    .call()
-    .await?.to_string();
 
-    let owner_token = contract_instance
-    .method::<_, Address>("ownerOf", token_id)?
-    .call()
-    .await?;
-
-    let token_uri = contract_instance
-    .method::<_, String>("tokenURI", token_id)?
-    .call()
-    .await?;
-
-    println!("NFT name: {:?}", owner);
-    println!("NFT symbol: {:?}", symbol);
-    println!("NFT owner of token {}: {:?}",token_id, owner_token);
-    println!("Token URIr of token {}: {:?}",token_id, token_uri);
-    // let _ = get_cid("https://ipfs.io/ipfs/bafkreieulfdm7miks2pgcs45rt4sv2s7bg775lt4acujl4l2unc5tn5hnu".to_string()).await;
-
-
+    
+    println!("all okay");
     Ok(())
-}
-
-
-
-//function to read metadata
-async fn get_cid(token_uri:String) -> Result<(), reqwest::Error> {
-  println!("Reading metadata:");
-    let body = reqwest::get(token_uri)
-    .await?.text().await?;
-
-    let v:Value=serde_json::from_str(&body).unwrap();
-    println!("Name:{}",v["name"]);
-    println!("--------------------------------------------------------------------------------");
-    println!("chainID:{}",v["source"]["chainId"]);
-    println!("--------------------------------------------------------------------------------");
-    println!("Origin:{}",v["origin"]);
-    println!("--------------------------------------------------------------------------------");
-
-    Ok(())
-}
-
-
-
 }
 
