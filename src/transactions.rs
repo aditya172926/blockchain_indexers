@@ -3,13 +3,13 @@ use ethers::abi::{Abi, Function, Token};
 use ethers::types::H160;
 use ethers::{
     providers::{Http, Middleware, Provider},
-    types::{Address, Transaction},
+    types::{Address, TxHash, Transaction},
 };
 
-pub async fn get_transaction_data(transaction_hash: H160) {
+pub async fn get_transaction_data(transaction_hash: TxHash) {
     // connect to a network -> eg Polygon
     println!("The transaction hash is {:?}", transaction_hash);
-    let provider = Provider::<Http>::try_from("https://rpc-mainnet.maticvigil.com")
+    let provider = Provider::<Http>::try_from("https://lingering-delicate-choice.discover.quiknode.pro/68f9e3726efe97ee2b6a7c8417f6f5d12ab713c6/")
         .expect("Failed to connect with a Provider");
     println!("GOt the provider {:?}", provider);
 

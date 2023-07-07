@@ -29,7 +29,7 @@ contract!("abi/abi_1.json");
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let network_endpoint: String = utils::get_network_rpc("1");
-    let contract_address: String = utils::get_contract_metadata(&"ens".to_string());
+    let contract_address: String = utils::get_contract_metadata(&"uniswap".to_string());
     let fetched_abi: String = initialize_node(&network_endpoint, &contract_address).await;
     // let _ = get_logs(network_endpoint, &contract_address, fetched_abi);
     // transactions::get_transaction_data(&fetched_abi, "setOwner".to_string(), "0x6b69174c0969eda83feb75734fee22722b518aba79be76aaa839ae58fd44d58b".to_string());
@@ -49,27 +49,31 @@ async fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-async fn getTxns(contract: Instance<Http>) {
-    let event_stream = contract
-        .all_events()
-        .from_block(BlockNumber::from(17547614))
-        .stream();
+
+async fn getTxns(contract:Instance<Http>){
+
+    let event_stream = contract.all_events().from_block(BlockNumber::from(17547614)).stream();
     println!("fetching...");
     let mut event_stream = Box::pin(event_stream);
+   
     loop {
         match event_stream.next().await {
             Some(Ok(log)) => {
+
+
                 // Handle the event
-                println!("Received event: {:?}", log.data);
+                println!("Received event: {:?}", log);
                 // println!("{:?}", &log.added().unwrap());
-                let to_address = log.meta.as_ref().unwrap().address.to_string();
-                let block_no: i64 = log.meta.as_ref().unwrap().block_number.try_into().unwrap();
-                let txn_hash = log.meta.as_ref().unwrap().transaction_hash;
-                println!("The metalog {:?}", log.meta.as_ref().unwrap());
+                let to_address=log.meta.as_ref().unwrap().address.to_string();
+                // let to_address=log.meta.as_ref().unwrap().address.to_string();
+                let block_no:i64=log.meta.as_ref().unwrap().block_number.try_into().unwrap();
+                let txn_hash=log.meta.as_ref().unwrap().transaction_hash.to_fixed_bytes();
+                let txnr: H256=ethers::core::types::TxHash::from(txn_hash);
+                
                 println!("TO Address: {:?}", &to_address);
                 println!("Block Number: {:?}", &block_no);
-                println!("Transaction Hash: {:?}", txn_hash);
-                transactions::get_transaction_data(txn_hash).await;
+                println!("Transaction Hash: {:?}", txnr);
+                transactions::get_transaction_data(txnr).await;
                 // add_to_db(to_address,block_no,txn_hash).await?;
                 // println!("Received event: {:?}", log);
             }
