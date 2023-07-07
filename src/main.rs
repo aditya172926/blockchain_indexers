@@ -26,17 +26,70 @@ mod transactions;
 // contract!("ens_registry_with_fallback.json");
 contract!("abi/abi_1.json");
 
-// type Bytes32 = ArrayVec<u8, 32>
-fn main() -> Result<(), Box<dyn Error>> {
-    let network_endpoint: String = utils::get_network_rpc("1");
-    let contract_address: String = utils::get_contract_metadata(&"uniswap".to_string());
-    let fetched_abi: String = initialize_node(&network_endpoint, &contract_address);
-    let _ = get_logs(network_endpoint, &contract_address, fetched_abi);
-    // transactions::get_transaction_data(&fetched_abi, "post".to_string(), "0x6b69174c0969eda83feb75734fee22722b518aba79be76aaa839ae58fd44d58b".to_string());
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn Error>> {
+    let network_endpoint: String = helper::get_network_rpc("1");
+    let contract_address: String = helper::get_contract_metadata(&"ens".to_string());
+    let fetched_abi: String = initialize_node(&network_endpoint, &contract_address).await;
+    // let _ = get_logs(network_endpoint, &contract_address, fetched_abi);
+    // transactions::get_transaction_data(&fetched_abi, "setOwner".to_string(), "0x6b69174c0969eda83feb75734fee22722b518aba79be76aaa839ae58fd44d58b".to_string());
+
+
+//creating contract here due to errors while creating contract in getTxns function
+    let abi = serde_json::from_str(&fetched_abi).unwrap();
+    let address: ethcontract::H160 = contract_address.parse()?;
+    let transport: Http = Http::new(&network_endpoint)?;
+    let web3: Web3<Http> = Web3::new(transport);
+
+    let contract_instance = Instance::at(web3, abi, address);
+
+
+    getTxns(contract_instance).await;
+
+    // get_logs(network_endpoint, &contract_address, fetched_abi);
+
     Ok(())
 }
 
-#[tokio::main]
+
+async fn getTxns(contract:Instance<Http>){
+
+    let event_stream = contract.all_events().from_block(BlockNumber::from(17547614)).stream();
+    println!("fetching...");
+    let mut event_stream = Box::pin(event_stream);
+    loop {
+        match event_stream.next().await {
+            Some(Ok(log)) => {
+
+                // Handle the event
+                println!("Received event: {:?}", log.data);
+                // println!("{:?}", &log.added().unwrap());
+                let to_address=log.meta.as_ref().unwrap().address.to_string();
+                // let to_address=log.meta.as_ref().unwrap().address.to_string();
+                let block_no:i64=log.meta.as_ref().unwrap().block_number.try_into().unwrap();
+                let txn_hash:String=log.meta.as_ref().unwrap().transaction_hash.to_string();
+                println!("TO Address: {:?}", &to_address);
+                println!("Block Number: {:?}", &block_no);
+                println!("Transaction Hash: {}", txn_hash);
+                // add_to_db(to_address,block_no,txn_hash).await?;
+                // println!("Received event: {:?}", log);
+                
+            }
+            Some(Err(e)) => {
+                eprintln!("Error: {}", e);
+            }
+            None => {
+                println!("Stream ended, reconnecting...");
+                sleep(Duration::from_secs(2)).await;
+                
+                event_stream = Box::pin(contract.all_events().from_block(BlockNumber::from(17547614)).stream());
+            }
+        }
+    }
+
+    
+}
+
 async fn initialize_node(network_endpoint: &str, contract_address:&str) -> String {
     let transport: Http = Http::new(&network_endpoint).expect("Error");
     let web3: Web3<Http> = Web3::new(transport);
