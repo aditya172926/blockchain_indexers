@@ -1,7 +1,8 @@
 {
-  "ens": {
+  "ens_ethereum": {
     "contract_address": "0xD4416b13d2b3a9aBae7AcD5D6C2BbDBE25686401",
     "chainId": "1",
+    "function_of_interest": "",
     "methods": {
       "setOwner": {
         "entityType": "ens-profile"
@@ -11,20 +12,40 @@
       "ens-profile": ["setOwner"]
     }
   },
-  "poap": {
+  "poap_ethereum": {
     "contract_address": "0x22c1f6050e56d2876009903609a2cc3fef83b415",
-    "chainId": "1"
+    "chainId": "1",
+    "function_of_interest": ""
   },
-  "mintKudos": {
-    "contract_address": "0x60576A64851C5B42e8c57E3E4A5cF3CF4eEb2ED6",
-    "chainId": "137"
-  },
-  "lens": {
-    "contract_address": "0xDb46d1Dc155634FbC732f92E853b10B288AD5a1d",
-    "chainId": "137"
-  },
-  "uniswap": {
+  "uniswap_ethereum": {
     "contract_address": "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984",
-    "chainId": "1"
+    "chainId": "1",
+    "function_of_interest": ""
+  },
+  "superfluid_ethereum": {
+    "contract_address": "0x1BA8603DA702602A8657980e825A6DAa03Dee93a",
+    "chainId": "1",
+    "function_of_interest": ""
+  },
+  "lido_ethereum": {
+    "contract_address": "0x388C818CA8B9251b393131C08a736A67ccB19297",
+    "chainId": "1",
+    "function_of_interest": ""
+  },
+  "opensea_ethereum": {
+    "contract_address": "0x00000000000000ADc04C56Bf30aC9d3c0aAF14dC",
+    "chainId": "1",
+    "function_of_interest": ""
+  },
+  "mintKudos_polygon": {
+    "contract_address": "0x60576A64851C5B42e8c57E3E4A5cF3CF4eEb2ED6",
+    "chainId": "137",
+    "function_of_interest": ""
+  },
+  "lens_polygon": {
+    "contract_address": "0xDb46d1Dc155634FbC732f92E853b10B288AD5a1d",
+    "chainId": "137",
+    "function_of_interest": ""
   }
+
 }

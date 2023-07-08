@@ -6,7 +6,7 @@ use ethers::{
     types::{Address, Transaction, TxHash},
 };
 
-pub async fn get_transaction_data(abi: &str, transaction_hash: TxHash) {
+pub async fn get_transaction_data(abi: &str, transaction_hash: TxHash) -> (Vec<Token>, String) {
     println!("The transaction hash is {:?}", transaction_hash);
     let provider = Provider::<Http>::try_from("https://lingering-delicate-choice.discover.quiknode.pro/68f9e3726efe97ee2b6a7c8417f6f5d12ab713c6/")
         .expect("Failed to connect with a Provider");
@@ -24,23 +24,20 @@ pub async fn get_transaction_data(abi: &str, transaction_hash: TxHash) {
         .await
         .expect("Couldn't get the transaction receipt");
 
-    println!("The transaction receipt is {:?}", transaction_receipt);
-    get_transaction_inputs(abi, transaction).await;
+    // println!("The transaction receipt is {:?}", transaction_receipt);
+    let decoded_transaction_data: (Vec<Token>, String) = get_transaction_inputs(abi, transaction).await;
+    return decoded_transaction_data;
 }
 
-async fn get_transaction_inputs(abi: &str, transaction: Option<Transaction>) {
-    let abi: Abi = serde_json::from_str(abi).expect("Failed to parse abi");
-    // println!("The decoded abi is=================== {:?}", abi);
-
+async fn get_transaction_inputs(abi: &str, transaction: Option<Transaction>) -> (Vec<ethers::abi::Token>, String) {
+    let contract_abi: Abi = serde_json::from_str(&abi).expect("Failed to parse abi");
     let input_data: String = transaction.unwrap().input.to_string();
-    // println!("The input data is {:?}", input_data);
     let function_id: &str = &input_data[2..10];
     println!("The function id raw is {:?}", function_id);
-    // let function_id = &function_id[1..function_id.len()-1];
-    // println!("The function_id is {:?}", function_id);
     let input_data = &input_data[10..]; // removing the transaction hash
+
     let mut function_name: &str = "";
-    if let Some(method) = abi
+    if let Some(method) = contract_abi
         .functions()
         .into_iter()
         .find(|&f| ethers::utils::hex::encode(f.short_signature()) == function_id)
@@ -52,50 +49,25 @@ async fn get_transaction_inputs(abi: &str, transaction: Option<Transaction>) {
     }
 
     if (function_name != "") {
-        let function: &Function = abi
+        let function: &Function = contract_abi
             .function(&function_name)
             .expect("Function is not found in ABI");
 
         println!("Running the transactions rust file {:?}", function.inputs);
 
         let input_bytes = hex::decode(input_data).expect("Failed to decode input bytes");
-        let decoded_inputs = function
+        let decoded_inputs: Vec<Token> = function
             .decode_input(&input_bytes)
             .expect("failed to decode inputs");
         println!("The decoded inputs are {:?}", decoded_inputs);
 
-        for decoded_input in decoded_inputs {
+        for decoded_input in &decoded_inputs {
             println!("The decoded input is--------- {:?}", decoded_input);
         }
 
-        // let vec_tokens = match &decoded_inputs[0] {
-        //     Token::Tuple(tokens) => tokens.to_owned(),
-        //     _ => panic!("Unexpected token type"),
-        // };
-
-        // println!("The vec tokens are {:?}", vec_tokens);
-
-        // let param1: u64 = match &vec_tokens[0] {
-        //     Token::Uint(value) => value.to_owned().as_u64(),
-        //     _ => panic!("unexpected token type"),
-        // };
-
-        // println!("The param 1 is {:?}", param1);
-
-        // let param2: String = match &vec_tokens[1] {
-        //     Token::String(value) => value.to_owned().to_string(),
-        //     _ => panic!("unexpected token type"),
-        // };
-
-        // println!("The param 2 is {:?}", param2);
-
-        // let param3: Address = match &vec_tokens[2] {
-        //     Token::Address(value) => value.to_owned(),
-        //     _ => panic!("unexpected token type"),
-        // };
-
-        // println!("The param 3 is {:?}", param3);
+        return (decoded_inputs, function_name.to_string());
     } else {
         println!("Couldn't find the function name");
+        return (Vec::new(), "".to_string());
     }
 }

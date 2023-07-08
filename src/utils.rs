@@ -13,27 +13,29 @@ pub fn get_network_rpc(chain_id: &str) -> String {
         Err(e) => e.to_string(),
     };
     let network_rpc: String = network_rpc[1..network_rpc.len() - 1].to_string();
-    println!("The Network RPC Endpoint is {:?}", network_rpc);
+    // println!("The Network RPC Endpoint is {:?}", network_rpc);
     return network_rpc;
 }
 
-pub fn get_contract_metadata(protocol_name: &str) -> (String, String) {
+pub fn get_contract_metadata(protocol_name: &str) -> (String, String, String) {
     let contract_meta_data: String =
         fs::read_to_string(r"config/global.json").expect("Error in reading global.json file");
     let contract_meta_data = serde_json::from_str::<serde_json::Value>(&contract_meta_data);
     let mut contract_chain_id: String = String::new();
     let mut contract_address: String = String::new();
+    let mut function_of_interest: String = String::new();
     match contract_meta_data {
         Ok(object) => {
             contract_address = object[protocol_name]["contract_address"].to_string();
             contract_chain_id = object[protocol_name]["chainId"].to_string();
+            function_of_interest = object[protocol_name]["function_of_interest"].to_string();
         }
         Err(e) => {
             println!("{:?}", e);
         }
     };
     contract_address = contract_address[1..contract_address.len() - 1].to_string();
-    return (contract_address, contract_chain_id);
+    return (contract_address, contract_chain_id, function_of_interest);
 }
 
 // pub async fn get_provider(
@@ -61,7 +63,7 @@ pub async fn fetch_contract_abi(
     contract_chain_id: String,
     contract_address: &str,
 ) -> reqwest::Result<reqwest::Response> {
-    println!("The Chain id is {}", contract_chain_id);
+    // println!("The Chain id is {}", contract_chain_id);
     let file: String = fs::read_to_string(r"config/constants.json")
         .expect("Error in reading the constants.json file");
     let file_data = serde_json::from_str::<serde_json::Value>(&file);
@@ -78,7 +80,7 @@ pub async fn fetch_contract_abi(
 
     let mut api_url = str::replace(&api, "{}", &contract_address);
     api_url = api_url[1..api_url.len() - 1].to_string();
-    println!("The api_url is {}", api_url);
+    // println!("The api_url is {}", api_url);
 
     let response: Result<reqwest::Response, reqwest::Error> = reqwest::get(&api_url).await;
     // let mut fetched_abi: reqwest::Response = Default::default();
@@ -98,7 +100,7 @@ pub async fn format_contract_abi(contract_chain_id: &str, contract_address: &str
                 // Parse the response body as JSON
                 let json: serde_json::Value = serde_json::from_str(&response_body).expect("Error in reading to json format");
                 fetched_abi = json["result"].as_str().unwrap().to_owned();
-                println!("The fetched contract abi is {:?}", fetched_abi);
+                // println!("The fetched contract abi is {:?}", fetched_abi);
             } else {
                 println!("Request failed with status code: {}", object.status());
             }

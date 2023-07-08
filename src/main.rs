@@ -20,19 +20,23 @@ use std::{error::Error, str::FromStr};
 use tokio::time::{sleep, Duration};
 use web3::transports::Http;
 use web3::Web3;
+
+// modules
 mod transactions;
 mod utils;
+mod middleware;
 
 // contract!("ens_registry_with_fallback.json");
 
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let contract_metadata: (String, String) = utils::get_contract_metadata(&"ens".to_string());
+    let contract_metadata: (String, String, String) = utils::get_contract_metadata(&"opensea_ethereum".to_string());
     let contract_address: String = contract_metadata.0;
     let mut contract_chain_id: String = contract_metadata.1;
     contract_chain_id = contract_chain_id[1..contract_chain_id.len()-1].to_string();
-    println!("contract_chain_id in main is {}", &contract_chain_id);
+    let function_of_interest: String = contract_metadata.2;
+    // println!("contract_chain_id in main is {}", &contract_chain_id);
     let network_rpc: String = utils::get_network_rpc(&contract_chain_id);
 
     let contract_fetched_abi: String = utils::format_contract_abi(&contract_chain_id, &contract_address).await;
@@ -77,7 +81,8 @@ async fn get_txns(contract_abi: &str, contract_instance: &Instance<Http>){
                 println!("TO Address: {:?}", &to_address);
                 println!("Block Number: {:?}", &block_no);
                 println!("Transaction Hash: {:?}", txnr);
-                transactions::get_transaction_data(contract_abi, txnr).await;
+                let decoded_txn_data: (Vec<ethers::abi::Token>, String) = transactions::get_transaction_data(contract_abi, txnr).await;
+                middleware::check_transaction_data(decoded_txn_data);
                 // add_to_db(to_address,block_no,txn_hash).await?;
                 // println!("Received event: {:?}", log);
             }
