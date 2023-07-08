@@ -1,7 +1,7 @@
 use mongodb::{bson::{doc, Document}, Client, options::ClientOptions};
 use ethers::contract::{Event};
 
-#[tokio::main]
+
 pub fn save_to_db(event: Event) -> Result<(), Box<dyn std::error::Error>> {
     let client_options = ClientOptions::parse("mongodb://localhost:27017").await?;
     let client = Client::with_options(client_options)?;
