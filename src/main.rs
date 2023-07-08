@@ -51,7 +51,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let web3: Web3<Http> = Web3::new(transport); 
     let contract_instance: Instance<Http> = Instance::at(web3, contract_abi, contract_address_h160);
 
-    get_txns(&contract_fetched_abi, &contract_instance).await;
+    get_txns(&contract_fetched_abi, &contract_instance, function_of_interest).await;
 
     let _ = get_logs(contract_instance, 17630615);
 
@@ -59,7 +59,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 }
 
 
-async fn get_txns(contract_abi: &str, contract_instance: &Instance<Http>){
+async fn get_txns(contract_abi: &str, contract_instance: &Instance<Http>, function_of_interest: String){
     let event_stream = contract_instance.all_events().from_block(BlockNumber::from(17547614)).stream();
     println!("fetching...");
     let mut event_stream = Box::pin(event_stream);
@@ -82,7 +82,7 @@ async fn get_txns(contract_abi: &str, contract_instance: &Instance<Http>){
                 println!("Block Number: {:?}", &block_no);
                 println!("Transaction Hash: {:?}", txnr);
                 let decoded_txn_data: (Vec<ethers::abi::Token>, String) = transactions::get_transaction_data(contract_abi, txnr).await;
-                middleware::check_transaction_data(decoded_txn_data);
+                middleware::check_transaction_data(decoded_txn_data, &function_of_interest);
                 // add_to_db(to_address,block_no,txn_hash).await?;
                 // println!("Received event: {:?}", log);
             }
