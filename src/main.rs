@@ -24,21 +24,21 @@ mod transactions;
 mod utils;
 
 // contract!("ens_registry_with_fallback.json");
-contract!("abi/abi_1.json");
+
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let network_endpoint: String = utils::get_network_rpc("1");
     let contract_address: String = utils::get_contract_metadata(&"ens".to_string());
     let fetched_abi: String = initialize_node(&network_endpoint, &contract_address).await;
-    let abi: web3::ethabi::Contract = serde_json::from_str(&fetched_abi).unwrap();
+    let abi: web3::ethabi::Contract = serde_json::from_str(&fetched_abi).unwrap(); 
     // println!("The abi functions are {:?}", abi.functions);
     // for function in &abi.functions {
     //     println!("The contract function is {:?}", function); // prints the list of functions
     // }
     let address: ethcontract::H160 = contract_address.parse()?;
     let transport: Http = Http::new(&network_endpoint)?;
-    let web3: Web3<Http> = Web3::new(transport);
+    let web3: Web3<Http> = Web3::new(transport); 
     let contract_instance = Instance::at(web3, abi, address);
 
     getTxns(&fetched_abi, contract_instance).await;
@@ -155,14 +155,9 @@ async fn get_logs(
                 let log = event_streams.next().await.expect("No events").expect("Error querying event").added();
                 let unwraped_log = log.unwrap();
                 println!("Received a new event log {:?}", unwraped_log);
-
-
-                let to=&unwraped_log.topics[2];
-                println!("Recipient Address:{:?}",to);
-
-                let amount=ethers::types::U256::from_big_endian(&unwraped_log.data[..32]);
-                println!("Amount:{:?}",amount);
-
+                for topic in &unwraped_log.topics {
+                    println!("Logging topic {:?}", topic);
+                }
             },
         };
     }

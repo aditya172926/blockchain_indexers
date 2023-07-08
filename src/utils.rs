@@ -58,7 +58,7 @@ pub fn get_contract_metadata(protocol_name: &str) -> String {
 // }
 
 pub async fn fetch_contract_abi(
-    network_name: String,
+    chain_id: String,
     contract_address: &str,
 ) -> reqwest::Result<reqwest::Response> {
     let file: String = fs::read_to_string(r"config/constants.json")
@@ -68,7 +68,7 @@ pub async fn fetch_contract_abi(
     let mut api: String = String::new();
     match file_data {
         Ok(object) => {
-            api = object[network_name]["_api"].to_string();
+            api = object[chain_id]["_api"].to_string();
         }
         Err(e) => {
             println!("{:?}", e);
