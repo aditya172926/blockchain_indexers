@@ -99,7 +99,7 @@ async fn initialize_node(network_endpoint: &str, contract_address: &str) -> Stri
     let web3: Web3<Http> = Web3::new(transport);
 
     let response: Result<reqwest::Response, reqwest::Error> =
-        utils::fetch_contract_abi("mainnet".to_string(), &contract_address).await;
+        utils::fetch_contract_abi("1".to_string(), &contract_address).await;
     // let contract_abi: Result<String, reqwest::Error>;
     let mut fetched_abi: String = String::new();
 
