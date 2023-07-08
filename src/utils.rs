@@ -4,12 +4,12 @@ use std::fs;
 use std::string::String;
 use url::ParseError;
 
-pub fn get_network_rpc(network_id: &str) -> String {
+pub fn get_network_rpc(chain_id: &str) -> String {
     let network_details: String =
         fs::read_to_string(r"config/network.json").expect("Error in reading network.json file");
     let network_details = serde_json::from_str::<serde_json::Value>(&network_details);
     let network_rpc = match network_details {
-        Ok(object) => object[network_id]["networkRpcUrl"].to_string(),
+        Ok(object) => object[chain_id]["networkRpcUrl"].to_string(),
         Err(e) => e.to_string(),
     };
     let network_rpc: String = network_rpc[1..network_rpc.len() - 1].to_string();
@@ -17,12 +17,12 @@ pub fn get_network_rpc(network_id: &str) -> String {
     return network_rpc;
 }
 
-pub fn get_contract_metadata(protocol_name: &str) -> String {
+pub fn get_contract_metadata(protocol_name: &str) -> (String, String) {
     let contract_meta_data: String =
         fs::read_to_string(r"config/global.json").expect("Error in reading global.json file");
     let contract_meta_data = serde_json::from_str::<serde_json::Value>(&contract_meta_data);
-    let contract_chain_id: String;
-    let mut contract_address: String = "".to_string();
+    let mut contract_chain_id: String = String::new();
+    let mut contract_address: String = String::new();
     match contract_meta_data {
         Ok(object) => {
             contract_address = object[protocol_name]["contract_address"].to_string();
@@ -33,7 +33,7 @@ pub fn get_contract_metadata(protocol_name: &str) -> String {
         }
     };
     contract_address = contract_address[1..contract_address.len() - 1].to_string();
-    return contract_address;
+    return (contract_address, contract_chain_id);
 }
 
 // pub async fn get_provider(
@@ -58,9 +58,10 @@ pub fn get_contract_metadata(protocol_name: &str) -> String {
 // }
 
 pub async fn fetch_contract_abi(
-    chain_id: String,
+    contract_chain_id: String,
     contract_address: &str,
 ) -> reqwest::Result<reqwest::Response> {
+    println!("The Chain id is {}", contract_chain_id);
     let file: String = fs::read_to_string(r"config/constants.json")
         .expect("Error in reading the constants.json file");
     let file_data = serde_json::from_str::<serde_json::Value>(&file);
@@ -68,7 +69,7 @@ pub async fn fetch_contract_abi(
     let mut api: String = String::new();
     match file_data {
         Ok(object) => {
-            api = object[chain_id]["_api"].to_string();
+            api = object[contract_chain_id]["_api"].to_string();
         }
         Err(e) => {
             println!("{:?}", e);
@@ -82,4 +83,30 @@ pub async fn fetch_contract_abi(
     let response: Result<reqwest::Response, reqwest::Error> = reqwest::get(&api_url).await;
     // let mut fetched_abi: reqwest::Response = Default::default();
     return response;
+}
+
+pub async fn format_contract_abi(contract_chain_id: &str, contract_address: &str) -> String {
+    let response: Result<reqwest::Response, reqwest::Error> = fetch_contract_abi(contract_chain_id.to_string(), contract_address).await;
+    // let contract_abi: Result<String, reqwest::Error>;
+    let mut fetched_abi: String = String::new();
+
+    match response {
+        Ok(object) => {
+            if object.status().is_success() {
+                // Read the response body as a string
+                let response_body: String = object.text().await.expect("Error in parsing object");
+                // Parse the response body as JSON
+                let json: serde_json::Value = serde_json::from_str(&response_body).expect("Error in reading to json format");
+                fetched_abi = json["result"].as_str().unwrap().to_owned();
+                println!("The fetched contract abi is {:?}", fetched_abi);
+            } else {
+                println!("Request failed with status code: {}", object.status());
+            }
+            return fetched_abi;
+        }
+        Err(e) => {
+            println!("Error in fetching contract abi {:?}", e);
+            return "Error in response".to_string();
+        }
+    }
 }

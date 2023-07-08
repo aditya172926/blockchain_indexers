@@ -28,30 +28,35 @@ mod utils;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let network_endpoint: String = utils::get_network_rpc("1");
-    let contract_address: String = utils::get_contract_metadata(&"ens".to_string());
-    let fetched_abi: String = initialize_node(&network_endpoint, &contract_address).await;
-    let abi: web3::ethabi::Contract = serde_json::from_str(&fetched_abi).unwrap(); 
+    let contract_metadata: (String, String) = utils::get_contract_metadata(&"ens".to_string());
+    let contract_address: String = contract_metadata.0;
+    let mut contract_chain_id: String = contract_metadata.1;
+    contract_chain_id = contract_chain_id[1..contract_chain_id.len()-1].to_string();
+    println!("contract_chain_id in main is {}", &contract_chain_id);
+    let network_rpc: String = utils::get_network_rpc(&contract_chain_id);
+
+    let contract_fetched_abi: String = utils::format_contract_abi(&contract_chain_id, &contract_address).await;
+    let contract_address_h160: ethcontract::H160 = contract_address.parse()?;
+
+    let contract_abi: web3::ethabi::Contract = serde_json::from_str(&contract_fetched_abi).unwrap(); 
     // println!("The abi functions are {:?}", abi.functions);
     // for function in &abi.functions {
     //     println!("The contract function is {:?}", function); // prints the list of functions
     // }
-    let address: ethcontract::H160 = contract_address.parse()?;
-    let transport: Http = Http::new(&network_endpoint)?;
+    let transport: Http = Http::new(&network_rpc)?;
     let web3: Web3<Http> = Web3::new(transport); 
-    let contract_instance = Instance::at(web3, abi, address);
+    let contract_instance: Instance<Http> = Instance::at(web3, contract_abi, contract_address_h160);
 
-    getTxns(&fetched_abi, contract_instance).await;
+    get_txns(&contract_fetched_abi, &contract_instance).await;
 
-    let _ = get_logs(network_endpoint, &contract_address, fetched_abi);
+    let _ = get_logs(contract_instance, 17630615);
 
     Ok(())
 }
 
 
-async fn getTxns(abi: &str, contract:Instance<Http>){
-
-    let event_stream = contract.all_events().from_block(BlockNumber::from(17547614)).stream();
+async fn get_txns(contract_abi: &str, contract_instance: &Instance<Http>){
+    let event_stream = contract_instance.all_events().from_block(BlockNumber::from(17547614)).stream();
     println!("fetching...");
     let mut event_stream = Box::pin(event_stream);
    
@@ -72,7 +77,7 @@ async fn getTxns(abi: &str, contract:Instance<Http>){
                 println!("TO Address: {:?}", &to_address);
                 println!("Block Number: {:?}", &block_no);
                 println!("Transaction Hash: {:?}", txnr);
-                transactions::get_transaction_data(abi, txnr).await;
+                transactions::get_transaction_data(contract_abi, txnr).await;
                 // add_to_db(to_address,block_no,txn_hash).await?;
                 // println!("Received event: {:?}", log);
             }
@@ -84,7 +89,7 @@ async fn getTxns(abi: &str, contract:Instance<Http>){
                 sleep(Duration::from_secs(2)).await;
 
                 event_stream = Box::pin(
-                    contract
+                    contract_instance
                         .all_events()
                         .from_block(BlockNumber::from(17547614))
                         .stream(),
@@ -94,57 +99,15 @@ async fn getTxns(abi: &str, contract:Instance<Http>){
     }
 }
 
-async fn initialize_node(network_endpoint: &str, contract_address: &str) -> String {
-    let transport: Http = Http::new(&network_endpoint).expect("Error");
-    let web3: Web3<Http> = Web3::new(transport);
-
-    let response: Result<reqwest::Response, reqwest::Error> =
-        utils::fetch_contract_abi("1".to_string(), &contract_address).await;
-    // let contract_abi: Result<String, reqwest::Error>;
-    let mut fetched_abi: String = String::new();
-
-    match response {
-        Ok(object) => {
-            if object.status().is_success() {
-                // Read the response body as a string
-                let response_body: String = object.text().await.expect("Error");
-                // Parse the response body as JSON
-                let json: serde_json::Value = serde_json::from_str(&response_body).expect("error");
-                fetched_abi = json["result"].as_str().unwrap().to_owned();
-            } else {
-                println!("Request failed with status code: {}", object.status());
-            }
-            return fetched_abi;
-        }
-        Err(e) => {
-            println!("Error in fetching contract abi {:?}", e);
-            return "Error".to_string();
-        }
-    }
-}
-
 #[tokio::main]
 async fn get_logs(
-    network_endpoint: String,
-    contract_address: &str,
-    fetched_abi: String,
+    contract_instance: Instance<Http>,
+    block_number: i64
 ) -> Result<(), Box<dyn Error>> {
-    let transport: Http = Http::new(&network_endpoint)?;
-    let web3: Web3<Http> = Web3::new(transport);
-    let abi = serde_json::from_str(&fetched_abi).unwrap();
-    println!("The contract abi unwrapped is {:?}", abi);
-    // ----------------------------------------------------------------------
-
-    let address: ethcontract::H160 = contract_address.parse()?;
-    let contract_instance = Instance::at(web3, abi, address);
-    println!("Contract address {:?}", address);
-    println!("--------------------------------------------------------");
-    println!("1. Contract initialized");
-
     // Subscribe to all events
     let mut event_streams = contract_instance
         .all_events()
-        .from_block(BlockNumber::from(17630615))
+        .from_block(BlockNumber::from(block_number))
         .stream()
         .boxed();
 
@@ -161,8 +124,6 @@ async fn get_logs(
             },
         };
     }
-
-    Ok(())
 }
 
 // #[derive(Debug, FromRow)]
