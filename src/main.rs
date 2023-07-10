@@ -4,7 +4,7 @@ use ethcontract::prelude::*;
 use ethers::{
     abi::Abi,
     contract::Contract,
-    types::{Address, H160, U256, H256},
+    types::{Address, H160, H256, U256},
 };
 
 use ethers::providers::Provider;
@@ -22,61 +22,84 @@ use web3::transports::Http;
 use web3::Web3;
 
 // modules
+mod db;
+mod middleware;
+mod structs;
 mod transactions;
 mod utils;
-mod middleware;
-mod db;
-mod structs;
 
 // contract!("ens_registry_with_fallback.json");
 
-
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let contract_metadata: (String, String, String) = utils::get_contract_metadata(&"opensea_ethereum".to_string());
+    let contract_metadata: (String, String, String) =
+        utils::get_contract_metadata(&"opensea_ethereum".to_string());
     let contract_address: String = contract_metadata.0;
     let mut contract_chain_id: String = contract_metadata.1;
-    contract_chain_id = contract_chain_id[1..contract_chain_id.len()-1].to_string();
+    contract_chain_id = contract_chain_id[1..contract_chain_id.len() - 1].to_string();
     let function_of_interest: String = contract_metadata.2;
     let network_rpc: String = utils::get_network_rpc(&contract_chain_id);
 
-    let contract_fetched_abi: String = utils::format_contract_abi(&contract_chain_id, &contract_address).await;
+    let contract_fetched_abi: String =
+        utils::format_contract_abi(&contract_chain_id, &contract_address).await;
     let contract_address_h160: ethcontract::H160 = contract_address.parse()?;
 
-    let contract_abi: web3::ethabi::Contract = serde_json::from_str(&contract_fetched_abi).unwrap(); 
+    let contract_abi: web3::ethabi::Contract = serde_json::from_str(&contract_fetched_abi).unwrap();
     let transport: Http = Http::new(&network_rpc)?;
-    let web3: Web3<Http> = Web3::new(transport); 
+    let web3: Web3<Http> = Web3::new(transport);
     let contract_instance: Instance<Http> = Instance::at(web3, contract_abi, contract_address_h160);
 
-    get_txns(&contract_fetched_abi, &contract_instance, function_of_interest).await;
+    get_txns(
+        &contract_fetched_abi,
+        &contract_instance,
+        function_of_interest,
+    )
+    .await;
 
     // let _ = get_logs(contract_instance, 17630615).await;
 
     Ok(())
 }
 
-
-async fn get_txns(contract_abi: &str, contract_instance: &Instance<Http>, function_of_interest: String){
-    let event_stream = contract_instance.all_events().from_block(BlockNumber::from(17547614)).stream();
+async fn get_txns(
+    contract_abi: &str,
+    contract_instance: &Instance<Http>,
+    function_of_interest: String,
+) {
+    let event_stream = contract_instance
+        .all_events()
+        .from_block(BlockNumber::from(17547614))
+        .stream();
     println!("fetching...");
     let mut event_stream = Box::pin(event_stream);
-   
+
     loop {
         match event_stream.next().await {
             Some(Ok(log)) => {
                 // Handle the event
                 // println!("Received event: {:?}", log);
-                let to_address=log.meta.as_ref().unwrap().address.to_string();
-                let block_no:i64=log.meta.as_ref().unwrap().block_number.try_into().unwrap();
-                let txn_hash=log.meta.as_ref().unwrap().transaction_hash.to_fixed_bytes();
-                let txnr: H256=ethers::core::types::TxHash::from(txn_hash);
-                
+                let to_address = log.meta.as_ref().unwrap().address.to_string();
+                let block_no: i64 = log.meta.as_ref().unwrap().block_number.try_into().unwrap();
+                let txn_hash = log.meta.as_ref().unwrap().transaction_hash.to_fixed_bytes();
+                let txnr: H256 = ethers::core::types::TxHash::from(txn_hash);
+
                 // println!("TO Address: {:?}", &to_address);
                 // println!("Block Number: {:?}", &block_no);
                 // println!("Transaction Hash: {:?}", txnr);
-                let decoded_txn_data: (Vec<structs::MethodParam<'_>>, String, ethers::types::TransactionReceipt) = transactions::get_transaction_data(contract_abi, txnr).await;
+                let decoded_txn_data: (
+                    Vec<structs::MethodParam>,
+                    String,
+                    String,
+                    ethers::types::TransactionReceipt,
+                ) = transactions::get_transaction_data(contract_abi, txnr).await;
                 // println!("Decoded transaction data {:?}", decoded_txn_data);
-                let _ = db::save_txn_to_db(decoded_txn_data.0).await;
+                let _ = db::save_txn_to_db(
+                    decoded_txn_data.0,
+                    decoded_txn_data.1,
+                    decoded_txn_data.2,
+                    decoded_txn_data.3,
+                )
+                .await;
                 // middleware::check_transaction_data(decoded_txn_data, &function_of_interest);
                 // add_to_db(to_address,block_no,txn_hash).await?;
             }
@@ -100,7 +123,7 @@ async fn get_txns(contract_abi: &str, contract_instance: &Instance<Http>, functi
 
 async fn get_logs(
     contract_instance: Instance<Http>,
-    block_number: i64
+    block_number: i64,
 ) -> Result<(), Box<dyn Error>> {
     // Subscribe to all events
     let mut event_streams = contract_instance
