@@ -68,22 +68,15 @@ pub async fn save_to_db(event: RawLog) -> Result<(), Box<dyn std::error::Error>>
 pub async fn save_txn_to_db(txn: Vec<MethodParam<'_>>) -> Result<(), Box<dyn std::error::Error>> {
     let client_options = ClientOptions::parse("mongodb+srv://metaworkdao:c106%40bh1@cluster0.h2imk.mongodb.net/metawork?retryWrites=true&w=majority").await?;
     let client = Client::with_options(client_options)?;
-
     let db = client.database("macha_sdk");
-    let collection = db.collection::<Document>("transactions");
-
+    let collection: mongodb::Collection<Document> = db.collection::<Document>("transactions");
     let event_bson: mongodb::bson::Bson = to_bson(&txn).unwrap();
-
     let event_document = doc! {
         "transaction": event_bson,
         "timestamp": "Testingt time stamp",
     };
-
     println!("The event document is {:?}", event_document);
-
     collection.insert_one(event_document, None).await?;
-
     println!("Event document inserted successfully!");
-
     Ok(())
 }
