@@ -1,11 +1,11 @@
-use ethers::abi::ParamType;
+use ethers::abi::{ParamType, Token};
 use serde::Serialize;
 
 
-#[derive(Serialize)]
+#[derive(Serialize, Debug)]
 pub struct MethodParam<'a> {
     pub name: &'a String,
-    pub kind: &'a ParamType,
+    pub kind: String,
     pub internal_type: &'a std::option::Option<std::string::String>,
-    pub value: ethers::abi::Token
+    pub value: Token
 }

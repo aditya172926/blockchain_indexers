@@ -1,5 +1,5 @@
 use ethcontract::H256;
-use ethers::abi::{Abi, Function, Token, ParamType};
+use ethers::abi::{Abi, Function, Token, ParamType, Param};
 use ethers::types::H160;
 use ethers::{
     providers::{Http, Middleware, Provider},
@@ -69,25 +69,24 @@ async fn get_transaction_inputs(contract_abi: &'static Abi, transaction: Option<
             .decode_input(&input_bytes)
             .expect("failed to decode inputs");
         
-        // while &index < &owned_decoded_inputs.len() {
+        // while &index < &decoded_inputs.len() {
         //     let current_input = &function.inputs[index];
-        //     let method_param: MethodParam = MethodParam {
+        //     let method_param: MethodParam<'static> = MethodParam {
         //         name: &current_input.name,
-        //         kind: &current_input.kind,
+        //         kind: &current_input.kind.to_string(),
         //         internal_type: &current_input.internal_type,
-        //         value: &owned_decoded_inputs[index]
+        //         value: &decoded_inputs[index]
         //     };
         //     // println!("The Method params are {:?} ", method_param);
         //     method_params.push(method_param);
         //     index += 1;
         // }
         for (index, input) in function.inputs.iter().enumerate() {
-            let current_input = &input;
             let cloned_token = decoded_inputs[index].clone();
             let method_param: MethodParam<'static> = MethodParam {
-                name: &current_input.name,
-                kind: &current_input.kind,
-                internal_type: &current_input.internal_type,
+                name: &input.name,
+                kind: input.kind.to_string(),
+                internal_type: &input.internal_type,
                 value: cloned_token,
             };
             // println!("The Method params are {:?} ", method_param);

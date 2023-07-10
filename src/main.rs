@@ -75,7 +75,7 @@ async fn get_txns(contract_abi: &str, contract_instance: &Instance<Http>, functi
                 // println!("Block Number: {:?}", &block_no);
                 // println!("Transaction Hash: {:?}", txnr);
                 let decoded_txn_data: (Vec<structs::MethodParam<'_>>, String, ethers::types::TransactionReceipt) = transactions::get_transaction_data(contract_abi, txnr).await;
-                // println!("Decoded transaction data {:?}", decoded_txn_data.0);
+                println!("Decoded transaction data {:?}", decoded_txn_data);
                 let _ = db::save_txn_to_db(decoded_txn_data.0).await;
                 // middleware::check_transaction_data(decoded_txn_data, &function_of_interest);
                 // add_to_db(to_address,block_no,txn_hash).await?;
