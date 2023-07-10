@@ -90,7 +90,7 @@ async fn get_transaction_inputs(contract_abi: &'static Abi, transaction: Option<
                 internal_type: &current_input.internal_type,
                 value: cloned_token,
             };
-            println!("The Method params are {:?} ", method_param);
+            // println!("The Method params are {:?} ", method_param);
             method_params.push(method_param);
         }
         return (method_params, function_name.to_string());
