@@ -64,23 +64,11 @@ pub async fn save_to_db(event: RawLog) -> Result<(), Box<dyn std::error::Error>>
 
 
 pub async fn save_txn_to_db(txn: Vec<ethers::abi::Token>) -> Result<(), Box<dyn std::error::Error>> {
-    
-    // let mut json_object = json!({});
-    // json_object["topics"] = serde_json::to_value(&event.topics).unwrap();
-    // let data_wrapper = BytesWrapper{bytes: &event.data};
-    // let bson_data: Bson = to_bson(&data_wrapper).unwrap();
-    // println!("The bson data is {:?}", bson_data);
-    // json_object["data"] = Value::from(event.data);
-    // let event_bson: mongodb::bson::Bson = to_bson(&json_object).unwrap();
-
-    // println!("The bson object is {:?}", event_bson);
-
-    // json_object["data"] = &event.data;
     let client_options = ClientOptions::parse("mongodb+srv://metaworkdao:c106%40bh1@cluster0.h2imk.mongodb.net/metawork?retryWrites=true&w=majority").await?;
     let client = Client::with_options(client_options)?;
 
     let db = client.database("macha_sdk");
-    let collection = db.collection::<Document>("events");
+    let collection = db.collection::<Document>("transactions");
 
     let event_bson: mongodb::bson::Bson = to_bson(&txn).unwrap();
 

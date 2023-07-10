@@ -37,17 +37,12 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let mut contract_chain_id: String = contract_metadata.1;
     contract_chain_id = contract_chain_id[1..contract_chain_id.len()-1].to_string();
     let function_of_interest: String = contract_metadata.2;
-    // println!("contract_chain_id in main is {}", &contract_chain_id);
     let network_rpc: String = utils::get_network_rpc(&contract_chain_id);
 
     let contract_fetched_abi: String = utils::format_contract_abi(&contract_chain_id, &contract_address).await;
     let contract_address_h160: ethcontract::H160 = contract_address.parse()?;
 
     let contract_abi: web3::ethabi::Contract = serde_json::from_str(&contract_fetched_abi).unwrap(); 
-    // println!("The abi functions are {:?}", abi.functions);
-    // for function in &abi.functions {
-    //     println!("The contract function is {:?}", function); // prints the list of functions
-    // }
     let transport: Http = Http::new(&network_rpc)?;
     let web3: Web3<Http> = Web3::new(transport); 
     let contract_instance: Instance<Http> = Instance::at(web3, contract_abi, contract_address_h160);
@@ -69,22 +64,19 @@ async fn get_txns(contract_abi: &str, contract_instance: &Instance<Http>, functi
         match event_stream.next().await {
             Some(Ok(log)) => {
                 // Handle the event
-                println!("Received event: {:?}", log);
-                // println!("{:?}", &log.added().unwrap());
+                // println!("Received event: {:?}", log);
                 let to_address=log.meta.as_ref().unwrap().address.to_string();
-                // let to_address=log.meta.as_ref().unwrap().address.to_string();
                 let block_no:i64=log.meta.as_ref().unwrap().block_number.try_into().unwrap();
                 let txn_hash=log.meta.as_ref().unwrap().transaction_hash.to_fixed_bytes();
                 let txnr: H256=ethers::core::types::TxHash::from(txn_hash);
                 
-                println!("TO Address: {:?}", &to_address);
-                println!("Block Number: {:?}", &block_no);
-                println!("Transaction Hash: {:?}", txnr);
-                let decoded_txn_data: (Vec<ethers::abi::Token>, String) = transactions::get_transaction_data(contract_abi, txnr).await;
+                // println!("TO Address: {:?}", &to_address);
+                // println!("Block Number: {:?}", &block_no);
+                // println!("Transaction Hash: {:?}", txnr);
+                let decoded_txn_data: (Vec<ethers::abi::Token>, String, ethers::types::TransactionReceipt) = transactions::get_transaction_data(contract_abi, txnr).await;
                 let _ = db::save_txn_to_db(decoded_txn_data.0).await;
                 // middleware::check_transaction_data(decoded_txn_data, &function_of_interest);
                 // add_to_db(to_address,block_no,txn_hash).await?;
-                // println!("Received event: {:?}", log);
             }
             Some(Err(e)) => {
                 eprintln!("Error: {}", e);
@@ -121,11 +113,7 @@ async fn get_logs(
             async {
                 let log = event_streams.next().await.expect("No events").expect("Error querying event").added();
                 let unwrapped_log = log.unwrap();
-                println!("Received a new event log {:?}", unwrapped_log);
                 let _ = db::save_to_db(unwrapped_log).await;
-                // for topic in &unwrapped_log.topics {
-                //     println!("Logging topic {:?}", topic);
-                // }
             },
         };
     }
