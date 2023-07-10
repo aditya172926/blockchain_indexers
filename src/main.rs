@@ -25,6 +25,7 @@ use web3::Web3;
 mod transactions;
 mod utils;
 mod middleware;
+mod db;
 
 // contract!("ens_registry_with_fallback.json");
 
@@ -53,7 +54,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     get_txns(&contract_fetched_abi, &contract_instance, function_of_interest).await;
 
-    let _ = get_logs(contract_instance, 17630615);
+    // let _ = get_logs(contract_instance, 17630615).await;
 
     Ok(())
 }
@@ -67,8 +68,6 @@ async fn get_txns(contract_abi: &str, contract_instance: &Instance<Http>, functi
     loop {
         match event_stream.next().await {
             Some(Ok(log)) => {
-
-
                 // Handle the event
                 println!("Received event: {:?}", log);
                 // println!("{:?}", &log.added().unwrap());
@@ -82,7 +81,8 @@ async fn get_txns(contract_abi: &str, contract_instance: &Instance<Http>, functi
                 println!("Block Number: {:?}", &block_no);
                 println!("Transaction Hash: {:?}", txnr);
                 let decoded_txn_data: (Vec<ethers::abi::Token>, String) = transactions::get_transaction_data(contract_abi, txnr).await;
-                middleware::check_transaction_data(decoded_txn_data, &function_of_interest);
+                let _ = db::save_txn_to_db(decoded_txn_data.0).await;
+                // middleware::check_transaction_data(decoded_txn_data, &function_of_interest);
                 // add_to_db(to_address,block_no,txn_hash).await?;
                 // println!("Received event: {:?}", log);
             }
@@ -104,7 +104,6 @@ async fn get_txns(contract_abi: &str, contract_instance: &Instance<Http>, functi
     }
 }
 
-#[tokio::main]
 async fn get_logs(
     contract_instance: Instance<Http>,
     block_number: i64
@@ -121,11 +120,12 @@ async fn get_logs(
         join! {
             async {
                 let log = event_streams.next().await.expect("No events").expect("Error querying event").added();
-                let unwraped_log = log.unwrap();
-                println!("Received a new event log {:?}", unwraped_log);
-                for topic in &unwraped_log.topics {
-                    println!("Logging topic {:?}", topic);
-                }
+                let unwrapped_log = log.unwrap();
+                println!("Received a new event log {:?}", unwrapped_log);
+                let _ = db::save_to_db(unwrapped_log).await;
+                // for topic in &unwrapped_log.topics {
+                //     println!("Logging topic {:?}", topic);
+                // }
             },
         };
     }
