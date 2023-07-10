@@ -5,8 +5,10 @@ use mongodb::{
 };
 // use ethers::{abi::Event};
 use ethcontract::{RawLog, H256};
+use ethers::abi::{ParamType};
 use serde_json::{json, Value};
 use serde::{Serialize, Serializer};
+use crate::structs::MethodParam;
 
 #[derive(Serialize)]
 struct BytesWrapper<'a> {
@@ -63,7 +65,7 @@ pub async fn save_to_db(event: RawLog) -> Result<(), Box<dyn std::error::Error>>
 }
 
 
-pub async fn save_txn_to_db(txn: Vec<ethers::abi::Token>) -> Result<(), Box<dyn std::error::Error>> {
+pub async fn save_txn_to_db(txn: Vec<MethodParam<'_>>) -> Result<(), Box<dyn std::error::Error>> {
     let client_options = ClientOptions::parse("mongodb+srv://metaworkdao:c106%40bh1@cluster0.h2imk.mongodb.net/metawork?retryWrites=true&w=majority").await?;
     let client = Client::with_options(client_options)?;
 

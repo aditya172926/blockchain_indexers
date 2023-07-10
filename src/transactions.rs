@@ -6,16 +6,9 @@ use ethers::{
     types::{Address, Transaction, TxHash, TransactionReceipt},
 };
 use mongodb::bson::Array;
+use crate::structs::MethodParam;
 
-#[derive(Debug)]
-struct MethodParam<'a> {
-    name: &'a String,
-    kind: &'a ParamType,
-    internal_type: &'a std::option::Option<std::string::String>,
-    value: ethers::abi::Token
-}
-
-pub async fn get_transaction_data(abi: &str, transaction_hash: TxHash) -> (Vec<MethodParam<'_>>, TransactionReceipt) {
+pub async fn get_transaction_data(abi: &str, transaction_hash: TxHash) -> (Vec<MethodParam<'_>>, String, TransactionReceipt) {
     println!("The transaction hash is {:?}", transaction_hash);
     let provider = Provider::<Http>::try_from("https://lingering-delicate-choice.discover.quiknode.pro/68f9e3726efe97ee2b6a7c8417f6f5d12ab713c6/")
         .expect("Failed to connect with a Provider");
@@ -34,7 +27,7 @@ pub async fn get_transaction_data(abi: &str, transaction_hash: TxHash) -> (Vec<M
     let transaction_receipt: TransactionReceipt = transaction_receipt.unwrap();
     let contract_abi: &'static Abi = Box::leak(Box::new(serde_json::from_str(&abi).expect("Failed to parse abi")));
     let decoded_transaction_data: (Vec<MethodParam<'static>>, String) = get_transaction_inputs(contract_abi, transaction).await;
-    return (decoded_transaction_data.0, transaction_receipt);
+    return (decoded_transaction_data.0, decoded_transaction_data.1, transaction_receipt);
 
 }
 
