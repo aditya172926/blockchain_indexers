@@ -12,7 +12,7 @@ struct MethodParam<'a> {
     name: &'a String,
     kind: &'a ParamType,
     internal_type: &'a std::option::Option<std::string::String>,
-    value: &'a ethers::abi::Token
+    value: ethers::abi::Token
 }
 
 pub async fn get_transaction_data(abi: &str, transaction_hash: TxHash) -> (Vec<MethodParam<'_>>, TransactionReceipt) {
@@ -32,13 +32,13 @@ pub async fn get_transaction_data(abi: &str, transaction_hash: TxHash) -> (Vec<M
         .await
         .expect("Couldn't get the transaction receipt");
     let transaction_receipt: TransactionReceipt = transaction_receipt.unwrap();
-    let contract_abi: Abi = serde_json::from_str(&abi).expect("Failed to parse abi");
-    let decoded_transaction_data: (Vec<MethodParam<'_>>, String) = get_transaction_inputs(contract_abi, transaction).await;
+    let contract_abi: &'static Abi = Box::leak(Box::new(serde_json::from_str(&abi).expect("Failed to parse abi")));
+    let decoded_transaction_data: (Vec<MethodParam<'static>>, String) = get_transaction_inputs(contract_abi, transaction).await;
     return (decoded_transaction_data.0, transaction_receipt);
 
 }
 
-async fn get_transaction_inputs(contract_abi: Abi, transaction: Option<Transaction>) -> (Vec<MethodParam<'static>>, String) {
+async fn get_transaction_inputs(contract_abi: &'static Abi, transaction: Option<Transaction>) -> (Vec<MethodParam<'static>>, String) {
     let input_data: String = transaction.unwrap().input.to_string();
     let function_id: &str = &input_data[2..10];
     // println!("The function id raw is {:?}", function_id);
@@ -75,18 +75,30 @@ async fn get_transaction_inputs(contract_abi: Abi, transaction: Option<Transacti
         let decoded_inputs: Vec<Token> = function
             .decode_input(&input_bytes)
             .expect("failed to decode inputs");
-
-        while &index < &decoded_inputs.len() {
-            let current_input = &function.inputs[index];
-            let method_param: MethodParam = MethodParam {
+        
+        // while &index < &owned_decoded_inputs.len() {
+        //     let current_input = &function.inputs[index];
+        //     let method_param: MethodParam = MethodParam {
+        //         name: &current_input.name,
+        //         kind: &current_input.kind,
+        //         internal_type: &current_input.internal_type,
+        //         value: &owned_decoded_inputs[index]
+        //     };
+        //     // println!("The Method params are {:?} ", method_param);
+        //     method_params.push(method_param);
+        //     index += 1;
+        // }
+        for (index, input) in function.inputs.iter().enumerate() {
+            let current_input = &input;
+            let cloned_token = decoded_inputs[index].clone();
+            let method_param: MethodParam<'static> = MethodParam {
                 name: &current_input.name,
                 kind: &current_input.kind,
                 internal_type: &current_input.internal_type,
-                value: &decoded_inputs[index]
+                value: cloned_token,
             };
-            // println!("The Method params are {:?} ", method_param);
+            println!("The Method params are {:?} ", method_param);
             method_params.push(method_param);
-            index += 1;
         }
         return (method_params, function_name.to_string());
     } else {
