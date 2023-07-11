@@ -1,5 +1,5 @@
 use ethers::{
-    abi::{ParamType, Token},
+    abi::Token,
     types::{H160, H256, U256, U64},
 };
 use serde::Serialize;
@@ -13,10 +13,19 @@ pub struct MethodParam<'a> {
 }
 
 #[derive(Serialize, Clone)]
+pub struct ContractData {
+    pub contract_address: String,
+    pub chain_id: String,
+    pub contract_name: String,
+    pub interested_method: String,
+    pub interested_event: String
+}
+
+#[derive(Serialize, Clone)]
 pub struct TransactionData <'a>{
     pub block_hash: Option<H256>,
     pub block_number: Option<U64>,
-    pub contract_address: Option<H160>,
+    pub contract_address: String,
     pub gas_used: Option<U256>,
     pub gas_price: Option<U256>,
     pub from: H160,

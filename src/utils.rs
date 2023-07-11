@@ -17,25 +17,27 @@ pub fn get_network_rpc(chain_id: &str) -> String {
     return network_rpc;
 }
 
-pub fn get_contract_metadata(protocol_name: &str) -> (String, String, String) {
+pub fn get_contract_metadata(protocol_name: &str) -> (String, String, String, String) {
     let contract_meta_data: String =
         fs::read_to_string(r"config/global.json").expect("Error in reading global.json file");
     let contract_meta_data = serde_json::from_str::<serde_json::Value>(&contract_meta_data);
     let mut contract_chain_id: String = String::new();
     let mut contract_address: String = String::new();
     let mut function_of_interest: String = String::new();
+    let mut contract_name: String = String::new();
     match contract_meta_data {
         Ok(object) => {
             contract_address = object[protocol_name]["contract_address"].to_string();
             contract_chain_id = object[protocol_name]["chainId"].to_string();
             function_of_interest = object[protocol_name]["function_of_interest"].to_string();
+            contract_name = object[protocol_name]["name"].to_string();
         }
         Err(e) => {
             println!("{:?}", e);
         }
     };
     contract_address = contract_address[1..contract_address.len() - 1].to_string();
-    return (contract_address, contract_chain_id, function_of_interest);
+    return (contract_address, contract_chain_id, function_of_interest, contract_name);
 }
 
 // pub async fn get_provider(

@@ -1,12 +1,10 @@
 use mongodb::{
-    bson::{doc, to_bson, Array, Binary, Bson, Document},
-    options::{ClientOptions, ServerApi},
-    Client,
+    bson::{doc, to_bson, Bson, Document},
+    options::ClientOptions,
+    Client
 };
-// use ethers::{abi::Event};
-use crate::structs::{MethodParam, TransactionData};
-use ethcontract::{RawLog, H256};
-use ethers::abi::ParamType;
+use crate::structs::{MethodParam, TransactionData, ContractData};
+use ethcontract::{RawLog, Contract};
 use ethers::types::TransactionReceipt;
 use serde::{Serialize, Serializer};
 use serde_json::{json, Value};
@@ -35,6 +33,14 @@ where
         .collect::<Vec<Bson>>();
     serializer.serialize_some(&bson_array)
 }
+
+// async fn get_db_client(collection_name: String) -> Result<mongodb::Collection<Document>, Box<dyn std::error::Error>> {
+//     let client_options: ClientOptions = ClientOptions::parse("mongodb+srv://metaworkdao:c106%40bh1@cluster0.h2imk.mongodb.net/metawork?retryWrites=true&w=majority").await?;
+//     let client: Client = Client::with_options(client_options)?;
+//     let db: mongodb::Database = client.database("macha_sdk");
+//     let collection: mongodb::Collection<Document> = db.collection::<Document>("transactions");
+//     Ok(());
+// }
 
 pub async fn save_to_db(event: RawLog) -> Result<(), Box<dyn std::error::Error>> {
     let mut json_object = json!({});
@@ -75,16 +81,17 @@ pub async fn save_txn_to_db(
     method_name: String,
     method_id: String,
     transaction_receipt: TransactionReceipt,
+    contract_address: String
 ) -> Result<(), Box<dyn std::error::Error>> {
-    let client_options = ClientOptions::parse("mongodb+srv://metaworkdao:c106%40bh1@cluster0.h2imk.mongodb.net/metawork?retryWrites=true&w=majority").await?;
-    let client = Client::with_options(client_options)?;
-    let db = client.database("macha_sdk");
+    let client_options: ClientOptions = ClientOptions::parse("mongodb+srv://metaworkdao:c106%40bh1@cluster0.h2imk.mongodb.net/metawork?retryWrites=true&w=majority").await?;
+    let client: Client = Client::with_options(client_options)?;
+    let db: mongodb::Database = client.database("macha_sdk");
     let collection: mongodb::Collection<Document> = db.collection::<Document>("transactions");
 
     let transaction_struct: TransactionData = TransactionData {
         block_hash: transaction_receipt.block_hash,
         block_number: transaction_receipt.block_number,
-        contract_address: transaction_receipt.contract_address,
+        contract_address: contract_address,
         gas_used: transaction_receipt.gas_used,
         gas_price: transaction_receipt.effective_gas_price,
         from: transaction_receipt.from,
@@ -106,4 +113,25 @@ pub async fn save_txn_to_db(
     collection.insert_one(event_document, None).await?;
     println!("Event document inserted successfully!");
     Ok(())
+}
+
+pub async fn save_contract_to_db (contract_data: ContractData) -> Result<(), Box<dyn std::error::Error>> {
+    let client_options: ClientOptions = ClientOptions::parse("mongodb+srv://metaworkdao:c106%40bh1@cluster0.h2imk.mongodb.net/metawork?retryWrites=true&w=majority").await?;
+    let client: Client = Client::with_options(client_options)?;
+    let db: mongodb::Database = client.database("macha_sdk");
+    let collection: mongodb::Collection<Document> = db.collection::<Document>("Contracts");
+
+    let result = collection.find(doc! {"contract_name": &contract_data.contract_name.to_string()}, None);
+    // if (result)
+    let contract_bson: mongodb::bson::Bson = to_bson(&contract_data).unwrap();
+    let contract_document = doc! {
+        "contract": contract_bson,
+        "timestamp": "Testingt time stamp",
+    };
+
+    collection.insert_one(contract_document, None).await?;
+    println!("The contract document is inserted");
+
+    Ok(())
+
 }

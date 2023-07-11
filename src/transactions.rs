@@ -16,8 +16,6 @@ pub async fn get_transaction_data(
     let provider = Provider::<Http>::try_from("https://lingering-delicate-choice.discover.quiknode.pro/68f9e3726efe97ee2b6a7c8417f6f5d12ab713c6/")
         .expect("Failed to connect with a Provider");
 
-    // println!("The transaction hash is {:?}", transaction_hash);
-
     // getting the transaction details
     let transaction: Option<ethers::types::Transaction> = provider
         .get_transaction(transaction_hash)
@@ -33,6 +31,7 @@ pub async fn get_transaction_data(
     ));
     let decoded_transaction_data: (Vec<MethodParam>, String, String) =
         get_transaction_inputs(contract_abi, transaction).await;
+
     return (
         decoded_transaction_data.0,
         decoded_transaction_data.1,

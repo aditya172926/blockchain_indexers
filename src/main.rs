@@ -17,6 +17,7 @@ use std::fs;
 use std::string::String;
 use std::sync::Arc;
 use std::{error::Error, str::FromStr};
+use structs::ContractData;
 use tokio::time::{sleep, Duration};
 use web3::transports::Http;
 use web3::Web3;
@@ -32,14 +33,15 @@ mod utils;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let contract_metadata: (String, String, String) =
+    let contract_metadata: (String, String, String, String) =
         utils::get_contract_metadata(&"opensea_ethereum".to_string());
     let contract_address: String = contract_metadata.0;
     let mut contract_chain_id: String = contract_metadata.1;
     contract_chain_id = contract_chain_id[1..contract_chain_id.len() - 1].to_string();
     let function_of_interest: String = contract_metadata.2;
-    let network_rpc: String = utils::get_network_rpc(&contract_chain_id);
+    let contract_name: String = contract_metadata.3;
 
+    let network_rpc: String = utils::get_network_rpc(&contract_chain_id);
     let contract_fetched_abi: String =
         utils::format_contract_abi(&contract_chain_id, &contract_address).await;
     let contract_address_h160: ethcontract::H160 = contract_address.parse()?;
@@ -53,6 +55,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
         &contract_fetched_abi,
         &contract_instance,
         function_of_interest,
+        contract_address,
+        contract_chain_id,
+        contract_name
     )
     .await;
 
@@ -65,7 +70,20 @@ async fn get_txns(
     contract_abi: &str,
     contract_instance: &Instance<Http>,
     function_of_interest: String,
+    contract_address: String,
+    chain_id: String,
+    contract_name: String,
 ) {
+    let contract_data: structs::ContractData = structs::ContractData {
+        contract_address: String::from(&contract_address),
+        chain_id: chain_id,
+        contract_name: contract_name,
+        interested_method: function_of_interest,
+        interested_event: "".to_string(),
+    };
+
+    let _ = db::save_contract_to_db(contract_data).await;
+
     let event_stream = contract_instance
         .all_events()
         .from_block(BlockNumber::from(17547614))
@@ -76,16 +94,9 @@ async fn get_txns(
     loop {
         match event_stream.next().await {
             Some(Ok(log)) => {
-                // Handle the event
-                // println!("Received event: {:?}", log);
-                let to_address = log.meta.as_ref().unwrap().address.to_string();
-                let block_no: i64 = log.meta.as_ref().unwrap().block_number.try_into().unwrap();
                 let txn_hash = log.meta.as_ref().unwrap().transaction_hash.to_fixed_bytes();
                 let txnr: H256 = ethers::core::types::TxHash::from(txn_hash);
 
-                // println!("TO Address: {:?}", &to_address);
-                // println!("Block Number: {:?}", &block_no);
-                // println!("Transaction Hash: {:?}", txnr);
                 let decoded_txn_data: (
                     Vec<structs::MethodParam>,
                     String,
@@ -93,15 +104,17 @@ async fn get_txns(
                     ethers::types::TransactionReceipt,
                 ) = transactions::get_transaction_data(contract_abi, txnr).await;
                 // println!("Decoded transaction data {:?}", decoded_txn_data);
-                let _ = db::save_txn_to_db(
-                    decoded_txn_data.0,
-                    decoded_txn_data.1,
-                    decoded_txn_data.2,
-                    decoded_txn_data.3,
-                )
-                .await;
-                // middleware::check_transaction_data(decoded_txn_data, &function_of_interest);
-                // add_to_db(to_address,block_no,txn_hash).await?;
+                if decoded_txn_data.1 != "".to_string() {
+                    let _ = db::save_txn_to_db(
+                        decoded_txn_data.0,
+                        decoded_txn_data.1,
+                        decoded_txn_data.2,
+                        decoded_txn_data.3,
+                        String::from(&contract_address)
+                    )
+                    .await;
+                }
+                
             }
             Some(Err(e)) => {
                 eprintln!("Error: {}", e);
