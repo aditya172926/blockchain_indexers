@@ -25,6 +25,7 @@ pub struct ContractData {
 pub struct TransactionData <'a>{
     pub block_hash: Option<H256>,
     pub block_number: Option<U64>,
+    pub contract_name: String,
     pub contract_address: String,
     pub gas_used: Option<U256>,
     pub gas_price: Option<U256>,

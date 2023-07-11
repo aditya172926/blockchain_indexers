@@ -81,7 +81,8 @@ pub async fn save_txn_to_db(
     method_name: String,
     method_id: String,
     transaction_receipt: TransactionReceipt,
-    contract_address: String
+    contract_address: String,
+    contract_name: String
 ) -> Result<(), Box<dyn std::error::Error>> {
     let client_options: ClientOptions = ClientOptions::parse("mongodb+srv://metaworkdao:c106%40bh1@cluster0.h2imk.mongodb.net/metawork?retryWrites=true&w=majority").await?;
     let client: Client = Client::with_options(client_options)?;
@@ -91,6 +92,7 @@ pub async fn save_txn_to_db(
     let transaction_struct: TransactionData = TransactionData {
         block_hash: transaction_receipt.block_hash,
         block_number: transaction_receipt.block_number,
+        contract_name: contract_name,
         contract_address: contract_address,
         gas_used: transaction_receipt.gas_used,
         gas_price: transaction_receipt.effective_gas_price,

@@ -77,7 +77,7 @@ async fn get_txns(
     let contract_data: structs::ContractData = structs::ContractData {
         contract_address: String::from(&contract_address),
         chain_id: chain_id,
-        contract_name: contract_name,
+        contract_name: String::from(&contract_name),
         interested_method: function_of_interest,
         interested_event: "".to_string(),
     };
@@ -110,7 +110,8 @@ async fn get_txns(
                         decoded_txn_data.1,
                         decoded_txn_data.2,
                         decoded_txn_data.3,
-                        String::from(&contract_address)
+                        String::from(&contract_address),
+                        String::from(&contract_name)
                     )
                     .await;
                 }
