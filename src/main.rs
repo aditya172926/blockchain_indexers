@@ -1,23 +1,10 @@
-use ethcontract::contract;
 use ethcontract::contract::Instance;
 use ethcontract::prelude::*;
-use ethers::{
-    abi::Abi,
-    contract::Contract,
-    types::{Address, H160, H256, U256},
-};
-
-use ethers::providers::Provider;
+use ethers::types::H256;
 use futures::join;
 use futures::stream::StreamExt;
-use serde::{Deserialize, Serialize};
-use sqlx::postgres::{PgPoolOptions, PgRow};
-use sqlx::{FromRow, Row};
-use std::{fs, env::current_exe};
 use std::string::String;
-use std::sync::Arc;
 use std::{error::Error, str::FromStr};
-use structs::ContractData;
 use tokio::time::{sleep, Duration};
 use web3::transports::Http;
 use web3::Web3;
@@ -57,7 +44,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         function_of_interest,
         contract_address,
         contract_chain_id,
-        contract_name
+        contract_name,
     )
     .await;
 
@@ -90,8 +77,9 @@ async fn get_txns(
         .stream();
     println!("fetching...");
     let mut event_stream = Box::pin(event_stream);
-    let dummy_str="0x0000000000000000000000000000000000000000000000000000000000000000";
-    let mut prev_txn_hash:H256=H256::from_str(dummy_str).unwrap();
+    let mut prev_txn_hash: H256 =
+        H256::from_str("0x0000000000000000000000000000000000000000000000000000000000000000")
+            .unwrap();
 
     loop {
         match event_stream.next().await {
@@ -107,24 +95,24 @@ async fn get_txns(
                 ) = transactions::get_transaction_data(contract_abi, txnr).await;
 
                 println!("Decoded transaction data {:?}", decoded_txn_data);
-                let current_txn_hash=decoded_txn_data.3.transaction_hash;
-                if(current_txn_hash!=prev_txn_hash){
-                    if decoded_txn_data.1 != "".to_string() {
-                        let _ = db::save_txn_to_db(
-                            decoded_txn_data.0,
-                            decoded_txn_data.1,
-                            decoded_txn_data.2,
-                            decoded_txn_data.3,
-                            String::from(&contract_address),
-                            String::from(&contract_name)
-                        )
-                        .await;
-                    }
-                    println!("Added txn:{:?}",current_txn_hash);
-                    prev_txn_hash=current_txn_hash;
+                let current_txn_hash: H256 = decoded_txn_data.3.transaction_hash;
+
+                if current_txn_hash != prev_txn_hash && decoded_txn_data.1 != "".to_string() {
+                    let _ = db::save_txn_to_db(
+                        decoded_txn_data.0,
+                        decoded_txn_data.1,
+                        decoded_txn_data.2,
+                        decoded_txn_data.3,
+                        String::from(&contract_address),
+                        String::from(&contract_name),
+                    )
+                    .await;
+                    println!("Added txn:{:?}", current_txn_hash);
+                    prev_txn_hash = current_txn_hash;
                 }
-                println!("=============================================================================");
-                
+                println!(
+                    "============================================================================="
+                );
             }
             Some(Err(e)) => {
                 eprintln!("Error: {}", e);

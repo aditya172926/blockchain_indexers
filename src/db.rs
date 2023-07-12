@@ -4,7 +4,7 @@ use mongodb::{
     Client
 };
 use crate::structs::{MethodParam, TransactionData, ContractData};
-use ethcontract::{RawLog, Contract};
+use ethcontract::RawLog;
 use ethers::types::TransactionReceipt;
 use serde::{Serialize, Serializer};
 use serde_json::{json, Value};

@@ -1,8 +1,5 @@
-use ethers::providers::Provider;
-use std::fmt;
 use std::fs;
 use std::string::String;
-use url::ParseError;
 
 pub fn get_network_rpc(chain_id: &str) -> String {
     let network_details: String =

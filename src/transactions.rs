@@ -1,12 +1,9 @@
 use crate::structs::MethodParam;
-use ethcontract::H256;
-use ethers::abi::{Abi, Function, Param, ParamType, Token};
-use ethers::types::H160;
+use ethers::abi::{Abi, Function, Token};
 use ethers::{
     providers::{Http, Middleware, Provider},
-    types::{Address, Transaction, TransactionReceipt, TxHash},
+    types::{Transaction, TransactionReceipt, TxHash},
 };
-use mongodb::bson::Array;
 
 pub async fn get_transaction_data(
     abi: &str,
@@ -61,7 +58,7 @@ async fn get_transaction_inputs(
         println!("Method not found");
     }
 
-    if (function_name != "") {
+    if function_name != "" {
         let function: &Function = contract_abi
             .function(&function_name)
             .expect("Function is not found in ABI");
