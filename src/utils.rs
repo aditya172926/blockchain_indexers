@@ -34,6 +34,7 @@ pub fn get_contract_metadata(protocol_name: &str) -> (String, String, String, St
         }
     };
     contract_address = contract_address[1..contract_address.len() - 1].to_string();
+    contract_name = contract_name[1..contract_name.len()-1].to_string();
     return (contract_address, contract_chain_id, function_of_interest, contract_name);
 }
 

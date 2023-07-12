@@ -16,12 +16,11 @@ mod structs;
 mod transactions;
 mod utils;
 
-// contract!("ens_registry_with_fallback.json");
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let contract_metadata: (String, String, String, String) =
-        utils::get_contract_metadata(&"opensea_ethereum".to_string());
+        utils::get_contract_metadata("opensea_ethereum");
     let contract_address: String = contract_metadata.0;
     let mut contract_chain_id: String = contract_metadata.1;
     contract_chain_id = contract_chain_id[1..contract_chain_id.len() - 1].to_string();

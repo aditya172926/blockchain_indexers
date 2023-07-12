@@ -123,7 +123,7 @@ pub async fn save_contract_to_db (contract_data: ContractData) -> Result<(), Box
     let db: mongodb::Database = client.database("macha_sdk");
     let collection: mongodb::Collection<Document> = db.collection::<Document>("Contracts");
 
-    let result = collection.find(doc! {"contract_name": &contract_data.contract_name.to_string()}, None);
+    let result = collection.find(doc! {"contract_name": &contract_data.contract_name}, None);
     // if (result)
     let contract_bson: mongodb::bson::Bson = to_bson(&contract_data).unwrap();
     let contract_document = doc! {
