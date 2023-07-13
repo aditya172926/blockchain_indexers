@@ -14,7 +14,7 @@ pub fn get_network_rpc(chain_id: &str) -> String {
     return network_rpc;
 }
 
-pub fn get_contract_metadata(protocol_name: &str) -> (String, String, String, String) {
+pub fn get_contract_metadata(protocol_name: &str) -> (String, String, String, String, String, String) {
     let contract_meta_data: String =
         fs::read_to_string(r"config/global.json").expect("Error in reading global.json file");
     let contract_meta_data = serde_json::from_str::<serde_json::Value>(&contract_meta_data);
@@ -22,20 +22,27 @@ pub fn get_contract_metadata(protocol_name: &str) -> (String, String, String, St
     let mut contract_address: String = String::new();
     let mut function_of_interest: String = String::new();
     let mut contract_name: String = String::new();
+    let mut contract_description: String = String::new();
+    let mut contract_slug: String = String::new();
     match contract_meta_data {
         Ok(object) => {
             contract_address = object[protocol_name]["contract_address"].to_string();
             contract_chain_id = object[protocol_name]["chainId"].to_string();
             function_of_interest = object[protocol_name]["function_of_interest"].to_string();
             contract_name = object[protocol_name]["name"].to_string();
+            contract_description = object[protocol_name]["description"].to_string();
+            contract_slug = object[protocol_name]["slug"].to_string();
         }
         Err(e) => {
             println!("{:?}", e);
         }
     };
+    contract_chain_id = contract_chain_id[1..contract_chain_id.len() - 1].to_string();
     contract_address = contract_address[1..contract_address.len() - 1].to_string();
     contract_name = contract_name[1..contract_name.len()-1].to_string();
-    return (contract_address, contract_chain_id, function_of_interest, contract_name);
+    contract_description = contract_description[1..contract_description.len()-1].to_string();
+    contract_slug = contract_slug[1..contract_slug.len()-1].to_string();
+    return (contract_address, contract_chain_id, function_of_interest, contract_name, contract_description, contract_slug);
 }
 
 // pub async fn get_provider(

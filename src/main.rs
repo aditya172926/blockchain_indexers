@@ -19,13 +19,14 @@ mod utils;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let contract_metadata: (String, String, String, String) =
+    let contract_metadata: (String, String, String, String, String, String) =
         utils::get_contract_metadata("opensea_ethereum");
     let contract_address: String = contract_metadata.0;
-    let mut contract_chain_id: String = contract_metadata.1;
-    contract_chain_id = contract_chain_id[1..contract_chain_id.len() - 1].to_string();
+    let contract_chain_id: String = contract_metadata.1;
     let function_of_interest: String = contract_metadata.2;
     let contract_name: String = contract_metadata.3;
+    let contract_description: String = contract_metadata.4;
+    let contract_slug: String = contract_metadata.5;
 
     let network_rpc: String = utils::get_network_rpc(&contract_chain_id);
     let contract_fetched_abi: String =
@@ -44,6 +45,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
         contract_address,
         contract_chain_id,
         contract_name,
+        contract_description,
+        contract_slug
     )
     .await;
 
@@ -59,13 +62,18 @@ async fn get_txns(
     contract_address: String,
     chain_id: String,
     contract_name: String,
+    contract_description: String,
+    contract_slug: String
 ) {
     let contract_data: structs::ContractData = structs::ContractData {
-        contract_address: String::from(&contract_address),
+        address: String::from(&contract_address),
         chain_id: chain_id,
-        contract_name: String::from(&contract_name),
-        interested_method: function_of_interest,
-        interested_event: "".to_string(),
+        name: String::from(&contract_name),
+        description: String::from(contract_description),
+        slug: String::from(&contract_slug),
+        image: String::from(""),
+        interested_methods: vec![function_of_interest],
+        interested_events: vec!["".to_string()],
     };
 
     let _ = db::save_contract_to_db(contract_data).await;
@@ -103,7 +111,7 @@ async fn get_txns(
                         decoded_txn_data.2,
                         decoded_txn_data.3,
                         String::from(&contract_address),
-                        String::from(&contract_name),
+                        String::from(&contract_slug),
                     )
                     .await;
                     println!("Added txn:{:?}", current_txn_hash);

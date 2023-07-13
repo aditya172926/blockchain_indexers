@@ -82,7 +82,7 @@ pub async fn save_txn_to_db(
     method_id: String,
     transaction_receipt: TransactionReceipt,
     contract_address: String,
-    contract_name: String
+    contract_slug: String
 ) -> Result<(), Box<dyn std::error::Error>> {
     let client_options: ClientOptions = ClientOptions::parse("mongodb+srv://metaworkdao:c106%40bh1@cluster0.h2imk.mongodb.net/metawork?retryWrites=true&w=majority").await?;
     let client: Client = Client::with_options(client_options)?;
@@ -92,7 +92,7 @@ pub async fn save_txn_to_db(
     let transaction_struct: TransactionData = TransactionData {
         block_hash: transaction_receipt.block_hash,
         block_number: transaction_receipt.block_number,
-        contract_name: contract_name,
+        contract_slug: contract_slug,
         contract_address: contract_address,
         gas_used: transaction_receipt.gas_used,
         gas_price: transaction_receipt.effective_gas_price,
@@ -121,9 +121,9 @@ pub async fn save_contract_to_db (contract_data: ContractData) -> Result<(), Box
     let client_options: ClientOptions = ClientOptions::parse("mongodb+srv://metaworkdao:c106%40bh1@cluster0.h2imk.mongodb.net/metawork?retryWrites=true&w=majority").await?;
     let client: Client = Client::with_options(client_options)?;
     let db: mongodb::Database = client.database("macha_sdk");
-    let collection: mongodb::Collection<Document> = db.collection::<Document>("Contracts");
+    let collection: mongodb::Collection<Document> = db.collection::<Document>("contracts");
 
-    let result = collection.find(doc! {"contract_name": &contract_data.contract_name}, None);
+    let result = collection.find(doc! {"contract_name": &contract_data.name}, None);
     // if (result)
     let contract_bson: mongodb::bson::Bson = to_bson(&contract_data).unwrap();
     let contract_document = doc! {

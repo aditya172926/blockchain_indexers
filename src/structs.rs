@@ -12,20 +12,23 @@ pub struct MethodParam<'a> {
     pub value: Token,
 }
 
-#[derive(Serialize, Clone)]
+#[derive(Serialize)]
 pub struct ContractData {
-    pub contract_address: String,
+    pub address: String,
     pub chain_id: String,
-    pub contract_name: String,
-    pub interested_method: String,
-    pub interested_event: String
+    pub name: String,
+    pub description: String,
+    pub slug: String,
+    pub image: String,
+    pub interested_methods: Vec<String>,
+    pub interested_events: Vec<String>
 }
 
 #[derive(Serialize, Clone)]
 pub struct TransactionData <'a>{
     pub block_hash: Option<H256>,
     pub block_number: Option<U64>,
-    pub contract_name: String,
+    pub contract_slug: String,
     pub contract_address: String,
     pub gas_used: Option<U256>,
     pub gas_price: Option<U256>,
