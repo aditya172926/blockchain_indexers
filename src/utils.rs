@@ -14,9 +14,12 @@ pub fn get_network_rpc(chain_id: &str) -> String {
     return network_rpc;
 }
 
-pub fn get_contract_metadata(protocol_name: &str) -> (String, String, String, String, String, String) {
+pub fn get_contract_metadata(
+    protocol_name: &str,
+) -> (String, String, String, String, String, String) {
     let contract_meta_data: String =
         fs::read_to_string(r"config/global.json").expect("Error in reading global.json file");
+
     let contract_meta_data = serde_json::from_str::<serde_json::Value>(&contract_meta_data);
     let mut contract_chain_id: String = String::new();
     let mut contract_address: String = String::new();
@@ -34,15 +37,22 @@ pub fn get_contract_metadata(protocol_name: &str) -> (String, String, String, St
             contract_slug = object[protocol_name]["slug"].to_string();
         }
         Err(e) => {
-            println!("{:?}", e);
+            println!("Error in reading global.json {:?}", e);
         }
     };
     contract_chain_id = contract_chain_id[1..contract_chain_id.len() - 1].to_string();
     contract_address = contract_address[1..contract_address.len() - 1].to_string();
-    contract_name = contract_name[1..contract_name.len()-1].to_string();
-    contract_description = contract_description[1..contract_description.len()-1].to_string();
-    contract_slug = contract_slug[1..contract_slug.len()-1].to_string();
-    return (contract_address, contract_chain_id, function_of_interest, contract_name, contract_description, contract_slug);
+    contract_name = contract_name[1..contract_name.len() - 1].to_string();
+    contract_description = contract_description[1..contract_description.len() - 1].to_string();
+    contract_slug = contract_slug[1..contract_slug.len() - 1].to_string();
+    return (
+        contract_address,
+        contract_chain_id,
+        function_of_interest,
+        contract_name,
+        contract_description,
+        contract_slug,
+    );
 }
 
 // pub async fn get_provider(
@@ -95,7 +105,8 @@ pub async fn fetch_contract_abi(
 }
 
 pub async fn format_contract_abi(contract_chain_id: &str, contract_address: &str) -> String {
-    let response: Result<reqwest::Response, reqwest::Error> = fetch_contract_abi(contract_chain_id.to_string(), contract_address).await;
+    let response: Result<reqwest::Response, reqwest::Error> =
+        fetch_contract_abi(contract_chain_id.to_string(), contract_address).await;
     // let contract_abi: Result<String, reqwest::Error>;
     let mut fetched_abi: String = String::new();
 
@@ -105,7 +116,8 @@ pub async fn format_contract_abi(contract_chain_id: &str, contract_address: &str
                 // Read the response body as a string
                 let response_body: String = object.text().await.expect("Error in parsing object");
                 // Parse the response body as JSON
-                let json: serde_json::Value = serde_json::from_str(&response_body).expect("Error in reading to json format");
+                let json: serde_json::Value =
+                    serde_json::from_str(&response_body).expect("Error in reading to json format");
                 fetched_abi = json["result"].as_str().unwrap().to_owned();
                 // println!("The fetched contract abi is {:?}", fetched_abi);
             } else {
