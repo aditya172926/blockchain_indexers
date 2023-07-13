@@ -20,7 +20,7 @@ mod utils;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let contract_metadata: (String, String, String, String, String, String) =
-        utils::get_contract_metadata("opensea_ethereum");
+        utils::get_contract_metadata("lens_polygon");
     let contract_address: String = contract_metadata.0;
     let contract_chain_id: String = contract_metadata.1;
     let function_of_interest: String = contract_metadata.2;
@@ -83,7 +83,7 @@ async fn get_txns(
 
     let event_stream = contract_instance
         .all_events()
-        .from_block(BlockNumber::from(45024229))
+        .from_block(BlockNumber::from(45031090))
         .stream();
     println!("fetching...");
     let mut event_stream = Box::pin(event_stream);
@@ -111,15 +111,15 @@ async fn get_txns(
                 let current_txn_hash: H256 = decoded_txn_data.3.transaction_hash;
 
                 if current_txn_hash != prev_txn_hash && decoded_txn_data.1 != "".to_string() {
-                    let _ = db::save_txn_to_db(
-                        decoded_txn_data.0,
-                        decoded_txn_data.1,
-                        decoded_txn_data.2,
-                        decoded_txn_data.3,
-                        String::from(&contract_address),
-                        String::from(&contract_slug),
-                    )
-                    .await;
+                    // let _ = db::save_txn_to_db(
+                    //     decoded_txn_data.0,
+                    //     decoded_txn_data.1,
+                    //     decoded_txn_data.2,
+                    //     decoded_txn_data.3,
+                    //     String::from(&contract_address),
+                    //     String::from(&contract_slug),
+                    // )
+                    // .await;
                     println!("Added txn:{:?}", current_txn_hash);
                     prev_txn_hash = current_txn_hash;
                 }
@@ -137,7 +137,7 @@ async fn get_txns(
                 event_stream = Box::pin(
                     contract_instance
                         .all_events()
-                        .from_block(BlockNumber::from(45024229))
+                        .from_block(BlockNumber::from(45031090))
                         .stream(),
                 );
             }
@@ -162,7 +162,7 @@ async fn get_logs(
             async {
                 let log = event_streams.next().await.expect("No events").expect("Error querying event").added();
                 let unwrapped_log = log.unwrap();
-                let _ = db::save_to_db(unwrapped_log).await;
+                // let _ = db::save_to_db(unwrapped_log).await;
             },
         };
     }

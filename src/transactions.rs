@@ -11,7 +11,8 @@ pub async fn get_transaction_data<'a>(
     network_rpc_url: &str
 ) -> (Vec<MethodParam<'a>>, String, String, TransactionReceipt) {
     println!("The transaction hash is {:?}", transaction_hash);
-    let provider = Provider::<Http>::try_from("https://thrumming-muddy-sheet.discover.quiknode.pro/a7bf1b504e89b58d4c0c895fa81f2c368f722755/")
+
+    let provider = Provider::<Http>::try_from(network_rpc_url)
         .expect("Failed to connect with a Provider");
 
     // getting the transaction details
@@ -23,7 +24,7 @@ pub async fn get_transaction_data<'a>(
         .get_transaction_receipt(transaction_hash)
         .await
         .expect("Couldn't get the transaction receipt");
-    println!("{:?}",transaction_receipt);
+    println!("receipt:{:?}",transaction_receipt);
     let transaction_receipt: TransactionReceipt = transaction_receipt.unwrap();
     let contract_abi: &'static Abi = Box::leak(Box::new(
         serde_json::from_str(&abi).expect("Failed to parse abi"),
