@@ -10,7 +10,7 @@ pub async fn get_transaction_data(
     transaction_hash: TxHash,
 ) -> (Vec<MethodParam>, String, String, TransactionReceipt) {
     println!("The transaction hash is {:?}", transaction_hash);
-    let provider = Provider::<Http>::try_from("https://lingering-delicate-choice.discover.quiknode.pro/68f9e3726efe97ee2b6a7c8417f6f5d12ab713c6/")
+    let provider = Provider::<Http>::try_from("https://lingering-responsive-card.matic.discover.quiknode.pro/f0306d09c42e2ba62b0c10ce6a07b9313e981ed0/")
         .expect("Failed to connect with a Provider");
 
     // getting the transaction details
@@ -22,6 +22,7 @@ pub async fn get_transaction_data(
         .get_transaction_receipt(transaction_hash)
         .await
         .expect("Couldn't get the transaction receipt");
+    println!("{:?}",transaction_receipt);
     let transaction_receipt: TransactionReceipt = transaction_receipt.unwrap();
     let contract_abi: &'static Abi = Box::leak(Box::new(
         serde_json::from_str(&abi).expect("Failed to parse abi"),

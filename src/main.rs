@@ -20,7 +20,7 @@ mod utils;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let contract_metadata: (String, String, String, String, String, String) =
-        utils::get_contract_metadata("opensea_ethereum");
+        utils::get_contract_metadata("mintKudos_polygon");
     let contract_address: String = contract_metadata.0;
     let contract_chain_id: String = contract_metadata.1;
     let function_of_interest: String = contract_metadata.2;
@@ -76,11 +76,11 @@ async fn get_txns(
         interested_events: vec!["".to_string()],
     };
 
-    let _ = db::save_contract_to_db(contract_data).await;
+    // let _ = db::save_contract_to_db(contract_data).await;
 
     let event_stream = contract_instance
         .all_events()
-        .from_block(BlockNumber::from(17547614))
+        .from_block(BlockNumber::from(45024229))
         .stream();
     println!("fetching...");
     let mut event_stream = Box::pin(event_stream);
@@ -91,6 +91,9 @@ async fn get_txns(
     loop {
         match event_stream.next().await {
             Some(Ok(log)) => {
+
+                println!("==========================================NEXT EVENT==========================================");
+
                 let txn_hash = log.meta.as_ref().unwrap().transaction_hash.to_fixed_bytes();
                 let txnr: H256 = ethers::core::types::TxHash::from(txn_hash);
 
@@ -131,7 +134,7 @@ async fn get_txns(
                 event_stream = Box::pin(
                     contract_instance
                         .all_events()
-                        .from_block(BlockNumber::from(17547614))
+                        .from_block(BlockNumber::from(45024229))
                         .stream(),
                 );
             }

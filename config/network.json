@@ -1,10 +1,10 @@
 {
-    "1": {
-        "networkName": "mainnet",
-        "networkRpcUrl": "https://mainnet.infura.io/v3/c108a133505241de9e2c48894d23e483"
-    },
-    "137": {
-        "networkName": "polygon",
-        "networkRpcUrl": "https://rpc-mainnet.maticvigil.com"
-    }
+  "1": {
+    "networkName": "mainnet",
+    "networkRpcUrl": "https://mainnet.infura.io/v3/c108a133505241de9e2c48894d23e483"
+  },
+  "137": {
+    "networkName": "polygon",
+    "networkRpcUrl": "https://lingering-responsive-card.matic.discover.quiknode.pro/f0306d09c42e2ba62b0c10ce6a07b9313e981ed0/"
+  }
 }
