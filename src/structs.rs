@@ -40,3 +40,10 @@ pub struct TransactionData <'a>{
     pub method_params: Vec<MethodParam<'a>>,
     pub status: Option<U64>
 }
+
+
+pub struct MetaSchema {
+    pub slug: String,
+    pub contract_slug: String,
+    pub data: Vec<String>
+}

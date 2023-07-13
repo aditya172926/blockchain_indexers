@@ -20,7 +20,7 @@ mod utils;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let contract_metadata: (String, String, String, String, String, String) =
-        utils::get_contract_metadata("opensea_ethereum");
+        utils::get_contract_metadata("poap_ethereum");
     let contract_address: String = contract_metadata.0;
     let contract_chain_id: String = contract_metadata.1;
     let function_of_interest: String = contract_metadata.2;
