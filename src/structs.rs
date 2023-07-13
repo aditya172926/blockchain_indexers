@@ -41,7 +41,6 @@ pub struct TransactionData <'a>{
     pub status: Option<U64>
 }
 
-
 pub struct MetaSchema {
     pub slug: String,
     pub contract_slug: String,
