@@ -6,7 +6,6 @@
   },
   "137": {
     "networkName": "polygon",
-    "networkRpcUrl": "https://lingering-responsive-card.matic.discover.quiknode.pro/f0306d09c42e2ba62b0c10ce6a07b9313e981ed0/",
-    "block_number": 45031090
+    "networkRpcUrl": "https://polygon-mainnet.g.alchemy.com/v2/Eg_FSYfeQu8h6QKbUL9A10wNprVI_bTw"
   }
 }

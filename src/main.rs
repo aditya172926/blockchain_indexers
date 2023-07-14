@@ -19,19 +19,21 @@ mod utils;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let contract_metadata: (String, String, String, String, String, String) =
+    let result: Option<structs::ContractMetaData> =
         utils::get_contract_metadata("lens_polygon");
-    let contract_address: String = contract_metadata.0;
-    let contract_chain_id: String = contract_metadata.1;
-    let function_of_interest: String = contract_metadata.2;
-    let contract_name: String = contract_metadata.3;
-    let contract_description: String = contract_metadata.4;
-    let contract_slug: String = contract_metadata.5;
+    let contract_metadata: structs::ContractMetaData = result.unwrap(); // expecting this will never fail to read globle.json
 
-    let network_rpc: String = utils::get_network_rpc(&contract_chain_id);
-    let contract_fetched_abi: String =
-        utils::format_contract_abi(&contract_chain_id, &contract_address).await;
-    let contract_address_h160: ethcontract::H160 = contract_address.parse()?;
+    let network_rpc: String = utils::get_network_rpc(&contract_metadata.chain_id);
+    let mut contract_fetched_abi: String = String::new();
+    if (contract_metadata.read_abi_from.contains("0x")) {
+        contract_fetched_abi = utils::format_contract_abi(&contract_metadata.chain_id, &contract_metadata.read_abi_from).await;
+        contract_fetched_abi = utils::format_contract_abi(&contract_metadata.chain_id, &contract_metadata.read_abi_from).await;
+    } else {
+        contract_fetched_abi = utils::format_contract_abi(&contract_metadata.chain_id, &contract_metadata.contract_address).await;
+        contract_fetched_abi = utils::format_contract_abi(&contract_metadata.chain_id, &contract_metadata.contract_address).await;
+    }
+    println!("The contract abi is {:?}", contract_fetched_abi);
+    let contract_address_h160: ethcontract::H160 = contract_metadata.contract_address.parse()?;
 
     let contract_abi: web3::ethabi::Contract = serde_json::from_str(&contract_fetched_abi).unwrap();
     let transport: Http = Http::new(&network_rpc)?;
@@ -41,12 +43,12 @@ async fn main() -> Result<(), Box<dyn Error>> {
     get_txns(
         &contract_fetched_abi,
         &contract_instance,
-        function_of_interest,
-        contract_address,
-        contract_chain_id,
-        contract_name,
-        contract_description,
-        contract_slug
+        contract_metadata.function_of_interest,
+        contract_metadata.contract_address,
+        contract_metadata.chain_id,
+        contract_metadata.contract_name,
+        contract_metadata.contract_description,
+        contract_metadata.contract_slug
     )
     .await;
 
@@ -82,16 +84,20 @@ async fn get_txns(
 
     // let _ = db::save_contract_to_db(contract_data).await;
 
+
+// eth block number:17691422
+//polygon block number:45033964
     let event_stream = contract_instance
         .all_events()
-        .from_block(BlockNumber::from(45031090))
+        .from_block(BlockNumber::from(45033964))
         .stream();
     println!("fetching...");
     let mut event_stream = Box::pin(event_stream);
     let mut prev_txn_hash: H256 =
-        H256::from_str("0x0000000000000000000000000000000000000000000000000000000000000000")
-            .unwrap();
+    H256::from_str("0x0000000000000000000000000000000000000000000000000000000000000000")
+    .unwrap();
 
+println!("Trying...");
     loop {
         match event_stream.next().await {
             Some(Ok(log)) => {
@@ -135,7 +141,7 @@ async fn get_txns(
                 event_stream = Box::pin(
                     contract_instance
                         .all_events()
-                        .from_block(BlockNumber::from(45031090))
+                        .from_block(BlockNumber::from(45033964))
                         .stream(),
                 );
             }

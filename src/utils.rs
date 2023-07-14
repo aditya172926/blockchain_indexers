@@ -1,3 +1,4 @@
+use crate::structs::ContractMetaData;
 use std::fs;
 use std::string::String;
 
@@ -14,35 +15,48 @@ pub fn get_network_rpc(chain_id: &str) -> String {
     return network_rpc;
 }
 
-pub fn get_contract_metadata(protocol_name: &str) -> (String, String, String, String, String, String) {
+pub fn get_contract_metadata(protocol_name: &str) -> Option<ContractMetaData> {
     let contract_meta_data: String =
         fs::read_to_string(r"config/global.json").expect("Error in reading global.json file");
-    let contract_meta_data = serde_json::from_str::<serde_json::Value>(&contract_meta_data);
-    let mut contract_chain_id: String = String::new();
-    let mut contract_address: String = String::new();
-    let mut function_of_interest: String = String::new();
-    let mut contract_name: String = String::new();
-    let mut contract_description: String = String::new();
-    let mut contract_slug: String = String::new();
-    match contract_meta_data {
+    let contract_meta_data: Result<serde_json::Value, serde_json::Error> = serde_json::from_str::<serde_json::Value>(&contract_meta_data);
+
+    let contract_metadata: Option<ContractMetaData> = match contract_meta_data {
         Ok(object) => {
-            contract_address = object[protocol_name]["contract_address"].to_string();
-            contract_chain_id = object[protocol_name]["chainId"].to_string();
-            function_of_interest = object[protocol_name]["function_of_interest"].to_string();
-            contract_name = object[protocol_name]["name"].to_string();
-            contract_description = object[protocol_name]["description"].to_string();
-            contract_slug = object[protocol_name]["slug"].to_string();
+            let mut contract_address: String = object[protocol_name]["contract_address"].to_string();
+            let mut contract_chain_id: String = object[protocol_name]["chainId"].to_string();
+            let mut function_of_interest: String =
+                object[protocol_name]["function_of_interest"].to_string();
+            let mut contract_name: String = object[protocol_name]["name"].to_string();
+            let mut contract_description: String = object[protocol_name]["description"].to_string();
+            let mut contract_slug: String = object[protocol_name]["slug"].to_string();
+            let mut read_abi_from: String = object[protocol_name]["read_abi_from"].to_string();
+
+            contract_chain_id = contract_chain_id[1..contract_chain_id.len() - 1].to_string();
+            read_abi_from = read_abi_from[1..read_abi_from.len() - 1].to_string();
+            contract_address = contract_address[1..contract_address.len() - 1].to_string();
+            contract_name = contract_name[1..contract_name.len() - 1].to_string();
+            contract_description =
+                contract_description[1..contract_description.len() - 1].to_string();
+            contract_slug = contract_slug[1..contract_slug.len() - 1].to_string();
+
+            let result: ContractMetaData = ContractMetaData {
+                contract_address: contract_address,
+                read_abi_from: read_abi_from,
+                chain_id: contract_chain_id,
+                function_of_interest: function_of_interest,
+                contract_name: contract_name,
+                contract_description: contract_description,
+                contract_slug: contract_slug
+            };
+            Some(result)
         }
         Err(e) => {
             println!("{:?}", e);
+            None
         }
     };
-    contract_chain_id = contract_chain_id[1..contract_chain_id.len() - 1].to_string();
-    contract_address = contract_address[1..contract_address.len() - 1].to_string();
-    contract_name = contract_name[1..contract_name.len()-1].to_string();
-    contract_description = contract_description[1..contract_description.len()-1].to_string();
-    contract_slug = contract_slug[1..contract_slug.len()-1].to_string();
-    return (contract_address, contract_chain_id, function_of_interest, contract_name, contract_description, contract_slug);
+    return contract_metadata;
+
 }
 
 // pub async fn get_provider(
@@ -95,7 +109,8 @@ pub async fn fetch_contract_abi(
 }
 
 pub async fn format_contract_abi(contract_chain_id: &str, contract_address: &str) -> String {
-    let response: Result<reqwest::Response, reqwest::Error> = fetch_contract_abi(contract_chain_id.to_string(), contract_address).await;
+    let response: Result<reqwest::Response, reqwest::Error> =
+        fetch_contract_abi(contract_chain_id.to_string(), contract_address).await;
     // let contract_abi: Result<String, reqwest::Error>;
     let mut fetched_abi: String = String::new();
 
@@ -105,7 +120,8 @@ pub async fn format_contract_abi(contract_chain_id: &str, contract_address: &str
                 // Read the response body as a string
                 let response_body: String = object.text().await.expect("Error in parsing object");
                 // Parse the response body as JSON
-                let json: serde_json::Value = serde_json::from_str(&response_body).expect("Error in reading to json format");
+                let json: serde_json::Value =
+                    serde_json::from_str(&response_body).expect("Error in reading to json format");
                 fetched_abi = json["result"].as_str().unwrap().to_owned();
                 // println!("The fetched contract abi is {:?}", fetched_abi);
             } else {

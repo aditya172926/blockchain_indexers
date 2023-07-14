@@ -41,6 +41,17 @@ pub struct TransactionData <'a>{
     // pub status: Option<U64>
 }
 
+#[derive(Serialize, Clone)]
+pub struct ContractMetaData {
+    pub contract_address: String,
+    pub read_abi_from: String,
+    pub chain_id: String,
+    pub function_of_interest: String,
+    pub contract_name: String,
+    pub contract_description: String,
+    pub contract_slug: String
+}
+
 pub struct MetaSchema {
     pub slug: String,
     pub contract_slug: String,
