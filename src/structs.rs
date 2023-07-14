@@ -52,6 +52,13 @@ pub struct ContractMetaData {
     pub contract_slug: String
 }
 
+#[derive(Serialize, Clone)]
+pub struct NetworkMetaData {
+    pub network_name: String,
+    pub network_rpc_url: String,
+    pub start_block_number: i64
+}
+
 pub struct MetaSchema {
     pub slug: String,
     pub contract_slug: String,

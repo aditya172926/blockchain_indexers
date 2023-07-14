@@ -1,28 +1,49 @@
-use crate::structs::ContractMetaData;
+use crate::structs::{ContractMetaData, NetworkMetaData};
 use std::fs;
 use std::string::String;
 
-pub fn get_network_rpc(chain_id: &str) -> String {
+pub fn get_network_data(chain_id: &str) -> Option<NetworkMetaData> {
     let network_details: String =
         fs::read_to_string(r"config/network.json").expect("Error in reading network.json file");
     let network_details = serde_json::from_str::<serde_json::Value>(&network_details);
+
     let network_rpc = match network_details {
-        Ok(object) => object[chain_id]["networkRpcUrl"].to_string(),
-        Err(e) => e.to_string(),
+        Ok(object) => {
+            let mut network_name: String = object[chain_id]["network_name"].to_string();
+            let mut network_rpc_url: String = object[chain_id]["network_rpc_url"].to_string();
+            let start_block_number: i64 = object[chain_id]["start_block_number"]
+                .to_string()
+                .parse()
+                .unwrap();
+
+            network_name = network_name[1..network_name.len() - 1].to_string();
+            network_rpc_url = network_rpc_url[1..network_rpc_url.len() - 1].to_string();
+
+            let result: NetworkMetaData = NetworkMetaData {
+                network_name: network_name,
+                network_rpc_url: network_rpc_url,
+                start_block_number: start_block_number,
+            };
+            Some(result)
+        }
+        Err(e) => {
+            println!("Error in getting network data {:?}", e);
+            None
+        }
     };
-    let network_rpc: String = network_rpc[1..network_rpc.len() - 1].to_string();
-    // println!("The Network RPC Endpoint is {:?}", network_rpc);
     return network_rpc;
 }
 
 pub fn get_contract_metadata(protocol_name: &str) -> Option<ContractMetaData> {
     let contract_meta_data: String =
         fs::read_to_string(r"config/global.json").expect("Error in reading global.json file");
-    let contract_meta_data: Result<serde_json::Value, serde_json::Error> = serde_json::from_str::<serde_json::Value>(&contract_meta_data);
+    let contract_meta_data: Result<serde_json::Value, serde_json::Error> =
+        serde_json::from_str::<serde_json::Value>(&contract_meta_data);
 
     let contract_metadata: Option<ContractMetaData> = match contract_meta_data {
         Ok(object) => {
-            let mut contract_address: String = object[protocol_name]["contract_address"].to_string();
+            let mut contract_address: String =
+                object[protocol_name]["contract_address"].to_string();
             let mut contract_chain_id: String = object[protocol_name]["chainId"].to_string();
             let mut function_of_interest: String =
                 object[protocol_name]["function_of_interest"].to_string();
@@ -46,7 +67,7 @@ pub fn get_contract_metadata(protocol_name: &str) -> Option<ContractMetaData> {
                 function_of_interest: function_of_interest,
                 contract_name: contract_name,
                 contract_description: contract_description,
-                contract_slug: contract_slug
+                contract_slug: contract_slug,
             };
             Some(result)
         }
@@ -56,7 +77,6 @@ pub fn get_contract_metadata(protocol_name: &str) -> Option<ContractMetaData> {
         }
     };
     return contract_metadata;
-
 }
 
 // pub async fn get_provider(
