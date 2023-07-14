@@ -81,16 +81,20 @@ async fn get_txns(
 
     // let _ = db::save_contract_to_db(contract_data).await;
 
+
+// eth block number:17691422
+//polygon block number:45033964
     let event_stream = contract_instance
         .all_events()
-        .from_block(BlockNumber::from(45031090))
+        .from_block(BlockNumber::from(45033964))
         .stream();
     println!("fetching...");
     let mut event_stream = Box::pin(event_stream);
     let mut prev_txn_hash: H256 =
-        H256::from_str("0x0000000000000000000000000000000000000000000000000000000000000000")
-            .unwrap();
+    H256::from_str("0x0000000000000000000000000000000000000000000000000000000000000000")
+    .unwrap();
 
+println!("Trying...");
     loop {
         match event_stream.next().await {
             Some(Ok(log)) => {
@@ -137,7 +141,7 @@ async fn get_txns(
                 event_stream = Box::pin(
                     contract_instance
                         .all_events()
-                        .from_block(BlockNumber::from(45031090))
+                        .from_block(BlockNumber::from(45033964))
                         .stream(),
                 );
             }
