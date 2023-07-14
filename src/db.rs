@@ -101,8 +101,7 @@ pub async fn save_txn_to_db(
         txn_hash: transaction_receipt.transaction_hash,
         method_name: method_name,
         method_id: method_id,
-        method_params: txn,
-        status: transaction_receipt.status,
+        method_params: txn
     };
 
     // let event_bson: mongodb::bson::Bson = to_bson(&txn).unwrap();

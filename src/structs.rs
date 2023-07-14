@@ -38,7 +38,7 @@ pub struct TransactionData <'a>{
     pub method_name: String,
     pub method_id: String,
     pub method_params: Vec<MethodParam<'a>>,
-    pub status: Option<U64>
+    // pub status: Option<U64>
 }
 
 pub struct MetaSchema {

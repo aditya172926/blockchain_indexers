@@ -1,10 +1,12 @@
 {
   "1": {
     "networkName": "mainnet",
-    "networkRpcUrl": "https://lingering-delicate-choice.discover.quiknode.pro/68f9e3726efe97ee2b6a7c8417f6f5d12ab713c6/"
+    "networkRpcUrl": "https://thrumming-muddy-sheet.discover.quiknode.pro/a7bf1b504e89b58d4c0c895fa81f2c368f722755/",
+    "block_number": 17689887
   },
   "137": {
     "networkName": "polygon",
-    "networkRpcUrl": "https://lingering-responsive-card.matic.discover.quiknode.pro/f0306d09c42e2ba62b0c10ce6a07b9313e981ed0/"
+    "networkRpcUrl": "https://lingering-responsive-card.matic.discover.quiknode.pro/f0306d09c42e2ba62b0c10ce6a07b9313e981ed0/",
+    "block_number": 45031090
   }
 }
