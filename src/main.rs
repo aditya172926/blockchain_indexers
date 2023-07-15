@@ -33,7 +33,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         contract_fetched_abi = utils::format_contract_abi(&contract_metadata.chain_id, &contract_metadata.contract_address).await;
         contract_fetched_abi = utils::format_contract_abi(&contract_metadata.chain_id, &contract_metadata.contract_address).await;
     }
-    println!("The contract abi is {:?}", contract_fetched_abi);
+    // println!("The contract abi is {:?}", contract_fetched_abi);
     let contract_address_h160: ethcontract::H160 = contract_metadata.contract_address.parse()?;
 
     let contract_abi: web3::ethabi::Contract = serde_json::from_str(&contract_fetched_abi).unwrap();
@@ -119,16 +119,21 @@ println!("Trying...");
                 let current_txn_hash: H256 = decoded_txn_data.3.transaction_hash;
 
                 if current_txn_hash != prev_txn_hash && decoded_txn_data.1 != "".to_string() {
-                    let _ = db::save_txn_to_db(
-                        decoded_txn_data.0,
-                        decoded_txn_data.1,
-                        decoded_txn_data.2,
-                        decoded_txn_data.3,
-                        String::from(&contract_address),
-                        String::from(&contract_slug),
-                    )
-                    .await;
+
+                    if(is_interesting_method(&decoded_txn_data.1)==true){
+
+                        
+                        // let _ = db::save_txn_to_db(
+                        //     decoded_txn_data.0,
+                        //     decoded_txn_data.1,
+                        //     decoded_txn_data.2,
+                        //     decoded_txn_data.3,
+                        //     String::from(&contract_address),
+                        //     String::from(&contract_slug),
+                        // )
+                        // .await;
                     println!("Added txn:{:?}", current_txn_hash);
+                    }
                     prev_txn_hash = current_txn_hash;
                 }
                 println!(
@@ -152,6 +157,23 @@ println!("Trying...");
         }
     }
 }
+
+
+
+fn is_interesting_method(method_name:&String)-> bool{
+    let interested_meths=["collect","follow","post","mirror"];
+
+    for item in interested_meths.iter() {
+        if item==method_name {
+            return true;
+        }
+    }
+
+    return false;
+
+}
+
+
 
 async fn get_logs(
     contract_instance: Instance<Http>,
