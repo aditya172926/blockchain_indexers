@@ -19,11 +19,8 @@ mod utils;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let mut contract_metadata: structs::ContractMetaData =
-        utils::get_contract_metadata("lens_polygon").await.unwrap();
-
-    // let contract_metadata: &mongodb::bson::Document = contract_result.get_document("contract")?;
-    // let contract_metadata: structs::ContractMetaData = result.unwrap(); // expecting this will never fail to read globle.json
+    let contract_metadata: structs::ContractMetaData =
+        utils::get_contract_metadata("opensea_ethereum").await.unwrap();
 
     let network_metadata:structs::NetworkMetaData = utils::get_network_data(&contract_metadata.chain_id).unwrap();
 

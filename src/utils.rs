@@ -37,7 +37,7 @@ pub fn get_network_data(chain_id: &str) -> Option<NetworkMetaData> {
 
 pub async fn get_contract_metadata(protocol_name: &str) -> Option<ContractMetaData> {
 
-    let contract_result: mongodb::bson::Document = db::db_contract_data("lens_polygon").await.unwrap();
+    let contract_result: mongodb::bson::Document = db::db_contract_data(protocol_name).await.unwrap();
     let contract_meta_data: Result<&mongodb::bson::Document, mongodb::bson::document::ValueAccessError> = contract_result.get_document("contract");
 
     let contract_metadata: Option<ContractMetaData> = match contract_meta_data {
