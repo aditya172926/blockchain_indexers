@@ -20,7 +20,9 @@ mod utils;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let mut contract_metadata: structs::ContractMetaData =
-        utils::get_contract_metadata("lens_polygon").unwrap();
+        utils::get_contract_metadata("lens_polygon").await.unwrap();
+
+    // let contract_metadata: &mongodb::bson::Document = contract_result.get_document("contract")?;
     // let contract_metadata: structs::ContractMetaData = result.unwrap(); // expecting this will never fail to read globle.json
 
     let network_metadata:structs::NetworkMetaData = utils::get_network_data(&contract_metadata.chain_id).unwrap();
@@ -33,7 +35,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
         contract_fetched_abi = utils::format_contract_abi(&contract_metadata.chain_id, &contract_metadata.contract_address).await;
         contract_fetched_abi = utils::format_contract_abi(&contract_metadata.chain_id, &contract_metadata.contract_address).await;
     }
-    println!("The contract abi is {:?}", contract_fetched_abi);
     let contract_address_h160: ethcontract::H160 = contract_metadata.contract_address.parse()?;
 
     let contract_abi: web3::ethabi::Contract = serde_json::from_str(&contract_fetched_abi).unwrap();

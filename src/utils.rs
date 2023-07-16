@@ -1,6 +1,7 @@
 use crate::structs::{ContractMetaData, NetworkMetaData};
 use std::fs;
 use std::string::String;
+use crate::db;
 
 pub fn get_network_data(chain_id: &str) -> Option<NetworkMetaData> {
     let network_details: String =
@@ -34,31 +35,35 @@ pub fn get_network_data(chain_id: &str) -> Option<NetworkMetaData> {
     return network_rpc;
 }
 
-pub fn get_contract_metadata(protocol_name: &str) -> Option<ContractMetaData> {
-    let contract_meta_data: String =
-        fs::read_to_string(r"config/global.json").expect("Error in reading global.json file");
-    let contract_meta_data: Result<serde_json::Value, serde_json::Error> =
-        serde_json::from_str::<serde_json::Value>(&contract_meta_data);
+pub async fn get_contract_metadata(protocol_name: &str) -> Option<ContractMetaData> {
+
+    let contract_result: mongodb::bson::Document = db::db_contract_data("lens_polygon").await.unwrap();
+    let contract_meta_data: Result<&mongodb::bson::Document, mongodb::bson::document::ValueAccessError> = contract_result.get_document("contract");
 
     let contract_metadata: Option<ContractMetaData> = match contract_meta_data {
         Ok(object) => {
-            let mut contract_address: String =
-                object[protocol_name]["contract_address"].to_string();
-            let mut contract_chain_id: String = object[protocol_name]["chainId"].to_string();
-            let mut function_of_interest: String =
-                object[protocol_name]["function_of_interest"].to_string();
-            let mut contract_name: String = object[protocol_name]["name"].to_string();
-            let mut contract_description: String = object[protocol_name]["description"].to_string();
-            let mut contract_slug: String = object[protocol_name]["slug"].to_string();
-            let mut read_abi_from: String = object[protocol_name]["read_abi_from"].to_string();
+            let mut contract_address: String = object.get_str("address").unwrap().to_string();
+            let mut contract_chain_id: String = object.get_str("chain_id").unwrap().to_string();
+            let mut function_of_interest: String = "".to_string();
+            let mut contract_name: String = object.get_str("name").unwrap().to_string();
+            let mut contract_description: String = object.get_str("description").unwrap().to_string();
+            let mut contract_slug: String = object.get_str("slug").unwrap().to_string();
+            let mut read_abi_result: Result<&str, mongodb::bson::document::ValueAccessError> = object.get_str("read_abi_from");
 
-            contract_chain_id = contract_chain_id[1..contract_chain_id.len() - 1].to_string();
-            read_abi_from = read_abi_from[1..read_abi_from.len() - 1].to_string();
-            contract_address = contract_address[1..contract_address.len() - 1].to_string();
-            contract_name = contract_name[1..contract_name.len() - 1].to_string();
-            contract_description =
-                contract_description[1..contract_description.len() - 1].to_string();
-            contract_slug = contract_slug[1..contract_slug.len() - 1].to_string();
+            contract_name = object.get_str("name").unwrap().to_string();
+            contract_slug = object.get_str("slug").unwrap().to_string();
+            contract_description = object.get_str("description").unwrap().to_string();
+            
+            let mut read_abi_from: String = String::new();
+
+            match read_abi_result {
+                Ok(doc) => {
+                    read_abi_from = doc.to_string();
+                }
+                Err(e) => {
+                    println!("ValueNotFound, there is no field of read_abi_from {:?}", e);
+                }
+            }
 
             let result: ContractMetaData = ContractMetaData {
                 contract_address: contract_address,
@@ -69,10 +74,11 @@ pub fn get_contract_metadata(protocol_name: &str) -> Option<ContractMetaData> {
                 contract_description: contract_description,
                 contract_slug: contract_slug,
             };
+            println!("The resulting ContractMetadata is {:?}", result);
             Some(result)
         }
         Err(e) => {
-            println!("{:?}", e);
+            println!("Error in reading contract_meta_data {:?}", e);
             None
         }
     };
