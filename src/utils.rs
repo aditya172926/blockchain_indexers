@@ -1,6 +1,7 @@
 use crate::structs::{ContractMetaData, NetworkMetaData};
 use std::fs;
 use std::string::String;
+use std::collections::HashSet;
 
 pub fn get_network_data(chain_id: &str) -> Option<NetworkMetaData> {
     let network_details: String =
@@ -51,6 +52,15 @@ pub fn get_contract_metadata(protocol_name: &str) -> Option<ContractMetaData> {
             let mut contract_description: String = object[protocol_name]["description"].to_string();
             let mut contract_slug: String = object[protocol_name]["slug"].to_string();
             let mut read_abi_from: String = object[protocol_name]["read_abi_from"].to_string();
+            let mut method_of_interest:HashSet<String> = HashSet::new();
+            let size=&object["lens_polygon"]["method_of_interest"].as_array().unwrap().len();
+            for i in 0..*size {
+                let interested:&String=
+                &object["lens_polygon"]["method_of_interest"][i].to_string().parse().unwrap();
+                let item=interested[1..interested.len()-1].to_string();
+     
+                method_of_interest.insert(item);
+            }
 
             contract_chain_id = contract_chain_id[1..contract_chain_id.len() - 1].to_string();
             read_abi_from = read_abi_from[1..read_abi_from.len() - 1].to_string();
@@ -68,6 +78,7 @@ pub fn get_contract_metadata(protocol_name: &str) -> Option<ContractMetaData> {
                 contract_name: contract_name,
                 contract_description: contract_description,
                 contract_slug: contract_slug,
+                method_of_interest:method_of_interest
             };
             Some(result)
         }

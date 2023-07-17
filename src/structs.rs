@@ -3,6 +3,7 @@ use ethers::{
     types::{H160, H256, U256, U64},
 };
 use serde::Serialize;
+use std::collections::HashSet;
 
 #[derive(Serialize, Debug, Clone)]
 pub struct MethodParam<'a> {
@@ -49,7 +50,8 @@ pub struct ContractMetaData {
     pub function_of_interest: String,
     pub contract_name: String,
     pub contract_description: String,
-    pub contract_slug: String
+    pub contract_slug: String,
+    pub method_of_interest:HashSet<String>
 }
 
 #[derive(Serialize, Clone)]

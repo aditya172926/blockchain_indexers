@@ -81,11 +81,10 @@
     "chainId": "137",
     "name": "Lens",
     "function_of_interest": "",
-    "method_of_interest": [],
+    "method_of_interest": ["collect", "follow", "post", "mirror"],
     "event_of_interest": [],
     "description": "Lens contract deployed on network Polygon",
     "slug": "lens_polygon",
     "image": ""
   }
-
 }

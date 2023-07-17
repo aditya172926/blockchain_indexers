@@ -4,6 +4,8 @@ use ethers::types::H256;
 use futures::join;
 use futures::stream::StreamExt;
 use std::string::String;
+use std::fs;
+use std::collections::HashSet;
 use std::{error::Error, str::FromStr};
 use tokio::time::{sleep, Duration};
 use web3::transports::Http;
@@ -41,6 +43,14 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let web3: Web3<Http> = Web3::new(transport);
     let contract_instance: Instance<Http> = Instance::at(web3, contract_abi, contract_address_h160);
 
+
+//Testing filtering function
+    // let strrr=String::from("collect");
+    // println!("{}",is_interesting_method(&contract_metadata.method_of_interest,&strrr));
+
+
+
+
     get_txns(
         &contract_fetched_abi,
         &contract_instance,
@@ -51,7 +61,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
         contract_metadata.contract_description,
         contract_metadata.contract_slug,
         network_metadata.network_rpc_url,
-        network_metadata.start_block_number
+        network_metadata.start_block_number,
+        contract_metadata.method_of_interest
     )
     .await;
 
@@ -70,7 +81,8 @@ async fn get_txns(
     contract_description: String,
     contract_slug: String,
     network_rpc_url: String,
-    network_block_number: i64
+    network_block_number: i64,
+    method_of_interest:HashSet<String>
 ) {
 
     println!("The RPC is {}", network_rpc_url);
@@ -120,7 +132,7 @@ println!("Trying...");
 
                 if current_txn_hash != prev_txn_hash && decoded_txn_data.1 != "".to_string() {
 
-                    if(is_interesting_method(&decoded_txn_data.1)==true){
+                    if is_interesting_method(&method_of_interest,&decoded_txn_data.1) {
 
                         
                         // let _ = db::save_txn_to_db(
@@ -160,17 +172,8 @@ println!("Trying...");
 
 
 
-fn is_interesting_method(method_name:&String)-> bool{
-    let interested_meths=["collect","follow","post","mirror"];
-
-    for item in interested_meths.iter() {
-        if item==method_name {
-            return true;
-        }
-    }
-
-    return false;
-
+fn is_interesting_method(method_of_interest:&HashSet<String>,method_name:&String)-> bool{
+    return method_of_interest.contains(method_name.as_str());
 }
 
 
