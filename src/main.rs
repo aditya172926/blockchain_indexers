@@ -20,7 +20,7 @@ mod utils;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let contract_metadata: structs::ContractMetaData =
-        utils::get_contract_metadata("opensea_ethereum").await.unwrap();
+        utils::get_contract_metadata("lens_polygon").await.unwrap();
 
     let network_metadata:structs::NetworkMetaData = utils::get_network_data(&contract_metadata.chain_id).unwrap();
 
@@ -113,19 +113,18 @@ println!("Trying...");
                     ethers::types::TransactionReceipt,
                 ) = transactions::get_transaction_data(contract_abi, transaction_hash, &network_rpc_url).await;
 
-                println!("Decoded transaction data {:?}", decoded_txn_data);
                 let current_txn_hash: H256 = decoded_txn_data.3.transaction_hash;
 
                 if current_txn_hash != prev_txn_hash && decoded_txn_data.1 != "".to_string() {
-                    let _ = db::save_txn_to_db(
-                        decoded_txn_data.0,
-                        decoded_txn_data.1,
-                        decoded_txn_data.2,
-                        decoded_txn_data.3,
-                        String::from(&contract_address),
-                        String::from(&contract_slug),
-                    )
-                    .await;
+                    // let _ = db::save_txn_to_db(
+                    //     decoded_txn_data.0,
+                    //     decoded_txn_data.1,
+                    //     decoded_txn_data.2,
+                    //     decoded_txn_data.3,
+                    //     String::from(&contract_address),
+                    //     String::from(&contract_slug),
+                    // )
+                    // .await;
                     println!("Added txn:{:?}", current_txn_hash);
                     prev_txn_hash = current_txn_hash;
                 }
