@@ -19,13 +19,6 @@ fn serialize_bytes<S>(bytes: &&[u8], serializer: S) -> Result<S::Ok, S::Error>
 where
     S: Serializer,
 {
-    // let bson_binary = Binary {
-    //     subtype: mongodb::bson::spec::BinarySubtype::Generic,
-    //     bytes: bytes.to_owned().to_vec()
-    // };
-    // let mut array: Vec<mongodb::bson::Bson> = Array::new();
-    // array.push(bson_binary);
-    // array.serialize(serializer);
 
     let bson_array = bytes
         .iter()
