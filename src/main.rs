@@ -11,7 +11,7 @@ use web3::Web3;
 
 // modules
 mod db;
-mod middleware;
+mod middleware; 
 mod structs;
 mod transactions;
 mod utils;
@@ -20,7 +20,7 @@ mod utils;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let contract_metadata: structs::ContractMetaData =
-        utils::get_contract_metadata("lens_polygon").await.unwrap();
+        utils::get_contract_metadata("ens_ethereum").await.unwrap();
 
     let network_metadata:structs::NetworkMetaData = utils::get_network_data(&contract_metadata.chain_id).unwrap();
 
@@ -35,6 +35,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let contract_address_h160: ethcontract::H160 = contract_metadata.contract_address.parse()?;
 
     let contract_abi: web3::ethabi::Contract = serde_json::from_str(&contract_fetched_abi).unwrap();
+    println!("The contract ABI is {:?}", contract_abi);
     let transport: Http = Http::new(&network_metadata.network_rpc_url)?;
     let web3: Web3<Http> = Web3::new(transport);
     let contract_instance: Instance<Http> = Instance::at(web3, contract_abi, contract_address_h160);
@@ -116,15 +117,15 @@ println!("Trying...");
                 let current_txn_hash: H256 = decoded_txn_data.3.transaction_hash;
 
                 if current_txn_hash != prev_txn_hash && decoded_txn_data.1 != "".to_string() {
-                    // let _ = db::save_txn_to_db(
-                    //     decoded_txn_data.0,
-                    //     decoded_txn_data.1,
-                    //     decoded_txn_data.2,
-                    //     decoded_txn_data.3,
-                    //     String::from(&contract_address),
-                    //     String::from(&contract_slug),
-                    // )
-                    // .await;
+                    let _ = db::save_txn_to_db(
+                        decoded_txn_data.0,
+                        decoded_txn_data.1,
+                        decoded_txn_data.2,
+                        decoded_txn_data.3,
+                        String::from(&contract_address),
+                        String::from(&contract_slug),
+                    )
+                    .await;
                     println!("Added txn:{:?}", current_txn_hash);
                     prev_txn_hash = current_txn_hash;
                 }
