@@ -76,13 +76,15 @@ async fn get_transaction_inputs(
             .expect("failed to decode inputs");
 
         for (index, input) in function.inputs.iter().enumerate() {
-            let cloned_token = decoded_inputs[index].clone();
+            let cloned_token: Token = decoded_inputs[index].clone();
+            println!("The cloned token is {:?}", cloned_token);
             let method_param: MethodParam = MethodParam {
                 name: &input.name,
                 kind: input.kind.to_string(),
                 internal_type: &input.internal_type,
-                value: cloned_token,
+                value: cloned_token.to_string(),
             };
+            println!("The generated method param object -------> {:?}", method_param);
             method_params.push(method_param);
         }
         println!("The method params are {:?}", method_params);

@@ -1,11 +1,12 @@
-use mongodb::{
-    bson::{doc, to_bson, Bson, Document},
-    options::ClientOptions,
-    Client
-};
-use crate::structs::{MethodParam, TransactionData, ContractData};
+use crate::structs::{ContractData, MethodParam, TransactionData};
 use ethcontract::RawLog;
 use ethers::types::TransactionReceipt;
+use mongodb::{
+    bson::{doc, to_bson, Bson, Document},
+    error::Error,
+    options::ClientOptions,
+    Client,
+};
 use serde::{Serialize, Serializer};
 use serde_json::{json, Value};
 
@@ -19,7 +20,6 @@ fn serialize_bytes<S>(bytes: &&[u8], serializer: S) -> Result<S::Ok, S::Error>
 where
     S: Serializer,
 {
-
     let bson_array = bytes
         .iter()
         .map(|&byte| Bson::Int32(byte as i32))
@@ -27,18 +27,21 @@ where
     serializer.serialize_some(&bson_array)
 }
 
-pub async fn db_contract_data(contract_slug: &str) -> Option<Document>{
+pub async fn db_contract_data(contract_slug: &str) -> Option<Document> {
     let client_options: ClientOptions = ClientOptions::parse("mongodb+srv://metaworkdao:c106%40bh1@cluster0.h2imk.mongodb.net/metawork?retryWrites=true&w=majority").await.unwrap();
     let client: Client = Client::with_options(client_options).unwrap();
     let db: mongodb::Database = client.database("macha_sdk");
     let collection: mongodb::Collection<Document> = db.collection::<Document>("contracts");
 
-    let result:Option<Document> = collection.find_one(doc! {"contract.slug": contract_slug}, None).await.unwrap();
+    let result: Option<Document> = collection
+        .find_one(doc! {"contract.slug": contract_slug}, None)
+        .await
+        .unwrap();
     // match &result {
     //      Some(doc) => println!("The document result is {:?}", doc),
     //      None => println!("No document found")
     // };
-    return result
+    return result;
 }
 
 pub async fn save_to_db(event: RawLog) -> Result<(), Box<dyn std::error::Error>> {
@@ -76,7 +79,7 @@ pub async fn save_txn_to_db(
     method_id: String,
     transaction_receipt: TransactionReceipt,
     contract_address: String,
-    contract_slug: String
+    contract_slug: String,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let client_options: ClientOptions = ClientOptions::parse("mongodb+srv://metaworkdao:c106%40bh1@cluster0.h2imk.mongodb.net/metawork?retryWrites=true&w=majority").await?;
     let client: Client = Client::with_options(client_options)?;
@@ -95,7 +98,7 @@ pub async fn save_txn_to_db(
         txn_hash: transaction_receipt.transaction_hash,
         method_name: method_name,
         method_id: method_id,
-        method_params: txn
+        method_params: txn,
     };
 
     // let event_bson: mongodb::bson::Bson = to_bson(&txn).unwrap();
@@ -104,13 +107,15 @@ pub async fn save_txn_to_db(
         "transaction": transaction_bson_receipt,
         "timestamp": "Testingt time stamp",
     };
-    println!("The event document is {:?}", event_document);
+    // println!("The event document is {:?}", event_document);
     collection.insert_one(event_document, None).await?;
     println!("Event document inserted successfully!");
     Ok(())
 }
 
-pub async fn save_contract_to_db (contract_data: ContractData) -> Result<(), Box<dyn std::error::Error>> {
+pub async fn save_contract_to_db(
+    contract_data: ContractData,
+) -> Result<(), Box<dyn std::error::Error>> {
     let client_options: ClientOptions = ClientOptions::parse("mongodb+srv://metaworkdao:c106%40bh1@cluster0.h2imk.mongodb.net/metawork?retryWrites=true&w=majority").await?;
     let client: Client = Client::with_options(client_options)?;
     let db: mongodb::Database = client.database("macha_sdk");
@@ -128,5 +133,26 @@ pub async fn save_contract_to_db (contract_data: ContractData) -> Result<(), Box
     println!("The contract document is inserted");
 
     Ok(())
+}
 
+// ----------------------- Meta Functions --------------------------------------------
+
+pub async fn get_meta_schama(meta_slug: &str) -> Result<Option<Document>, Error> {
+    let client_options: ClientOptions = ClientOptions::parse("mongodb+srv://metaworkdao:c106%40bh1@cluster0.h2imk.mongodb.net/metawork?retryWrites=true&w=majority").await?;
+    let client: Client = Client::with_options(client_options)?;
+    let db: mongodb::Database = client.database("macha_sdk");
+    let collection: mongodb::Collection<Document> = db.collection::<Document>("metas_schemas");
+
+    let meta_schama_result = collection.find_one(doc! {"slug": meta_slug}, None).await;
+
+    match meta_schama_result {
+        Ok(result) => {
+            println!("The meta schema fetched is {:?}", result);
+            Ok(result)
+        }
+        Err(e) => {
+            println!("Error in fetching meta_schema {:?}", e);
+            Err(e)
+        }
+    }
 }

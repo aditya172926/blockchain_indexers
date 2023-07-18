@@ -9,7 +9,7 @@ pub struct MethodParam<'a> {
     pub name: &'a String,
     pub kind: String,
     pub internal_type: &'a std::option::Option<std::string::String>,
-    pub value: Token,
+    pub value: String,
 }
 
 #[derive(Serialize)]

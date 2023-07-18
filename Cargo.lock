@@ -2246,6 +2246,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "macha_indexer"
+version = "0.1.0"
+dependencies = [
+ "ethcontract",
+ "ethers",
+ "eyre 0.3.10",
+ "futures",
+ "hex",
+ "mongodb",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "tokio",
+ "url",
+ "web3",
+]
+
+[[package]]
 name = "match_cfg"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2376,25 +2395,6 @@ dependencies = [
  "security-framework",
  "security-framework-sys",
  "tempfile",
-]
-
-[[package]]
-name = "new_code"
-version = "0.1.0"
-dependencies = [
- "ethcontract",
- "ethers",
- "eyre 0.3.10",
- "futures",
- "hex",
- "mongodb",
- "reqwest",
- "serde",
- "serde_json",
- "sqlx",
- "tokio",
- "url",
- "web3",
 ]
 
 [[package]]
