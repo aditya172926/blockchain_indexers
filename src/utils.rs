@@ -2,6 +2,7 @@ use crate::db;
 use crate::structs::{ContractMetaData, NetworkMetaData};
 use std::fs;
 use std::string::String;
+use std::collections::HashSet;
 
 pub fn get_network_data(chain_id: &str) -> Option<NetworkMetaData> {
     let network_details: String =
@@ -88,12 +89,31 @@ pub async fn get_contract_metadata(protocol_name: &str) -> Option<ContractMetaDa
             let mut contract_description: String =
                 object.get_str("description").unwrap().to_string();
             let mut contract_slug: String = object.get_str("slug").unwrap().to_string();
-            let mut read_abi_result: Result<&str, mongodb::bson::document::ValueAccessError> =
-                object.get_str("read_abi_from");
+            let mut read_abi_result: Result<&str, mongodb::bson::document::ValueAccessError> = object.get_str("read_abi_from");
 
-            // contract_name = object.get_str("name").unwrap().to_string();
-            // contract_slug = object.get_str("slug").unwrap().to_string();
-            // contract_description = object.get_str("description").unwrap().to_string();
+            let mut method_of_interest:HashSet<String> = HashSet::new();
+          
+            
+            let mut size=object.get_array("interested_methods");
+            let mut i_size=0;
+            match size{
+                Ok(i) =>{
+                       i_size=i.len();
+                }
+                Err(_) => {
+                    i_size=0;
+                }
+            }
+            if i_size!=0 {
+                for i in 0..i_size {
+                    let interested=object.get_array("interested_methods").unwrap()[i].to_string();
+                    let item=interested[1..interested.len()-1].to_string();
+                        if item!=""{
+                            method_of_interest.insert(item);
+                        }
+                }
+            }
+
 
             let contract_address: ethcontract::H160 = contract_address_string.parse().unwrap();
 
@@ -116,6 +136,7 @@ pub async fn get_contract_metadata(protocol_name: &str) -> Option<ContractMetaDa
                 contract_name: contract_name,
                 contract_description: contract_description,
                 contract_slug: contract_slug,
+                method_of_interest: method_of_interest,
             };
             println!("The resulting ContractMetadata is {:?}", result);
             Some(result)

@@ -4,6 +4,7 @@ use ethers::types::H256;
 use futures::join;
 use futures::stream::StreamExt;
 use std::string::String;
+use std::collections::HashSet;
 use std::{error::Error, str::FromStr};
 use tokio::time::{sleep, Duration};
 use web3::transports::Http;
@@ -45,7 +46,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
         contract_metadata.contract_description,
         contract_metadata.contract_slug,
         network_metadata.network_rpc_url,
-        network_metadata.start_block_number
+        network_metadata.start_block_number,
+        contract_metadata.method_of_interest
     )
     .await;
 
@@ -64,7 +66,8 @@ async fn get_txns(
     contract_description: String,
     contract_slug: String,
     network_rpc_url: String,
-    network_block_number: i64
+    network_block_number: i64,
+    method_of_interest:HashSet<String>
 ) {
 
     println!("The RPC is {}", network_rpc_url);
@@ -112,16 +115,21 @@ println!("Trying...");
                 let current_txn_hash: H256 = decoded_txn_data.3.transaction_hash;
 
                 if current_txn_hash != prev_txn_hash && decoded_txn_data.1 != "".to_string() {
-                    let _ = db::save_txn_to_db(
-                        decoded_txn_data.0,
-                        decoded_txn_data.1,
-                        decoded_txn_data.2,
-                        decoded_txn_data.3,
-                        String::from(&contract_address),
-                        String::from(&contract_slug),
-                    )
-                    .await;
+
+                    if is_interesting_method(&method_of_interest,&decoded_txn_data.1) {
+
+                        
+                        // let _ = db::save_txn_to_db(
+                        //     decoded_txn_data.0,
+                        //     decoded_txn_data.1,
+                        //     decoded_txn_data.2,
+                        //     decoded_txn_data.3,
+                        //     String::from(&contract_address),
+                        //     String::from(&contract_slug),
+                        // )
+                        // .await;
                     println!("Added txn:{:?}", current_txn_hash);
+                    }
                     prev_txn_hash = current_txn_hash;
                 }
                 println!(
@@ -145,6 +153,19 @@ println!("Trying...");
         }
     }
 }
+
+
+
+
+fn is_interesting_method(method_of_interest:&HashSet<String>,method_name:&String)-> bool{
+    println!("{:?}",method_of_interest);
+    if !method_of_interest.is_empty(){
+        return method_of_interest.contains(method_name.as_str());
+    }
+    return true;
+}
+
+
 
 async fn get_logs(
     contract_instance: Instance<Http>,
