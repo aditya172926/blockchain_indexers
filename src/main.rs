@@ -19,32 +19,27 @@ mod utils;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let contract_metadata: structs::ContractMetaData =
-        utils::get_contract_metadata("ens_ethereum").await.unwrap();
+    let contract_result: (structs::ContractMetaData, String, web3::ethabi::Contract) =
+        utils::get_contract_data("ens_ethereum").await;
+
+    let contract_metadata = contract_result.0;
+    let contract_fetched_abi = contract_result.1;
+    let contract_abi = contract_result.2;
+
 
     let network_metadata:structs::NetworkMetaData = utils::get_network_data(&contract_metadata.chain_id).unwrap();
 
-    let mut contract_fetched_abi: String = String::new();
-    if contract_metadata.read_abi_from.contains("0x") {
-        contract_fetched_abi = utils::format_contract_abi(&contract_metadata.chain_id, &contract_metadata.read_abi_from).await;
-        contract_fetched_abi = utils::format_contract_abi(&contract_metadata.chain_id, &contract_metadata.read_abi_from).await;
-    } else {
-        contract_fetched_abi = utils::format_contract_abi(&contract_metadata.chain_id, &contract_metadata.contract_address).await;
-        contract_fetched_abi = utils::format_contract_abi(&contract_metadata.chain_id, &contract_metadata.contract_address).await;
-    }
-    let contract_address_h160: ethcontract::H160 = contract_metadata.contract_address.parse()?;
-
-    let contract_abi: web3::ethabi::Contract = serde_json::from_str(&contract_fetched_abi).unwrap();
+    
     println!("The contract ABI is {:?}", contract_abi);
     let transport: Http = Http::new(&network_metadata.network_rpc_url)?;
     let web3: Web3<Http> = Web3::new(transport);
-    let contract_instance: Instance<Http> = Instance::at(web3, contract_abi, contract_address_h160);
+    let contract_instance: Instance<Http> = Instance::at(web3, contract_abi, contract_metadata.contract_address);
 
     get_txns(
         &contract_fetched_abi,
         &contract_instance,
         contract_metadata.function_of_interest,
-        contract_metadata.contract_address,
+        contract_metadata.contract_address.to_string(),
         contract_metadata.chain_id,
         contract_metadata.contract_name,
         contract_metadata.contract_description,

@@ -1,7 +1,7 @@
+use crate::db;
 use crate::structs::{ContractMetaData, NetworkMetaData};
 use std::fs;
 use std::string::String;
-use crate::db;
 
 pub fn get_network_data(chain_id: &str) -> Option<NetworkMetaData> {
     let network_details: String =
@@ -35,25 +35,68 @@ pub fn get_network_data(chain_id: &str) -> Option<NetworkMetaData> {
     return network_rpc;
 }
 
-pub async fn get_contract_metadata(protocol_name: &str) -> Option<ContractMetaData> {
+pub async fn get_contract_data(
+    protocol_name: &str,
+) -> (ContractMetaData, String, web3::ethabi::Contract) {
+    let contract_metadata: ContractMetaData = get_contract_metadata(protocol_name).await.unwrap();
 
-    let contract_result: mongodb::bson::Document = db::db_contract_data(protocol_name).await.unwrap();
-    let contract_meta_data: Result<&mongodb::bson::Document, mongodb::bson::document::ValueAccessError> = contract_result.get_document("contract");
+    let mut contract_fetched_abi: String = String::new();
+    if contract_metadata.read_abi_from.contains("0x") {
+        contract_fetched_abi = format_contract_abi(
+            &contract_metadata.chain_id,
+            &contract_metadata.read_abi_from,
+        )
+        .await;
+        contract_fetched_abi = format_contract_abi(
+            &contract_metadata.chain_id,
+            &contract_metadata.read_abi_from,
+        )
+        .await;
+    } else {
+        contract_fetched_abi = format_contract_abi(
+            &contract_metadata.chain_id,
+            &contract_metadata.contract_address.to_string(),
+        )
+        .await;
+        contract_fetched_abi = format_contract_abi(
+            &contract_metadata.chain_id,
+            &contract_metadata.contract_address.to_string(),
+        )
+        .await;
+    }
+
+    let contract_abi: web3::ethabi::Contract = serde_json::from_str(&contract_fetched_abi).unwrap();
+
+    return (contract_metadata, contract_fetched_abi, contract_abi);
+}
+
+pub async fn get_contract_metadata(protocol_name: &str) -> Option<ContractMetaData> {
+    let contract_result: mongodb::bson::Document =
+        db::db_contract_data(protocol_name).await.unwrap();
+    let contract_meta_data: Result<
+        &mongodb::bson::Document,
+        mongodb::bson::document::ValueAccessError,
+    > = contract_result.get_document("contract");
 
     let contract_metadata: Option<ContractMetaData> = match contract_meta_data {
         Ok(object) => {
-            let mut contract_address: String = object.get_str("address").unwrap().to_string();
+            let mut contract_address_string: String =
+                object.get_str("address").unwrap().to_string();
             let mut contract_chain_id: String = object.get_str("chain_id").unwrap().to_string();
             let mut function_of_interest: String = "".to_string();
             let mut contract_name: String = object.get_str("name").unwrap().to_string();
-            let mut contract_description: String = object.get_str("description").unwrap().to_string();
+            let mut contract_description: String =
+                object.get_str("description").unwrap().to_string();
             let mut contract_slug: String = object.get_str("slug").unwrap().to_string();
-            let mut read_abi_result: Result<&str, mongodb::bson::document::ValueAccessError> = object.get_str("read_abi_from");
+            let mut read_abi_result: Result<&str, mongodb::bson::document::ValueAccessError> =
+                object.get_str("read_abi_from");
 
-            contract_name = object.get_str("name").unwrap().to_string();
-            contract_slug = object.get_str("slug").unwrap().to_string();
-            contract_description = object.get_str("description").unwrap().to_string();
-            
+            // contract_name = object.get_str("name").unwrap().to_string();
+            // contract_slug = object.get_str("slug").unwrap().to_string();
+            // contract_description = object.get_str("description").unwrap().to_string();
+
+            let contract_address: ethcontract::H160 = contract_address_string.parse().unwrap();
+
             let mut read_abi_from: String = String::new();
 
             match read_abi_result {

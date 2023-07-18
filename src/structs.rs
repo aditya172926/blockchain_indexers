@@ -43,7 +43,7 @@ pub struct TransactionData <'a>{
 
 #[derive(Serialize, Clone, Debug)]
 pub struct ContractMetaData {
-    pub contract_address: String,
+    pub contract_address: ethcontract::H160,
     pub read_abi_from: String,
     pub chain_id: String,
     pub function_of_interest: String,
