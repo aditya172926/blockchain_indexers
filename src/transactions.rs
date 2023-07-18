@@ -24,7 +24,6 @@ pub async fn get_transaction_data<'a>(
         .get_transaction_receipt(transaction_hash)
         .await
         .expect("Couldn't get the transaction receipt");
-    println!("receipt:{:?}",transaction_receipt);
     let transaction_receipt: TransactionReceipt = transaction_receipt.unwrap();
     let contract_abi: &'static Abi = Box::leak(Box::new(
         serde_json::from_str(&abi).expect("Failed to parse abi"),
@@ -69,30 +68,13 @@ async fn get_transaction_inputs(
         // println!("Running the transactions rust file {:?}", function.inputs);
 
         let mut method_params: Vec<MethodParam> = Vec::new();
-        // let mut index: usize = 0;
-        // for input in &function.inputs {
-        //     println!("******* The input name is {:?} *******", input.name);
-        //     println!("******* The input kind is {:?} *******", input.kind);
-        //     println!("******* The input internal type is {:?} *******", input.internal_type);
-        // }
+
 
         let input_bytes: Vec<u8> = hex::decode(input_data).expect("Failed to decode input bytes");
         let decoded_inputs: Vec<Token> = function
             .decode_input(&input_bytes)
             .expect("failed to decode inputs");
 
-        // while &index < &decoded_inputs.len() {
-        //     let current_input = &function.inputs[index];
-        //     let method_param: MethodParam<'static> = MethodParam {
-        //         name: &current_input.name,
-        //         kind: &current_input.kind.to_string(),
-        //         internal_type: &current_input.internal_type,
-        //         value: &decoded_inputs[index]
-        //     };
-        //     // println!("The Method params are {:?} ", method_param);
-        //     method_params.push(method_param);
-        //     index += 1;
-        // }
         for (index, input) in function.inputs.iter().enumerate() {
             let cloned_token = decoded_inputs[index].clone();
             let method_param: MethodParam = MethodParam {
@@ -101,9 +83,9 @@ async fn get_transaction_inputs(
                 internal_type: &input.internal_type,
                 value: cloned_token,
             };
-            // println!("The Method params are {:?} ", method_param);
             method_params.push(method_param);
         }
+        println!("The method params are {:?}", method_params);
         return (
             method_params,
             function_name.to_string(),

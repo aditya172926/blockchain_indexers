@@ -19,13 +19,6 @@ fn serialize_bytes<S>(bytes: &&[u8], serializer: S) -> Result<S::Ok, S::Error>
 where
     S: Serializer,
 {
-    // let bson_binary = Binary {
-    //     subtype: mongodb::bson::spec::BinarySubtype::Generic,
-    //     bytes: bytes.to_owned().to_vec()
-    // };
-    // let mut array: Vec<mongodb::bson::Bson> = Array::new();
-    // array.push(bson_binary);
-    // array.serialize(serializer);
 
     let bson_array = bytes
         .iter()
@@ -34,13 +27,19 @@ where
     serializer.serialize_some(&bson_array)
 }
 
-// async fn get_db_client(collection_name: String) -> Result<mongodb::Collection<Document>, Box<dyn std::error::Error>> {
-//     let client_options: ClientOptions = ClientOptions::parse("mongodb+srv://metaworkdao:c106%40bh1@cluster0.h2imk.mongodb.net/metawork?retryWrites=true&w=majority").await?;
-//     let client: Client = Client::with_options(client_options)?;
-//     let db: mongodb::Database = client.database("macha_sdk");
-//     let collection: mongodb::Collection<Document> = db.collection::<Document>("transactions");
-//     Ok(());
-// }
+pub async fn db_contract_data(contract_slug: &str) -> Option<Document>{
+    let client_options: ClientOptions = ClientOptions::parse("mongodb+srv://metaworkdao:c106%40bh1@cluster0.h2imk.mongodb.net/metawork?retryWrites=true&w=majority").await.unwrap();
+    let client: Client = Client::with_options(client_options).unwrap();
+    let db: mongodb::Database = client.database("macha_sdk");
+    let collection: mongodb::Collection<Document> = db.collection::<Document>("contracts");
+
+    let result:Option<Document> = collection.find_one(doc! {"contract.slug": contract_slug}, None).await.unwrap();
+    // match &result {
+    //      Some(doc) => println!("The document result is {:?}", doc),
+    //      None => println!("No document found")
+    // };
+    return result
+}
 
 pub async fn save_to_db(event: RawLog) -> Result<(), Box<dyn std::error::Error>> {
     let mut json_object = json!({});
@@ -49,14 +48,9 @@ pub async fn save_to_db(event: RawLog) -> Result<(), Box<dyn std::error::Error>>
     let bson_data: Bson = to_bson(&data_wrapper).unwrap();
     println!("The bson data is {:?}", bson_data);
     json_object["data"] = Value::from(event.data);
-    // let event_bson: mongodb::bson::Bson = to_bson(&json_object).unwrap();
 
-    // println!("The bson object is {:?}", event_bson);
-
-    // json_object["data"] = &event.data;
     let client_options = ClientOptions::parse("mongodb+srv://metaworkdao:c106%40bh1@cluster0.h2imk.mongodb.net/metawork?retryWrites=true&w=majority").await?;
     let client = Client::with_options(client_options)?;
-
     let db = client.database("macha_sdk");
     let collection = db.collection::<Document>("events");
 

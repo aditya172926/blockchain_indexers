@@ -4,6 +4,7 @@ use ethers::types::H256;
 use futures::join;
 use futures::stream::StreamExt;
 use std::string::String;
+use std::collections::HashSet;
 use std::{error::Error, str::FromStr};
 use tokio::time::{sleep, Duration};
 use web3::transports::Http;
@@ -11,7 +12,7 @@ use web3::Web3;
 
 // modules
 mod db;
-mod middleware;
+mod middleware; 
 mod structs;
 mod transactions;
 mod utils;
@@ -19,9 +20,8 @@ mod utils;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let mut contract_metadata: structs::ContractMetaData =
-        utils::get_contract_metadata("lens_polygon").unwrap();
-    // let contract_metadata: structs::ContractMetaData = result.unwrap(); // expecting this will never fail to read globle.json
+    let contract_metadata: structs::ContractMetaData =
+        utils::get_contract_metadata("lens_polygon").await.unwrap();
 
     let network_metadata:structs::NetworkMetaData = utils::get_network_data(&contract_metadata.chain_id).unwrap();
 
@@ -33,10 +33,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
         contract_fetched_abi = utils::format_contract_abi(&contract_metadata.chain_id, &contract_metadata.contract_address).await;
         contract_fetched_abi = utils::format_contract_abi(&contract_metadata.chain_id, &contract_metadata.contract_address).await;
     }
-    // println!("The contract abi is {:?}", contract_fetched_abi);
     let contract_address_h160: ethcontract::H160 = contract_metadata.contract_address.parse()?;
 
     let contract_abi: web3::ethabi::Contract = serde_json::from_str(&contract_fetched_abi).unwrap();
+    println!("The contract ABI is {:?}", contract_abi);
     let transport: Http = Http::new(&network_metadata.network_rpc_url)?;
     let web3: Web3<Http> = Web3::new(transport);
     let contract_instance: Instance<Http> = Instance::at(web3, contract_abi, contract_address_h160);
@@ -51,7 +51,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
         contract_metadata.contract_description,
         contract_metadata.contract_slug,
         network_metadata.network_rpc_url,
-        network_metadata.start_block_number
+        network_metadata.start_block_number,
+        contract_metadata.method_of_interest
     )
     .await;
 
@@ -70,7 +71,8 @@ async fn get_txns(
     contract_description: String,
     contract_slug: String,
     network_rpc_url: String,
-    network_block_number: i64
+    network_block_number: i64,
+    method_of_interest:HashSet<String>
 ) {
 
     println!("The RPC is {}", network_rpc_url);
@@ -115,12 +117,11 @@ println!("Trying...");
                     ethers::types::TransactionReceipt,
                 ) = transactions::get_transaction_data(contract_abi, transaction_hash, &network_rpc_url).await;
 
-                println!("Decoded transaction data {:?}", decoded_txn_data);
                 let current_txn_hash: H256 = decoded_txn_data.3.transaction_hash;
 
                 if current_txn_hash != prev_txn_hash && decoded_txn_data.1 != "".to_string() {
 
-                    if(is_interesting_method(&decoded_txn_data.1)==true){
+                    if is_interesting_method(&method_of_interest,&decoded_txn_data.1) {
 
                         
                         // let _ = db::save_txn_to_db(
@@ -160,17 +161,13 @@ println!("Trying...");
 
 
 
-fn is_interesting_method(method_name:&String)-> bool{
-    let interested_meths=["collect","follow","post","mirror"];
 
-    for item in interested_meths.iter() {
-        if item==method_name {
-            return true;
-        }
+fn is_interesting_method(method_of_interest:&HashSet<String>,method_name:&String)-> bool{
+    println!("{:?}",method_of_interest);
+    if !method_of_interest.is_empty(){
+        return method_of_interest.contains(method_name.as_str());
     }
-
-    return false;
-
+    return true;
 }
 
 

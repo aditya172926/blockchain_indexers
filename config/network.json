@@ -1,7 +1,7 @@
 {
   "1": {
     "network_name": "mainnet",
-    "network_rpc_url": "https://thrumming-muddy-sheet.discover.quiknode.pro/a7bf1b504e89b58d4c0c895fa81f2c368f722755/",
+    "network_rpc_url": "https://eth-mainnet.g.alchemy.com/v2/wiflVw_lj8Lx6x6n0GYWEMhQgMqnFW8x",
     "start_block_number": 17689887
   },
   "137": {
