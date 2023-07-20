@@ -9,6 +9,7 @@ use std::{error::Error, str::FromStr};
 use tokio::time::{sleep, Duration};
 use web3::transports::Http;
 use web3::Web3;
+use hex::ToHex;
 
 // modules
 mod db;
@@ -31,16 +32,24 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let transport: Http = Http::new(&network_metadata.network_rpc_url)?;
     let web3: Web3<Http> = Web3::new(transport);
 
-    println!("The contract ABI is {:?}", contract_abi);
+    // println!("The contract ABI is {:?}", contract_abi);
 
     let contract_instance: Instance<Http> =
         Instance::at(web3, contract_abi, contract_metadata.contract_address);
+
+
+        let contract_h160 = contract_metadata.contract_address;
+        let contract_address_string = format!("{:020x}", contract_h160);
+        let initial=String::from("0x");
+        let s_contract_address=format!("{}{}",initial,contract_address_string);
+        // println!("{}",s_contract_address);
+
 
     get_txns(
         &contract_fetched_abi,
         &contract_instance,
         contract_metadata.function_of_interest,
-        contract_metadata.contract_address.to_string(),
+        s_contract_address,
         contract_metadata.chain_id,
         contract_metadata.contract_name,
         contract_metadata.contract_description,
@@ -117,18 +126,20 @@ async fn get_txns(
 
                 let current_txn_hash: H256 = decoded_txn_data.3.transaction_hash;
 
+
                 if current_txn_hash != prev_txn_hash && decoded_txn_data.1 != "".to_string() {
                     let _ = db::save_txn_to_db(
                         decoded_txn_data.0,
                         decoded_txn_data.1,
                         decoded_txn_data.2,
                         decoded_txn_data.3,
-                        String::from(&contract_address),
+                        contract_address.clone(),
                         String::from(&contract_slug),
                         &contract_data.chain_id
                     )
                     .await;
                     println!("Added txn:{:?}", current_txn_hash);
+                    println!("cont_add txn:{:?}", contract_address.clone());
                     // if is_interesting_method(&method_of_interest, &decoded_txn_data.1) {
                         
                     // }
