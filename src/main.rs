@@ -125,6 +125,7 @@ async fn get_txns(
                         decoded_txn_data.3,
                         String::from(&contract_address),
                         String::from(&contract_slug),
+                        &contract_data.chain_id
                     )
                     .await;
                     println!("Added txn:{:?}", current_txn_hash);

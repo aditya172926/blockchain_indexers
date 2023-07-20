@@ -30,6 +30,7 @@ pub struct TransactionData <'a>{
     pub block_number: Option<U64>,
     pub contract_slug: String,
     pub contract_address: String,
+    pub chain_id: String,
     pub gas_used: Option<U256>,
     pub gas_price: Option<U256>,
     pub from: H160,
