@@ -88,6 +88,7 @@ pub async fn save_txn_to_db(
     let collection: mongodb::Collection<Document> = db.collection::<Document>("transactions");
 
     let block_number=transaction_receipt.block_number.unwrap().as_u64();
+    // let block_number=transaction_receipt.block_number.unwrap().to_string();
 
 
 

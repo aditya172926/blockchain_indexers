@@ -3,6 +3,7 @@ use ethcontract::prelude::*;
 use ethers::types::H256;
 use futures::join;
 use futures::stream::StreamExt;
+use tokio::net::tcp::OwnedReadHalf;
 use std::collections::HashSet;
 use std::string::String;
 use std::{error::Error, str::FromStr};
@@ -112,7 +113,7 @@ async fn get_txns(
                 let txn_hash = log.meta.as_ref().unwrap().transaction_hash.to_fixed_bytes();
                 let transaction_hash: H256 = ethers::core::types::TxHash::from(txn_hash);
 
-                let decoded_txn_data: (
+                let mut decoded_txn_data: (
                     Vec<structs::MethodParam>,
                     String,
                     String,
@@ -124,7 +125,18 @@ async fn get_txns(
                 )
                 .await;
 
+            // println!("{:?}",decoded_txn_data);
+
                 let current_txn_hash: H256 = decoded_txn_data.3.transaction_hash;
+            
+                
+                if decoded_txn_data.0.len()>1 && decoded_txn_data.0[1].name =="owner" && &decoded_txn_data.0[1].kind=="address" {
+                    let mut onwer_value=&decoded_txn_data.0[1].value;
+                    let initial=String::from("0x");
+                    decoded_txn_data.0[1].value=format!("{}{}",initial,onwer_value);
+
+                    println!("AFTER====================name:{:?},kind:{:?},value:{:?}=================",decoded_txn_data.0[1].name,decoded_txn_data.0[1].kind,decoded_txn_data.0[1].value);
+                }
 
 
                 if current_txn_hash != prev_txn_hash && decoded_txn_data.1 != "".to_string() {
