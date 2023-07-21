@@ -87,10 +87,13 @@ pub async fn save_txn_to_db(
     let db: mongodb::Database = client.database("macha_sdk");
     let collection: mongodb::Collection<Document> = db.collection::<Document>("transactions");
 
+    let block_number=transaction_receipt.block_number.unwrap().as_u64();
+
+
 
     let transaction_struct: TransactionData = TransactionData {
         block_hash: transaction_receipt.block_hash,
-        block_number: transaction_receipt.block_number,
+        block_number:block_number,
         contract_slug: contract_slug,
         contract_address: contract_address,
         chain_id: chain_id.to_string(),
@@ -110,7 +113,7 @@ pub async fn save_txn_to_db(
         "transaction": transaction_bson_receipt,
         "timestamp": "Testingt time stamp",
     };
-    // println!("The event document is {:?}", event_document);
+    println!("The event document is {:?}", event_document);
     collection.insert_one(event_document, None).await?;
     println!("Event document inserted successfully!");
     Ok(())

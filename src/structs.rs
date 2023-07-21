@@ -27,7 +27,7 @@ pub struct ContractData {
 #[derive(Serialize, Clone)]
 pub struct TransactionData <'a>{
     pub block_hash: Option<H256>,
-    pub block_number: Option<U64>,
+    pub block_number: u64,
     pub contract_slug: String,
     pub contract_address: String,
     pub chain_id: String,
