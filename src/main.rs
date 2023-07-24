@@ -22,7 +22,7 @@ mod utils;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let contract_result: (structs::ContractMetaData, String, web3::ethabi::Contract) =
-        utils::get_contract_data("ens_ethereum").await;
+        utils::get_contract_data("lens_polygon").await;
 
     let contract_metadata: structs::ContractMetaData = contract_result.0;
     let contract_fetched_abi: String = contract_result.1;
@@ -140,16 +140,16 @@ async fn get_txns(
 
 
                 if current_txn_hash != prev_txn_hash && decoded_txn_data.1 != "".to_string() {
-                    let _ = db::save_txn_to_db(
-                        decoded_txn_data.0,
-                        decoded_txn_data.1,
-                        decoded_txn_data.2,
-                        decoded_txn_data.3,
-                        contract_address.clone(),
-                        String::from(&contract_slug),
-                        &contract_data.chain_id
-                    )
-                    .await;
+                    // let _ = db::save_txn_to_db(
+                    //     decoded_txn_data.0,
+                    //     decoded_txn_data.1,
+                    //     decoded_txn_data.2,
+                    //     decoded_txn_data.3,
+                    //     contract_address.clone(),
+                    //     String::from(&contract_slug),
+                    //     &contract_data.chain_id
+                    // )
+                    // .await;
                     println!("Added txn:{:?}", current_txn_hash);
                     println!("cont_add txn:{:?}", contract_address.clone());
                     // if is_interesting_method(&method_of_interest, &decoded_txn_data.1) {
