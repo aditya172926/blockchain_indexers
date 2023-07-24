@@ -88,13 +88,95 @@ async fn get_transaction_inputs(
             println!("The method_param before formatting ************************ {:?}", input);
 
             let mut input_params:HashMap<String, Box<dyn Any>>=HashMap::new();
-            println!("==========================THIS IS METHODS:==========={:?}",methods.get_document("post").unwrap().get_array("params").unwrap()[0]);
-            if std::mem::size_of_val(&cloned_token)>1{}
-            let mut index=0;
-            while index < std::mem::size_of_val(&cloned_token)-1{
-                              
-                // input_params.insert(input.kind, v)
+
+            let mut ind=0;
+            let mut token_length=0;
+            let name=methods.get_document(function_name);
+            match cloned_token.clone().into_tuple(){
+                Some(i) => {
+                    token_length=i.len();
+                },
+                None => {
+                    println!("NO COPY TOKEN");
+                    
+                }
             }
+
+                println!("{}",token_length);
+                 match name{
+                    Ok(i) => {
+                        while (ind < token_length-1){
+                            let final_tuple=cloned_token.clone().into_tuple();
+                            match final_tuple{
+                                Some(data) => {
+                                    let key=i.get_array("params").unwrap()[ind].to_string();
+                                    let value=data.get(ind).unwrap().to_owned();
+                                    match value{
+                                        Token::Address(add) => {
+                                            input_params.insert(key, Box::new(add));
+                                        },
+                                        Token::FixedBytes(fb) => {
+                                            input_params.insert(key, Box::new(fb));
+                                            
+                                        },
+                                        Token::Bytes(bt) => {
+                                            input_params.insert(key, Box::new(bt));
+                                        },
+                                        Token::Int(i) => {
+                                            input_params.insert(key, Box::new(i));
+                                            
+                                        },
+                                        Token::Uint(u) => {
+                                            input_params.insert(key, Box::new(u));
+                                            
+                                        },
+                                        Token::Bool(b) => {
+                                            input_params.insert(key, Box::new(b));
+                                            
+                                        },
+                                        Token::String(s) => {
+                                            input_params.insert(key, Box::new(s));
+                                            
+                                        },
+                                        Token::FixedArray(fa) => {
+                                            input_params.insert(key, Box::new(fa));
+                                            
+                                        },
+                                        Token::Array(a) => {
+                                            input_params.insert(key, Box::new(a));
+                                            
+                                        },
+                                        Token::Tuple(t) => {
+                                            input_params.insert(key, Box::new(t));
+
+                                        },
+                                    }
+                                     
+                                }
+                                None => {
+                                    continue;
+                                },
+                            }
+                            
+                            // println!("============KEY:VALUE===={:?}",value);
+                            ind += 1;
+                    }
+                     
+                }
+                    Err(e) => {println!("Error");
+                }
+                }
+                println!("INPUT PARAMS=========================={:?}",input_params);
+                
+
+                // println!("==========================THIS IS METHODS:==========={:?}",methods.get_document(function_name).unwrap().get_array("params").unwrap()[0]);
+                let mut index=0;
+                // while index < std::mem::size_of_val(&cloned_token)-1{
+                    
+                //     // input_params.insert(input.kind, v)
+                // }
+                
+                // println!("{:?}",&cloned_token);
 
 
 
