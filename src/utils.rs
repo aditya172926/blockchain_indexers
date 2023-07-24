@@ -91,10 +91,13 @@ pub async fn get_contract_metadata(protocol_name: &str) -> Option<ContractMetaDa
             let mut contract_slug: String = object.get_str("slug").unwrap().to_string();
             let mut read_abi_result: Result<&str, mongodb::bson::document::ValueAccessError> = object.get_str("read_abi_from");
             let mut methods=object.get_document("methods").unwrap();
-            // let interested=object.get_array("interested_methods").unwrap()[0].to_string();
+   
+
+            let interested=object.get_array("interested_methods").unwrap()[2];
             // let interested="post";
-            // println!("{}",interested);
-            // println!("{:?}",methods.get_document(&interested));
+            println!("{}",interested);
+            println!("{:?}",methods.get_document(object.get_array("interested_methods").unwrap()[2]));
+           
 
 
             let mut method_of_interest:HashSet<String> = HashSet::new();

@@ -46,20 +46,20 @@ async fn main() -> Result<(), Box<dyn Error>> {
         // println!("{}",s_contract_address);
 
 
-    get_txns(
-        &contract_fetched_abi,
-        &contract_instance,
-        contract_metadata.function_of_interest,
-        s_contract_address,
-        contract_metadata.chain_id,
-        contract_metadata.contract_name,
-        contract_metadata.contract_description,
-        contract_metadata.contract_slug,
-        network_metadata.network_rpc_url,
-        network_metadata.start_block_number,
-        contract_metadata.method_of_interest,
-    )
-    .await;
+    // get_txns(
+    //     &contract_fetched_abi,
+    //     &contract_instance,
+    //     contract_metadata.function_of_interest,
+    //     s_contract_address,
+    //     contract_metadata.chain_id,
+    //     contract_metadata.contract_name,
+    //     contract_metadata.contract_description,
+    //     contract_metadata.contract_slug,
+    //     network_metadata.network_rpc_url,
+    //     network_metadata.start_block_number,
+    //     contract_metadata.method_of_interest,
+    // )
+    // .await;
 
     // let _ = get_logs(contract_instance, 17630615).await;
 
