@@ -87,7 +87,8 @@ async fn get_transaction_inputs(
             println!("The cloned token is {:?}", cloned_token);
             println!("The method_param before formatting ************************ {:?}", input);
 
-            let mut input_params:HashMap<String, Box<dyn Any>>=HashMap::new();
+            // let mut input_params:HashMap<String, Box<dyn Any>>=HashMap::new();
+            let mut input_params:HashMap<String, String>=HashMap::new();
 
             let mut ind=0;
             let mut token_length=0;
@@ -109,49 +110,10 @@ async fn get_transaction_inputs(
                             let final_tuple=cloned_token.clone().into_tuple();
                             match final_tuple{
                                 Some(data) => {
-                                    let key=i.get_array("params").unwrap()[ind].to_string();
+                                    println!("=====DATA====={:?}",data.get(ind));
                                     let value=data.get(ind).unwrap().to_owned();
-                                    match value{
-                                        Token::Address(add) => {
-                                            input_params.insert(key, Box::new(add));
-                                        },
-                                        Token::FixedBytes(fb) => {
-                                            input_params.insert(key, Box::new(fb));
-                                            
-                                        },
-                                        Token::Bytes(bt) => {
-                                            input_params.insert(key, Box::new(bt));
-                                        },
-                                        Token::Int(i) => {
-                                            input_params.insert(key, Box::new(i));
-                                            
-                                        },
-                                        Token::Uint(u) => {
-                                            input_params.insert(key, Box::new(u));
-                                            
-                                        },
-                                        Token::Bool(b) => {
-                                            input_params.insert(key, Box::new(b));
-                                            
-                                        },
-                                        Token::String(s) => {
-                                            input_params.insert(key, Box::new(s));
-                                            
-                                        },
-                                        Token::FixedArray(fa) => {
-                                            input_params.insert(key, Box::new(fa));
-                                            
-                                        },
-                                        Token::Array(a) => {
-                                            input_params.insert(key, Box::new(a));
-                                            
-                                        },
-                                        Token::Tuple(t) => {
-                                            input_params.insert(key, Box::new(t));
-
-                                        },
-                                    }
-                                     
+                                    let key=i.get_array("params").unwrap()[ind].to_string();
+                                     input_params.insert(key, value.to_string());
                                 }
                                 None => {
                                     continue;
