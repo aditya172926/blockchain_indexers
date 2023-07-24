@@ -90,8 +90,6 @@ pub async fn save_txn_to_db(
     let block_number=transaction_receipt.block_number.unwrap().as_u64();
     // let block_number=transaction_receipt.block_number.unwrap().to_string();
 
-
-
     let transaction_struct: TransactionData = TransactionData {
         block_hash: transaction_receipt.block_hash,
         block_number:block_number,
@@ -114,7 +112,7 @@ pub async fn save_txn_to_db(
         "transaction": transaction_bson_receipt,
         "timestamp": "Testingt time stamp",
     };
-    println!("The event document is {:?}", event_document);
+    println!("\n\nThe event document is {:?}\n\n", event_document);
     collection.insert_one(event_document, None).await?;
     println!("Event document inserted successfully!");
     Ok(())

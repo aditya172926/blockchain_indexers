@@ -1,11 +1,11 @@
-use mongodb::bson::Document;
 use mongodb::bson::document::ValueAccessError;
+use mongodb::bson::Document;
 
 use crate::db;
-use crate::structs::{ContractMetaData, NetworkMetaData, MethodParam};
+use crate::structs::{ContractMetaData, MethodParam, NetworkMetaData};
+use std::collections::HashSet;
 use std::fs;
 use std::string::String;
-use std::collections::HashSet;
 
 pub fn get_network_data(chain_id: &str) -> Option<NetworkMetaData> {
     let network_details: String =
@@ -82,11 +82,10 @@ pub async fn get_contract_metadata(protocol_name: &str) -> Option<ContractMetaDa
         mongodb::bson::document::ValueAccessError,
     > = contract_result.get_document("contract");
 
-    let mut methods: Result<&Document, ValueAccessError>;
+    let mut methods:&Document = &Document::new();
 
     let contract_metadata: Option<ContractMetaData> = match contract_meta_data {
         Ok(object) => {
-
             let mut contract_address_string: String =
                 object.get_str("address").unwrap().to_string();
             let mut contract_chain_id: String = object.get_str("chain_id").unwrap().to_string();
@@ -95,45 +94,41 @@ pub async fn get_contract_metadata(protocol_name: &str) -> Option<ContractMetaDa
             let mut contract_description: String =
                 object.get_str("description").unwrap().to_string();
             let mut contract_slug: String = object.get_str("slug").unwrap().to_string();
-            let mut read_abi_result: Result<&str, mongodb::bson::document::ValueAccessError> = object.get_str("read_abi_from");
+            let mut read_abi_result: Result<&str, mongodb::bson::document::ValueAccessError> =
+                object.get_str("read_abi_from");
 
-             methods=object.get_document("methods");
-   
+            methods = match object.get_document("methods") {
+                Ok(method_object) => method_object,
+                Err(e) => {
+                    println!("Value access error in methods {:?}", e);
+                    methods
+                }
+            };
 
-            let mut interested=object.get_array("interested_methods").unwrap()[2].to_string();
-            interested=interested[1..interested.len()-1].to_string();
-            println!("{}",interested);
-            // println!("{:?}",methods.get_document(interested));
+            let mut method_of_interest: HashSet<String> = HashSet::new();
 
-           
-
-
-            let mut method_of_interest:HashSet<String> = HashSet::new();
-          
-            
-            let mut size=object.get_array("interested_methods");
-            let mut i_size=0;
-            match size{
-                Ok(i) =>{
-                       i_size=i.len();
+            let mut size = object.get_array("interested_methods");
+            let mut i_size = 0;
+            match size {
+                Ok(i) => {
+                    i_size = i.len();
                 }
                 Err(_) => {
-                    i_size=0;
+                    i_size = 0;
                 }
             }
-            if i_size!=0 {
+            if i_size != 0 {
                 for i in 0..i_size {
-                    let interested=object.get_array("interested_methods").unwrap()[i].to_string();
-                    let item=interested[1..interested.len()-1].to_string();
-                        if item!=""{
-                            method_of_interest.insert(item);
-                        }
+                    let interested = object.get_array("interested_methods").unwrap()[i].to_string();
+                    let item = interested[1..interested.len() - 1].to_string();
+                    if item != "" {
+                        method_of_interest.insert(item);
+                    }
                 }
             }
-            println!("intersting:{:?}",method_of_interest);
+            println!("intersting:{:?}", method_of_interest);
             // let func=method_of_interest.get(&0).unwrap();
             // println!("{:?}",methods.get(func));
-
 
             let contract_address: ethcontract::H160 = contract_address_string.parse().unwrap();
 
@@ -157,9 +152,8 @@ pub async fn get_contract_metadata(protocol_name: &str) -> Option<ContractMetaDa
                 contract_description: contract_description,
                 contract_slug: contract_slug,
                 method_of_interest: method_of_interest,
-                methods:methods.cloned() 
+                methods: methods.clone(),
             };
-            println!("The resulting ContractMetadata is {:?}", result);
             Some(result)
         }
         Err(e) => {

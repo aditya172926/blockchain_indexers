@@ -3,16 +3,16 @@ use ethcontract::prelude::*;
 use ethers::types::H256;
 use futures::join;
 use futures::stream::StreamExt;
-use mongodb::bson::Document;
+use hex::ToHex;
 use mongodb::bson::document::ValueAccessError;
-use tokio::net::tcp::OwnedReadHalf;
+use mongodb::bson::Document;
 use std::collections::HashSet;
 use std::string::String;
 use std::{error::Error, str::FromStr};
+use tokio::net::tcp::OwnedReadHalf;
 use tokio::time::{sleep, Duration};
 use web3::transports::Http;
 use web3::Web3;
-use hex::ToHex;
 
 // modules
 mod db;
@@ -40,13 +40,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let contract_instance: Instance<Http> =
         Instance::at(web3, contract_abi, contract_metadata.contract_address);
 
-
-        let contract_h160 = contract_metadata.contract_address;
-        let contract_address_string = format!("{:020x}", contract_h160);
-        let initial=String::from("0x");
-        let s_contract_address=format!("{}{}",initial,contract_address_string);
-        // println!("{}",s_contract_address);
-
+    let contract_h160 = contract_metadata.contract_address;
+    let contract_address_string = format!("{:020x}", contract_h160);
+    let initial = String::from("0x");
+    let s_contract_address = format!("{}{}", initial, contract_address_string);
+    // println!("{}",s_contract_address);
 
     get_txns(
         &contract_fetched_abi,
@@ -60,7 +58,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         network_metadata.network_rpc_url,
         network_metadata.start_block_number,
         contract_metadata.method_of_interest,
-        contract_metadata.methods
+        contract_metadata.methods,
     )
     .await;
 
@@ -81,7 +79,7 @@ async fn get_txns(
     network_rpc_url: String,
     network_block_number: i64,
     method_of_interest: HashSet<String>,
-    methods:Result<Document, ValueAccessError>
+    methods: Document,
 ) {
     println!("The RPC is {}", network_rpc_url);
 
@@ -126,39 +124,45 @@ async fn get_txns(
                     contract_abi,
                     transaction_hash,
                     &network_rpc_url,
-                    methods.as_ref().unwrap().clone()
+                    &methods
                 )
                 .await;
 
-            // println!("{:?}",decoded_txn_data);
+                // println!("{:?}",decoded_txn_data);
 
                 let current_txn_hash: H256 = decoded_txn_data.3.transaction_hash;
-            
-                
-                if decoded_txn_data.0.len()>1 && decoded_txn_data.0[1].name =="owner" && &decoded_txn_data.0[1].kind=="address" {
-                    let mut onwer_value=&decoded_txn_data.0[1].value;
-                    let initial=String::from("0x");
-                    decoded_txn_data.0[1].value=format!("{}{}",initial,onwer_value);
 
-                    println!("AFTER====================name:{:?},kind:{:?},value:{:?}=================",decoded_txn_data.0[1].name,decoded_txn_data.0[1].kind,decoded_txn_data.0[1].value);
+                if decoded_txn_data.0.len() > 1
+                    && decoded_txn_data.0[1].name == "owner"
+                    && &decoded_txn_data.0[1].kind == "address"
+                {
+                    let onwer_value = &decoded_txn_data.0[1].value;
+                    let initial = String::from("0x");
+                    decoded_txn_data.0[1].value = structs::MethodParamvalue::StringValue(format!("{:?}{:?}", initial, onwer_value));
+
+                    println!(
+                        "AFTER====================name:{:?},kind:{:?},value:{:?}=================",
+                        decoded_txn_data.0[1].name,
+                        decoded_txn_data.0[1].kind,
+                        decoded_txn_data.0[1].value
+                    );
                 }
 
-
                 if current_txn_hash != prev_txn_hash && decoded_txn_data.1 != "".to_string() {
-                    // let _ = db::save_txn_to_db(
-                    //     decoded_txn_data.0,
-                    //     decoded_txn_data.1,
-                    //     decoded_txn_data.2,
-                    //     decoded_txn_data.3,
-                    //     contract_address.clone(),
-                    //     String::from(&contract_slug),
-                    //     &contract_data.chain_id
-                    // )
-                    // .await;
+                    let _ = db::save_txn_to_db(
+                        decoded_txn_data.0, //method_params
+                        decoded_txn_data.1, // function name
+                        decoded_txn_data.2, // function id
+                        decoded_txn_data.3, // transaction receipt
+                        contract_address.clone(),
+                        String::from(&contract_slug),
+                        &contract_data.chain_id
+                    )
+                    .await;
                     println!("Added txn:{:?}", current_txn_hash);
                     println!("cont_add txn:{:?}", contract_address.clone());
                     // if is_interesting_method(&method_of_interest, &decoded_txn_data.1) {
-                        
+
                     // }
                     prev_txn_hash = current_txn_hash;
                 }

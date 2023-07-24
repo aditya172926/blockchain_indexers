@@ -2,16 +2,31 @@ use ethers::{
     abi::Token,
     types::{H160, H256, U256, U64},
 };
+use std::{collections::HashMap, any::Any};
 use mongodb::bson::{Document, document::ValueAccessError};
 use serde::Serialize;
+
+#[derive(Serialize, Debug, Clone)]
+pub enum MethodParamvalue {
+    StringValue(String),
+    ComplexData(HashMap<String, String>)
+}
 
 #[derive(Serialize, Debug, Clone)]
 pub struct MethodParam<'a> {
     pub name: &'a String,
     pub kind: String,
     pub internal_type: &'a std::option::Option<std::string::String>,
-    pub value: String,
+    pub value: MethodParamvalue,
 }
+
+// #[derive(Serialize, Debug, Clone)]
+// pub struct MethodParamList<'a> {
+//     pub name: &'a String,
+//     pub kind: String,
+//     pub internal_type: &'a std::option::Option<std::string::String>,
+//     pub value: HashMap<String, String>,
+// }
 
 #[derive(Serialize)]
 pub struct ContractData {
@@ -53,7 +68,7 @@ pub struct ContractMetaData {
     pub contract_description: String,
     pub contract_slug: String,
     pub method_of_interest:std::collections::HashSet<String>,
-    pub methods:Result<Document, ValueAccessError>,
+    pub methods:Document,
 }
 
 #[derive(Serialize, Clone)]
