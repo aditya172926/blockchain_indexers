@@ -51,7 +51,7 @@ pub struct ContractMetaData {
     pub contract_name: String,
     pub contract_description: String,
     pub contract_slug: String,
-    pub method_of_interest:std::collections::HashSet<String>
+    pub method_of_interest:std::collections::HashSet<String>,
 }
 
 #[derive(Serialize, Clone)]

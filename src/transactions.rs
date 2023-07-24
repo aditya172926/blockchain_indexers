@@ -1,14 +1,20 @@
+use std::any::Any;
+use std::clone;
+use std::collections::HashMap;
+
 use crate::structs::MethodParam;
 use ethers::abi::{Abi, Function, Token};
 use ethers::{
     providers::{Http, Middleware, Provider},
     types::{Transaction, TransactionReceipt, TxHash},
 };
+use mongodb::bson::Document;
 
 pub async fn get_transaction_data<'a>(
     abi: &str,
     transaction_hash: TxHash,
-    network_rpc_url: &str
+    network_rpc_url: &str,
+    methods:Document
 ) -> (Vec<MethodParam<'a>>, String, String, TransactionReceipt) {
     println!("The transaction hash is {:?}", transaction_hash);
 
@@ -29,7 +35,7 @@ pub async fn get_transaction_data<'a>(
         serde_json::from_str(&abi).expect("Failed to parse abi"),
     ));
     let decoded_transaction_data: (Vec<MethodParam>, String, String) =
-        get_transaction_inputs(contract_abi, transaction).await;
+        get_transaction_inputs(contract_abi, transaction,methods).await;
 
     return (
         decoded_transaction_data.0,
@@ -42,6 +48,7 @@ pub async fn get_transaction_data<'a>(
 async fn get_transaction_inputs(
     contract_abi: &'static Abi,
     transaction: Option<Transaction>,
+    methods:Document
 ) -> (Vec<MethodParam>, String, String) {
     let input_data: String = transaction.unwrap().input.to_string();
     let function_id: &str = &input_data[2..10];
@@ -79,9 +86,16 @@ async fn get_transaction_inputs(
             let cloned_token: Token = decoded_inputs[index].clone();
             println!("The cloned token is {:?}", cloned_token);
             println!("The method_param before formatting ************************ {:?}", input);
-            // if std::mem::size_of_val(&input.kind)>1{
-            // }
-            println!("{}",input.kind);
+
+            let mut input_params:HashMap<String, Box<dyn Any>>=HashMap::new();
+            println!("==========================THIS IS METHODS:==========={}",methods);
+            if std::mem::size_of_val(&cloned_token)>1{}
+            let mut index=0;
+            while index < std::mem::size_of_val(&cloned_token)-1{
+                // input_params.insert(input.kind, v)
+            }
+
+
 
             let method_param: MethodParam = MethodParam {
                 name: &input.name,

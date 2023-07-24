@@ -3,6 +3,7 @@ use ethcontract::prelude::*;
 use ethers::types::H256;
 use futures::join;
 use futures::stream::StreamExt;
+use mongodb::bson::Document;
 use tokio::net::tcp::OwnedReadHalf;
 use std::collections::HashSet;
 use std::string::String;
@@ -46,20 +47,21 @@ async fn main() -> Result<(), Box<dyn Error>> {
         // println!("{}",s_contract_address);
 
 
-    // get_txns(
-    //     &contract_fetched_abi,
-    //     &contract_instance,
-    //     contract_metadata.function_of_interest,
-    //     s_contract_address,
-    //     contract_metadata.chain_id,
-    //     contract_metadata.contract_name,
-    //     contract_metadata.contract_description,
-    //     contract_metadata.contract_slug,
-    //     network_metadata.network_rpc_url,
-    //     network_metadata.start_block_number,
-    //     contract_metadata.method_of_interest,
-    // )
-    // .await;
+    get_txns(
+        &contract_fetched_abi,
+        &contract_instance,
+        contract_metadata.function_of_interest,
+        s_contract_address,
+        contract_metadata.chain_id,
+        contract_metadata.contract_name,
+        contract_metadata.contract_description,
+        contract_metadata.contract_slug,
+        network_metadata.network_rpc_url,
+        network_metadata.start_block_number,
+        contract_metadata.method_of_interest,
+        contract_metadata.methods
+    )
+    .await;
 
     // let _ = get_logs(contract_instance, 17630615).await;
 
@@ -78,6 +80,7 @@ async fn get_txns(
     network_rpc_url: String,
     network_block_number: i64,
     method_of_interest: HashSet<String>,
+    methods:Document
 ) {
     println!("The RPC is {}", network_rpc_url);
 
@@ -122,6 +125,7 @@ async fn get_txns(
                     contract_abi,
                     transaction_hash,
                     &network_rpc_url,
+                    methods
                 )
                 .await;
 

@@ -1,3 +1,6 @@
+use mongodb::bson::Document;
+use mongodb::bson::document::ValueAccessError;
+
 use crate::db;
 use crate::structs::{ContractMetaData, NetworkMetaData, MethodParam};
 use std::fs;
@@ -71,16 +74,19 @@ pub async fn get_contract_data(
     return (contract_metadata, contract_fetched_abi, contract_abi);
 }
 
-pub async fn get_contract_metadata(protocol_name: &str) -> Option<ContractMetaData> {
+pub async fn get_contract_metadata(protocol_name: &str) -> Option<(ContractMetaData,Result<&Document, ValueAccessError>)> {
     let contract_result: mongodb::bson::Document =
         db::db_contract_data(protocol_name).await.unwrap();
     let contract_meta_data: Result<
         &mongodb::bson::Document,
         mongodb::bson::document::ValueAccessError,
     > = contract_result.get_document("contract");
+    
+    let mut methods;
 
-    let contract_metadata: Option<ContractMetaData> = match contract_meta_data {
+    let contract_metadata: Option<(ContractMetaData,Result<&Document, ValueAccessError>)> = match contract_meta_data {
         Ok(object) => {
+
             let mut contract_address_string: String =
                 object.get_str("address").unwrap().to_string();
             let mut contract_chain_id: String = object.get_str("chain_id").unwrap().to_string();
@@ -90,13 +96,15 @@ pub async fn get_contract_metadata(protocol_name: &str) -> Option<ContractMetaDa
                 object.get_str("description").unwrap().to_string();
             let mut contract_slug: String = object.get_str("slug").unwrap().to_string();
             let mut read_abi_result: Result<&str, mongodb::bson::document::ValueAccessError> = object.get_str("read_abi_from");
-            let mut methods=object.get_document("methods").unwrap();
+
+             methods=object.get_document("methods");
    
 
-            let interested=object.get_array("interested_methods").unwrap()[2];
-            // let interested="post";
+            let mut interested=object.get_array("interested_methods").unwrap()[2].to_string();
+            interested=interested[1..interested.len()-1].to_string();
             println!("{}",interested);
-            println!("{:?}",methods.get_document(object.get_array("interested_methods").unwrap()[2]));
+            // println!("{:?}",methods.get_document(interested));
+
            
 
 
@@ -151,7 +159,7 @@ pub async fn get_contract_metadata(protocol_name: &str) -> Option<ContractMetaDa
                 method_of_interest: method_of_interest,
             };
             println!("The resulting ContractMetadata is {:?}", result);
-            Some(result)
+            Some((result,methods))
         }
         Err(e) => {
             println!("Error in reading contract_meta_data {:?}", e);
