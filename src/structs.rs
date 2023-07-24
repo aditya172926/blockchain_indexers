@@ -2,6 +2,7 @@ use ethers::{
     abi::Token,
     types::{H160, H256, U256, U64},
 };
+use mongodb::bson::{Document, document::ValueAccessError};
 use serde::Serialize;
 
 #[derive(Serialize, Debug, Clone)]
@@ -42,7 +43,7 @@ pub struct TransactionData <'a>{
     // pub status: Option<U64>
 }
 
-#[derive(Serialize, Clone, Debug)]
+#[derive( Clone, Debug)]
 pub struct ContractMetaData {
     pub contract_address: ethcontract::H160,
     pub read_abi_from: String,
@@ -52,6 +53,7 @@ pub struct ContractMetaData {
     pub contract_description: String,
     pub contract_slug: String,
     pub method_of_interest:std::collections::HashSet<String>,
+    pub methods:Result<Document, ValueAccessError>,
 }
 
 #[derive(Serialize, Clone)]

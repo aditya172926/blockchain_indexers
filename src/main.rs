@@ -4,6 +4,7 @@ use ethers::types::H256;
 use futures::join;
 use futures::stream::StreamExt;
 use mongodb::bson::Document;
+use mongodb::bson::document::ValueAccessError;
 use tokio::net::tcp::OwnedReadHalf;
 use std::collections::HashSet;
 use std::string::String;
@@ -80,7 +81,7 @@ async fn get_txns(
     network_rpc_url: String,
     network_block_number: i64,
     method_of_interest: HashSet<String>,
-    methods:Document
+    methods:Result<Document, ValueAccessError>
 ) {
     println!("The RPC is {}", network_rpc_url);
 
@@ -125,7 +126,7 @@ async fn get_txns(
                     contract_abi,
                     transaction_hash,
                     &network_rpc_url,
-                    methods
+                    methods.as_ref().unwrap().clone()
                 )
                 .await;
 

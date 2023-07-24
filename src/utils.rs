@@ -74,17 +74,17 @@ pub async fn get_contract_data(
     return (contract_metadata, contract_fetched_abi, contract_abi);
 }
 
-pub async fn get_contract_metadata(protocol_name: &str) -> Option<(ContractMetaData,Result<&Document, ValueAccessError>)> {
+pub async fn get_contract_metadata(protocol_name: &str) -> Option<ContractMetaData> {
     let contract_result: mongodb::bson::Document =
-        db::db_contract_data(protocol_name).await.unwrap();
+        db::db_contract_data(protocol_name).await.unwrap().clone();
     let contract_meta_data: Result<
         &mongodb::bson::Document,
         mongodb::bson::document::ValueAccessError,
     > = contract_result.get_document("contract");
-    
-    let mut methods;
 
-    let contract_metadata: Option<(ContractMetaData,Result<&Document, ValueAccessError>)> = match contract_meta_data {
+    let mut methods: Result<&Document, ValueAccessError>;
+
+    let contract_metadata: Option<ContractMetaData> = match contract_meta_data {
         Ok(object) => {
 
             let mut contract_address_string: String =
@@ -157,9 +157,10 @@ pub async fn get_contract_metadata(protocol_name: &str) -> Option<(ContractMetaD
                 contract_description: contract_description,
                 contract_slug: contract_slug,
                 method_of_interest: method_of_interest,
+                methods:methods.cloned()
             };
             println!("The resulting ContractMetadata is {:?}", result);
-            Some((result,methods))
+            Some(result)
         }
         Err(e) => {
             println!("Error in reading contract_meta_data {:?}", e);
