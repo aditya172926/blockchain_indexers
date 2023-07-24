@@ -79,6 +79,10 @@ async fn get_transaction_inputs(
             let cloned_token: Token = decoded_inputs[index].clone();
             println!("The cloned token is {:?}", cloned_token);
             println!("The method_param before formatting ************************ {:?}", input);
+            // if std::mem::size_of_val(&input.kind)>1{
+            // }
+            println!("{}",input.kind);
+
             let method_param: MethodParam = MethodParam {
                 name: &input.name,
                 kind: input.kind.to_string(),
@@ -87,6 +91,7 @@ async fn get_transaction_inputs(
             };
             println!("The generated method param object -------> {:?}", method_param);
             method_params.push(method_param);
+            println!("{:?}",method_params);
         }
         println!("The method params are {:?}", method_params);
         return (

@@ -1,5 +1,5 @@
 use crate::db;
-use crate::structs::{ContractMetaData, NetworkMetaData};
+use crate::structs::{ContractMetaData, NetworkMetaData, MethodParam};
 use std::fs;
 use std::string::String;
 use std::collections::HashSet;
@@ -90,6 +90,12 @@ pub async fn get_contract_metadata(protocol_name: &str) -> Option<ContractMetaDa
                 object.get_str("description").unwrap().to_string();
             let mut contract_slug: String = object.get_str("slug").unwrap().to_string();
             let mut read_abi_result: Result<&str, mongodb::bson::document::ValueAccessError> = object.get_str("read_abi_from");
+            let mut methods=object.get_document("methods").unwrap();
+            // let interested=object.get_array("interested_methods").unwrap()[0].to_string();
+            // let interested="post";
+            // println!("{}",interested);
+            // println!("{:?}",methods.get_document(&interested));
+
 
             let mut method_of_interest:HashSet<String> = HashSet::new();
           
@@ -113,6 +119,9 @@ pub async fn get_contract_metadata(protocol_name: &str) -> Option<ContractMetaDa
                         }
                 }
             }
+            println!("intersting:{:?}",method_of_interest);
+            // let func=method_of_interest.get(&0).unwrap();
+            // println!("{:?}",methods.get(func));
 
 
             let contract_address: ethcontract::H160 = contract_address_string.parse().unwrap();
