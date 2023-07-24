@@ -2,7 +2,7 @@ use std::any::Any;
 use std::clone;
 use std::collections::HashMap;
 
-use crate::structs::{MethodParam, MethodParamvalue};
+use crate::structs::{MethodParam, MethodParamValue, MethodParamDataType};
 use ethers::abi::{Abi, Function, Token};
 use ethers::{
     providers::{Http, Middleware, Provider},
@@ -138,14 +138,16 @@ async fn get_transaction_inputs<'a>(
                     name: &input.name,
                     kind: input.kind.to_string(),
                     internal_type: &input.internal_type,
-                    value: MethodParamvalue::StringValue(cloned_token.to_string()),
+                    data_type: crate::structs::MethodParamDataType::StringValue,
+                    value: MethodParamValue::StringValue(cloned_token.to_string()),
                 };
             } else {
                 method_param = MethodParam {
                     name: &input.name,
                     kind: input.kind.to_string(),
                     internal_type: &input.internal_type,
-                    value: MethodParamvalue::ComplexData(input_hashmap),
+                    data_type: MethodParamDataType::ComplexData,
+                    value: MethodParamValue::ComplexData(input_hashmap),
                 };
             }
             

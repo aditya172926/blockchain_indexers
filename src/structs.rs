@@ -7,7 +7,13 @@ use mongodb::bson::{Document, document::ValueAccessError};
 use serde::Serialize;
 
 #[derive(Serialize, Debug, Clone)]
-pub enum MethodParamvalue {
+pub enum MethodParamDataType {
+    StringValue,
+    ComplexData
+}
+
+#[derive(Serialize, Debug, Clone)]
+pub enum MethodParamValue {
     StringValue(String),
     ComplexData(HashMap<String, String>)
 }
@@ -17,7 +23,8 @@ pub struct MethodParam<'a> {
     pub name: &'a String,
     pub kind: String,
     pub internal_type: &'a std::option::Option<std::string::String>,
-    pub value: MethodParamvalue,
+    pub data_type: MethodParamDataType,
+    pub value: MethodParamValue,
 }
 
 // #[derive(Serialize, Debug, Clone)]
