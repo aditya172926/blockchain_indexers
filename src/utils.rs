@@ -157,7 +157,7 @@ pub async fn get_contract_metadata(protocol_name: &str) -> Option<ContractMetaDa
                 contract_description: contract_description,
                 contract_slug: contract_slug,
                 method_of_interest: method_of_interest,
-                methods:methods.cloned()
+                methods:methods.cloned() 
             };
             println!("The resulting ContractMetadata is {:?}", result);
             Some(result)

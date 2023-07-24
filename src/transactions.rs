@@ -88,11 +88,11 @@ async fn get_transaction_inputs(
             println!("The method_param before formatting ************************ {:?}", input);
 
             let mut input_params:HashMap<String, Box<dyn Any>>=HashMap::new();
-            println!("==========================THIS IS METHODS:==========={}",methods);
+            println!("==========================THIS IS METHODS:==========={:?}",methods.get_document("post").unwrap().get_array("params").unwrap()[0]);
             if std::mem::size_of_val(&cloned_token)>1{}
             let mut index=0;
             while index < std::mem::size_of_val(&cloned_token)-1{
-
+                              
                 // input_params.insert(input.kind, v)
             }
 
