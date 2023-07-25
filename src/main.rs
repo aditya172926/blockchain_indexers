@@ -62,7 +62,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     )
     .await;
 
-    // let _ = get_logs(contract_instance, 17630615).await;
+    // let _ = get_events(contract_instance, 17630615).await;
 
     Ok(())
 }
@@ -83,19 +83,6 @@ async fn get_txns(
 ) {
     println!("The RPC is {}", network_rpc_url);
 
-    let contract_data: structs::ContractData = structs::ContractData {
-        address: String::from(&contract_address),
-        chain_id: chain_id,
-        name: String::from(&contract_name),
-        description: String::from(contract_description),
-        slug: String::from(&contract_slug),
-        image: String::from(""),
-        interested_methods: vec![function_of_interest],
-        interested_events: vec!["".to_string()],
-    };
-
-    // let _ = db::save_contract_to_db(contract_data).await;
-
     // eth block number:17691422
     //polygon block number:45033964
     let event_stream = contract_instance
@@ -115,56 +102,53 @@ async fn get_txns(
                 let txn_hash = log.meta.as_ref().unwrap().transaction_hash.to_fixed_bytes();
                 let transaction_hash: H256 = ethers::core::types::TxHash::from(txn_hash);
 
-                let mut decoded_txn_data: (
-                    Vec<structs::MethodParam>,
-                    String,
-                    String,
-                    ethers::types::TransactionReceipt,
-                ) = transactions::get_transaction_data(
-                    contract_abi,
-                    transaction_hash,
-                    &network_rpc_url,
-                    &methods
-                )
-                .await;
-
-                // println!("{:?}",decoded_txn_data);
-
-                let current_txn_hash: H256 = decoded_txn_data.3.transaction_hash;
-
-                if decoded_txn_data.0.len() > 1
-                    && decoded_txn_data.0[1].name == "owner"
-                    && &decoded_txn_data.0[1].kind == "address"
-                {
-                    let onwer_value = &decoded_txn_data.0[1].value;
-                    let initial = String::from("0x");
-                    decoded_txn_data.0[1].value = structs::MethodParamValue::StringValue(format!("{:?}{:?}", initial, onwer_value));
-
-                    println!(
-                        "AFTER====================name:{:?},kind:{:?},value:{:?}=================",
-                        decoded_txn_data.0[1].name,
-                        decoded_txn_data.0[1].kind,
-                        decoded_txn_data.0[1].value
-                    );
-                }
-
-                if current_txn_hash != prev_txn_hash && decoded_txn_data.1 != "".to_string() {
-                    let _ = db::save_txn_to_db(
-                        decoded_txn_data.0, //method_params
-                        decoded_txn_data.1, // function name
-                        decoded_txn_data.2, // function id
-                        decoded_txn_data.3, // transaction receipt
-                        contract_address.clone(),
-                        String::from(&contract_slug),
-                        &contract_data.chain_id
+                if transaction_hash != prev_txn_hash {
+                    let mut decoded_txn_data: (
+                        Vec<structs::MethodParam>, // method params array
+                        String, // function name
+                        String, // transaction hash
+                        ethers::types::TransactionReceipt, // transaction receipt
+                    ) = transactions::get_transaction_data(
+                        contract_abi,
+                        transaction_hash,
+                        &network_rpc_url,
+                        &methods,
                     )
                     .await;
-                    println!("Added txn:{:?}", current_txn_hash);
-                    println!("cont_add txn:{:?}", contract_address.clone());
-                    // if is_interesting_method(&method_of_interest, &decoded_txn_data.1) {
 
-                    // }
-                    prev_txn_hash = current_txn_hash;
+                    if decoded_txn_data.1 != "".to_string() {
+                        if decoded_txn_data.0.len() > 1
+                            && decoded_txn_data.0[1].name == "owner"
+                            && &decoded_txn_data.0[1].kind == "address"
+                        {
+                            let onwer_value = &decoded_txn_data.0[1].value;
+                            let initial = String::from("0x");
+                            decoded_txn_data.0[1].value = structs::MethodParamValue::StringValue(
+                                format!("{:?}{:?}", initial, onwer_value),
+                            );
+
+                            println!(
+                                "AFTER====================name:{:?},kind:{:?},value:{:?}=================",
+                                decoded_txn_data.0[1].name,
+                                decoded_txn_data.0[1].kind,
+                                decoded_txn_data.0[1].value
+                            );
+                        }
+
+                        let _ = db::save_txn_to_db(
+                            decoded_txn_data.0, //method_params
+                            decoded_txn_data.1, // function name
+                            decoded_txn_data.2, // function id
+                            decoded_txn_data.3, // transaction receipt
+                            contract_address.clone(),
+                            String::from(&contract_slug),
+                            &chain_id,
+                        )
+                        .await;
+                        println!("Added txn:{:?}", transaction_hash);
+                        println!("cont_add txn:{:?}", contract_address.clone());
+                        prev_txn_hash = transaction_hash;
+                    }
                 }
                 println!(
                     "============================================================================="
@@ -188,15 +172,7 @@ async fn get_txns(
     }
 }
 
-fn is_interesting_method(method_of_interest: &HashSet<String>, method_name: &String) -> bool {
-    println!("{:?}", method_of_interest);
-    if !method_of_interest.is_empty() {
-        return method_of_interest.contains(method_name.as_str());
-    }
-    return true;
-}
-
-async fn get_logs(
+async fn get_events(
     contract_instance: Instance<Http>,
     block_number: i64,
 ) -> Result<(), Box<dyn Error>> {

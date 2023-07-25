@@ -100,6 +100,8 @@ async fn get_transaction_inputs<'a>(
             }
 
             println!("{}", token_length);
+
+            // complex DT
             let input_hashmap: HashMap<String, String> = match name {
                 Ok(i) => {
                     let mut input_params: HashMap<String, String> = HashMap::new();
@@ -112,8 +114,9 @@ async fn get_transaction_inputs<'a>(
                                 let mut key = i.get_array("params").unwrap()[ind].to_string();
                                 key = key[1..key.len()-1].to_string();
                                 input_params.insert(key, value.to_string());
+                                
                             }
-                            None => {
+                            None => { 
                                 continue;
                             }
                         }

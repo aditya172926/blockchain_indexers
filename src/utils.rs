@@ -51,17 +51,7 @@ pub async fn get_contract_data(
             &contract_metadata.read_abi_from,
         )
         .await;
-        contract_fetched_abi = format_contract_abi(
-            &contract_metadata.chain_id,
-            &contract_metadata.read_abi_from,
-        )
-        .await;
     } else {
-        contract_fetched_abi = format_contract_abi(
-            &contract_metadata.chain_id,
-            &contract_metadata.contract_address.to_string(),
-        )
-        .await;
         contract_fetched_abi = format_contract_abi(
             &contract_metadata.chain_id,
             &contract_metadata.contract_address.to_string(),
@@ -82,21 +72,34 @@ pub async fn get_contract_metadata(protocol_name: &str) -> Option<ContractMetaDa
         mongodb::bson::document::ValueAccessError,
     > = contract_result.get_document("contract");
 
-    let mut methods:&Document = &Document::new();
+    let mut methods: &Document = &Document::new();
 
     let contract_metadata: Option<ContractMetaData> = match contract_meta_data {
         Ok(object) => {
             let mut contract_address_string: String =
                 object.get_str("address").unwrap().to_string();
+            let contract_address: ethcontract::H160 = contract_address_string.parse().unwrap();
+
             let mut contract_chain_id: String = object.get_str("chain_id").unwrap().to_string();
             let mut function_of_interest: String = "".to_string();
             let mut contract_name: String = object.get_str("name").unwrap().to_string();
             let mut contract_description: String =
                 object.get_str("description").unwrap().to_string();
             let mut contract_slug: String = object.get_str("slug").unwrap().to_string();
+
+            // logic for read_abi_from
             let mut read_abi_result: Result<&str, mongodb::bson::document::ValueAccessError> =
                 object.get_str("read_abi_from");
 
+            let read_abi_from: String = match read_abi_result {
+                Ok(doc) => doc.to_string(),
+                Err(e) => {
+                    println!("ValueNotFound, there is no field of read_abi_from {:?}", e);
+                    String::new()
+                }
+            };
+
+            // logic for extracting methods
             methods = match object.get_document("methods") {
                 Ok(method_object) => method_object,
                 Err(e) => {
@@ -107,8 +110,9 @@ pub async fn get_contract_metadata(protocol_name: &str) -> Option<ContractMetaDa
 
             let mut method_of_interest: HashSet<String> = HashSet::new();
 
-            let mut size = object.get_array("interested_methods");
-            let mut i_size = 0;
+            let mut size: Result<&Vec<mongodb::bson::Bson>, ValueAccessError> =
+                object.get_array("interested_methods");
+            let mut i_size: usize = 0;
             match size {
                 Ok(i) => {
                     i_size = i.len();
@@ -126,23 +130,8 @@ pub async fn get_contract_metadata(protocol_name: &str) -> Option<ContractMetaDa
                     }
                 }
             }
-            println!("intersting:{:?}", method_of_interest);
-            // let func=method_of_interest.get(&0).unwrap();
-            // println!("{:?}",methods.get(func));
 
-            let contract_address: ethcontract::H160 = contract_address_string.parse().unwrap();
-
-            let mut read_abi_from: String = String::new();
-
-            match read_abi_result {
-                Ok(doc) => {
-                    read_abi_from = doc.to_string();
-                }
-                Err(e) => {
-                    println!("ValueNotFound, there is no field of read_abi_from {:?}", e);
-                }
-            }
-
+            // logic to return result
             let result: ContractMetaData = ContractMetaData {
                 contract_address: contract_address,
                 read_abi_from: read_abi_from,
@@ -163,27 +152,6 @@ pub async fn get_contract_metadata(protocol_name: &str) -> Option<ContractMetaDa
     };
     return contract_metadata;
 }
-
-// pub async fn get_provider(
-//     chain_id: String,
-// ) -> std::result::Result<Provider<ethers::providers::Http>,  ethers::abi::ParseError> {
-//     let network_data: String =
-//         fs::read_to_string(r"config/network.json").expect("Error in reading network.json file");
-//     let network_data = serde_json::from_str::<serde_json::Value>(&network_data);
-//     let mut network_rpc: String = String::new();
-//     match network_data {
-//         Ok(object) => {
-//             network_rpc = object[chain_id]["networkRpcUrl"].to_string();
-//             let provider = Provider::try_from(network_rpc);
-//             println!("The provider is {:?}", provider);
-//             return provider;
-//         }
-//         Err(e) => {
-//             println!("Error in reading networkRpcUrl {:?}", e);
-//             return ethers::abi::ParseError::ParseError(e);
-//         }
-//     }
-// }
 
 pub async fn fetch_contract_abi(
     contract_chain_id: String,
@@ -216,7 +184,6 @@ pub async fn fetch_contract_abi(
 pub async fn format_contract_abi(contract_chain_id: &str, contract_address: &str) -> String {
     let response: Result<reqwest::Response, reqwest::Error> =
         fetch_contract_abi(contract_chain_id.to_string(), contract_address).await;
-    // let contract_abi: Result<String, reqwest::Error>;
     let mut fetched_abi: String = String::new();
 
     match response {
