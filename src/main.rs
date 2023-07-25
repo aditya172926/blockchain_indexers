@@ -24,7 +24,7 @@ mod utils;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let contract_result: (structs::ContractMetaData, String, web3::ethabi::Contract) =
-        utils::get_contract_data("lens_polygon").await;
+        utils::get_contract_data("opensea_ethereum").await;
 
     let contract_metadata: structs::ContractMetaData = contract_result.0;
     let contract_fetched_abi: String = contract_result.1;
@@ -36,12 +36,12 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let web3: Web3<Http> = Web3::new(transport);
 
     // println!("The contract ABI is {:?}", contract_abi);
-
+    let contract_address_h160 = contract_metadata.contract_address.parse().unwrap();
     let contract_instance: Instance<Http> =
-        Instance::at(web3, contract_abi, contract_metadata.contract_address);
+        Instance::at(web3, contract_abi, contract_address_h160);
 
     let contract_h160 = contract_metadata.contract_address;
-    let contract_address_string = format!("{:020x}", contract_h160);
+    let contract_address_string = format!("{:020x}", contract_address_h160);
     let initial = String::from("0x");
     let s_contract_address = format!("{}{}", initial, contract_address_string);
     // println!("{}",s_contract_address);

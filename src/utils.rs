@@ -43,7 +43,7 @@ pub async fn get_contract_data(
     protocol_name: &str,
 ) -> (ContractMetaData, String, web3::ethabi::Contract) {
     let contract_metadata: ContractMetaData = get_contract_metadata(protocol_name).await.unwrap();
-
+    println!("The conntract metadata is {:?}", contract_metadata);
     let mut contract_fetched_abi: String = String::new();
     if contract_metadata.read_abi_from.contains("0x") {
         contract_fetched_abi = format_contract_abi(
@@ -52,11 +52,13 @@ pub async fn get_contract_data(
         )
         .await;
     } else {
+        println!("The contract address is {:?}", contract_metadata.contract_address.to_string());
         contract_fetched_abi = format_contract_abi(
             &contract_metadata.chain_id,
-            &contract_metadata.contract_address.to_string(),
+            &contract_metadata.contract_address,
         )
         .await;
+        // println!("Printing abi from ")
     }
 
     let contract_abi: web3::ethabi::Contract = serde_json::from_str(&contract_fetched_abi).unwrap();
@@ -133,7 +135,7 @@ pub async fn get_contract_metadata(protocol_name: &str) -> Option<ContractMetaDa
 
             // logic to return result
             let result: ContractMetaData = ContractMetaData {
-                contract_address: contract_address,
+                contract_address: contract_address_string,
                 read_abi_from: read_abi_from,
                 chain_id: contract_chain_id,
                 function_of_interest: function_of_interest,
