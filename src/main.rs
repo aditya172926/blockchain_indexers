@@ -123,9 +123,7 @@ async fn get_txns(
                         {
                             let onwer_value = &decoded_txn_data.0[1].value;
                             let initial = String::from("0x");
-                            decoded_txn_data.0[1].value = structs::MethodParamValue::StringValue(
-                                format!("{:?}{:?}", initial, onwer_value),
-                            );
+                            decoded_txn_data.0[1].value = format!("{:?}{:?}", initial, onwer_value);
 
                             println!(
                                 "AFTER====================name:{:?},kind:{:?},value:{:?}=================",

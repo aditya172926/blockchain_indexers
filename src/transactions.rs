@@ -102,85 +102,75 @@ pub async fn get_transaction_method_params<'a>(
         );
 
         let mut ind = 0;
-        let mut token_length = 0;
         let name: Result<&Document, mongodb::bson::document::ValueAccessError> =
             methods.get_document(method_name);
 
-        match cloned_token.clone().into_tuple() {
-            Some(i) => {
-                token_length = i.len();
-            }
+        let token_length = match cloned_token.clone().into_tuple() {
+            Some(i) => i.len(),
             None => {
                 println!("NO COPY TOKEN");
+                0
             }
-        }
+        };
 
         println!("{}", token_length);
 
         // complex DT
-        let input_hashmap: HashMap<String, String> = match name {
-            Ok(i) => {
-                let mut input_params: HashMap<String, String> = HashMap::new();
-                while ind < token_length - 1 {
-                    let final_tuple: Option<Vec<Token>> = cloned_token.clone().into_tuple();
-                    match final_tuple {
-                        Some(data) => {
-                            println!("=====DATA====={:?}", data.get(ind));
-                            let value = data.get(ind).unwrap().to_owned();
-                            let mut key = i.get_array("params").unwrap()[ind].to_string();
-                            key = key[1..key.len() - 1].to_string();
-                            input_params.insert(key, value.to_string());
-                        }
-                        None => {
-                            continue;
-                        }
+        // let mut input_hashmap: Vec<MethodParam> = Vec::new();
+        if token_length > 0 {
+            match name {
+                Ok(i) => {
+                    // let mut input_params: HashMap<String, String> = HashMap::new();
+                    let mut input_params: Vec<MethodParam> = Vec::new();
+                    while ind < token_length - 1 {
+                        let final_tuple: Option<Vec<Token>> = cloned_token.clone().into_tuple();
+                        let test = match final_tuple {
+                            Some(data) => {
+                                println!("=====DATA====={:?}", data.get(ind));
+                                let value = data.get(ind).unwrap().to_owned();
+                                let mut key = i.get_array("params").unwrap()[ind].to_string();
+                                let input_key = key[1..key.len() - 1].to_string();
+                                let input_struct: MethodParam = MethodParam {
+                                    name: input_key,
+                                    kind: "".to_string(),
+                                    internal_type: &input.internal_type,
+                                    data_type: MethodParamDataType::StringValue,
+                                    value: value.to_string(), 
+                                };
+                                method_params.push(input_struct);
+                                // input_params.insert(key, value.to_string());
+                            },
+                            None => {
+                                continue;
+                            }
+                        };
+                        ind += 1;
                     }
-
-                    // println!("============KEY:VALUE===={:?}",value);
-                    ind += 1;
                 }
-                println!("The input params are {:?}", input_params);
-                input_params
-            }
-            Err(e) => {
-                println!("Error {:?}", e);
-                let input_params: HashMap<String, String> = HashMap::new();
-                input_params
-            }
-        };
-        println!("INPUT PARAMS=========================={:?}", input_hashmap);
-
-        let method_param: MethodParam;
-        if input_hashmap.is_empty() {
-            method_param = MethodParam {
-                name: &input.name,
-                kind: input.kind.to_string(),
-                internal_type: &input.internal_type,
-                data_type: crate::structs::MethodParamDataType::StringValue,
-                value: MethodParamValue::StringValue(cloned_token.to_string()),
-            };
-        } else {
-            method_param = MethodParam {
-                name: &input.name,
-                kind: input.kind.to_string(),
-                internal_type: &input.internal_type,
-                data_type: MethodParamDataType::ComplexData,
-                value: MethodParamValue::ComplexData(input_hashmap),
+                Err(e) => {
+                    println!("Error {:?}", e);
+                }
             };
         }
 
-        println!(
-            "The generated method param object -------> {:?}",
-            method_param
-        );
-        method_params.push(method_param);
+        // println!("INPUT PARAMS=========================={:?}", input_hashmap);
+
+        let mut method_param: MethodParam;
+        if token_length == 0 {
+            method_param = MethodParam {
+                name: String::from(&input.name),
+                kind: input.kind.to_string(),
+                internal_type: &input.internal_type,
+                data_type: crate::structs::MethodParamDataType::StringValue,
+                value: cloned_token.to_string(),
+            };
+            method_params.push(method_param);
+        }
+
     }
     println!(
         "The method params are@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ {:?}",
         method_params
     );
-    return (
-        method_params,
-        method_name.to_string()
-    );
+    return (method_params, method_name.to_string());
 }

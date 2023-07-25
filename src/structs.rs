@@ -20,11 +20,11 @@ pub enum MethodParamValue {
 
 #[derive(Serialize, Debug, Clone)]
 pub struct MethodParam<'a> {
-    pub name: &'a String,
+    pub name: String,
     pub kind: String,
     pub internal_type: &'a std::option::Option<std::string::String>,
     pub data_type: MethodParamDataType,
-    pub value: MethodParamValue,
+    pub value: String,
 }
 
 // #[derive(Serialize, Debug, Clone)]
