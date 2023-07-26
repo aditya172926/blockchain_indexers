@@ -24,7 +24,7 @@ mod utils;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let contract_result: (structs::ContractMetaData, String, web3::ethabi::Contract) =
-        utils::get_contract_data("opensea_ethereum").await;
+        utils::get_contract_data("lens_polygon").await;
 
     let contract_metadata: structs::ContractMetaData = contract_result.0;
     let contract_fetched_abi: String = contract_result.1;
@@ -133,6 +133,9 @@ async fn get_txns(
                             );
                         }
 
+                        println!("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+                        println!("{:?}",decoded_txn_data);
+                        println!("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                         let _ = db::save_txn_to_db(
                             decoded_txn_data.0, //method_params
                             decoded_txn_data.1, // function name
@@ -144,6 +147,8 @@ async fn get_txns(
                         )
                         .await;
                         println!("Added txn:{:?}", transaction_hash);
+                        // println!("{:?}",decoded_txn_data);
+                        // println!("{:?}",decoded_txn_data);
                         println!("cont_add txn:{:?}", contract_address.clone());
                         prev_txn_hash = transaction_hash;
                     }

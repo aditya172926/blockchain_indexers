@@ -9,6 +9,7 @@ use mongodb::{
 };
 use serde::{Serialize, Serializer};
 use serde_json::{json, Value};
+use chrono::prelude::*;
 
 #[derive(Serialize)]
 struct BytesWrapper<'a> {
@@ -59,6 +60,7 @@ pub async fn save_to_db(event: RawLog) -> Result<(), Box<dyn std::error::Error>>
 
     let event_bson: mongodb::bson::Bson = to_bson(&json_object).unwrap();
 
+
     let event_document = doc! {
         "event": event_bson,
         "timestamp": "Testingt time stamp",
@@ -106,11 +108,16 @@ pub async fn save_txn_to_db(
         method_params: txn_params,
     };
 
+    let now = Utc::now();
+      let ts: String = now.timestamp().to_string();
+    println!("Current timestamp is: {}", ts);
+
+
     // let event_bson: mongodb::bson::Bson = to_bson(&txn).unwrap();
     let transaction_bson_receipt: mongodb::bson::Bson = to_bson(&transaction_struct).unwrap();
     let event_document = doc! {
         "transaction": transaction_bson_receipt,
-        "timestamp": "Testingt time stamp",
+        "timestamp": ts,
     };
     println!("\n\nThe event document is {:?}\n\n", event_document);
     collection.insert_one(event_document, None).await?;
