@@ -1,14 +1,17 @@
 use std::any::Any;
 use std::clone;
 use std::collections::HashMap;
+use std::str::FromStr;
 
 use crate::structs::{MethodParam, MethodParamDataType, MethodParamValue};
+use ethcontract::H256;
 use ethers::abi::{Abi, Function, Token};
 use ethers::{
     providers::{Http, Middleware, Provider},
     types::{Transaction, TransactionReceipt, TxHash},
 };
 use mongodb::bson::Document;
+use serde_json::from_str;
 
 pub async fn get_transaction_data<'a>(
     abi: &str,
@@ -26,11 +29,22 @@ pub async fn get_transaction_data<'a>(
         .get_transaction(transaction_hash)
         .await
         .expect("Failed to get the transaction");
-    let transaction_receipt = provider
+    let transaction_receipt: Option<ethers::core::types::transaction::response::TransactionReceipt> = provider
         .get_transaction_receipt(transaction_hash)
         .await
         .expect("Couldn't get the transaction receipt");
-    let transaction_receipt: TransactionReceipt = transaction_receipt.unwrap();
+
+    let transaction_receipt_formatted:ethers::core::types::transaction::response::TransactionReceipt;
+    match transaction_receipt.unwrap(){
+        (txn)=>{
+            transaction_receipt_formatted=txn;
+        }
+       _=>{
+        transaction_receipt_formatted=TransactionReceipt::default();
+       }
+    }
+
+
     let contract_abi: &'static Abi = Box::leak(Box::new(
         serde_json::from_str(&abi).expect("Failed to parse abi"),
     ));
@@ -41,7 +55,7 @@ pub async fn get_transaction_data<'a>(
         decoded_transaction_data.0, // method_params
         decoded_transaction_data.1, // method name
         decoded_transaction_data.2, // method id
-        transaction_receipt,
+        transaction_receipt_formatted,
     );
 }
 
