@@ -1,12 +1,26 @@
 {
-  "1": {
-    "network_name": "mainnet",
-    "network_rpc_url": "https://eth-mainnet.g.alchemy.com/v2/wiflVw_lj8Lx6x6n0GYWEMhQgMqnFW8x",
-    "start_block_number": 17689887
+  "production": {
+    "1": {
+      "network_name": "mainnet",
+      "network_rpc_url": "https://eth-mainnet.g.alchemy.com/v2/wiflVw_lj8Lx6x6n0GYWEMhQgMqnFW8x",
+      "start_block_number": 17689887
+    },
+    "137": {
+      "network_name": "polygon",
+      "network_rpc_url": "https://polygon-mainnet.g.alchemy.com/v2/Eg_FSYfeQu8h6QKbUL9A10wNprVI_bTw",
+      "start_block_number": 45033964
+    }
   },
-  "137": {
-    "network_name": "polygon",
-    "network_rpc_url": "https://polygon-mainnet.g.alchemy.com/v2/Eg_FSYfeQu8h6QKbUL9A10wNprVI_bTw",
-    "start_block_number": 45033964
+  "dev": {
+    "1": {
+      "network_name": "mainnet",
+      "network_rpc_url": "https://eth-mainnet.g.alchemy.com/v2/hWEjq_fZYfTWahuiJ77jQ8weh_1gTW0y",
+      "start_block_number": 17689887
+    },
+    "137": {
+      "network_name": "polygon",
+      "network_rpc_url": "https://polygon-mainnet.g.alchemy.com/v2/Ijw3Y5X492F2UhygJoD162ax-3R-NbPk",
+      "start_block_number": 45033964
+    }
   }
 }

@@ -136,16 +136,16 @@ async fn get_txns(
                         println!("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                         println!("{:?}",decoded_txn_data);
                         println!("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-                        // let _ = db::save_txn_to_db(
-                        //     decoded_txn_data.0, //method_params
-                        //     decoded_txn_data.1, // function name
-                        //     decoded_txn_data.2, // function id
-                        //     decoded_txn_data.3, // transaction receipt
-                        //     contract_address.clone(),
-                        //     String::from(&contract_slug),
-                        //     &chain_id,
-                        // )
-                        // .await;
+                        let _ = db::save_txn_to_db(
+                            decoded_txn_data.0, //method_params
+                            decoded_txn_data.1, // function name
+                            decoded_txn_data.2, // function id
+                            decoded_txn_data.3, // transaction receipt
+                            contract_address.clone(),
+                            String::from(&contract_slug),
+                            &chain_id,
+                        )
+                        .await;
                         println!("Added txn:{:?}", transaction_hash);
                         // println!("{:?}",decoded_txn_data);
                         // println!("{:?}",decoded_txn_data);

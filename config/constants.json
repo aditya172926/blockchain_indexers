@@ -1,11 +1,10 @@
 {
-    "1": {
-        "api_token": "ER9VKT8AXAI2WTPSCRNANN69W67V7PRU59",
-        "_api": "https://api.etherscan.io/api?module=contract&action=getabi&address={}&apikey=ER9VKT8AXAI2WTPSCRNANN69W67V7PRU59"
-    },
-    "137": {
-        "api_token": "YFV2FG443XMWB774JJ4PD56Q7UBWFQ6KE1",
-        "_api": "https://api.polygonscan.com/api?module=contract&action=getabi&address={}&apikey=YFV2FG443XMWB774JJ4PD56Q7UBWFQ6KE1"
-    }
-
+  "1": {
+    "api_token": "ER9VKT8AXAI2WTPSCRNANN69W67V7PRU59",
+    "_api": "https://api.etherscan.io/api?module=contract&action=getabi&address={}&apikey=ER9VKT8AXAI2WTPSCRNANN69W67V7PRU59"
+  },
+  "137": {
+    "api_token": "YFV2FG443XMWB774JJ4PD56Q7UBWFQ6KE1",
+    "_api": "https://api.polygonscan.com/api?module=contract&action=getabi&address={}&apikey=YFV2FG443XMWB774JJ4PD56Q7UBWFQ6KE1"
+  }
 }
