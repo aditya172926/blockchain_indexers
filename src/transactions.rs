@@ -29,21 +29,30 @@ pub async fn get_transaction_data<'a>(
         .get_transaction(transaction_hash)
         .await
         .expect("Failed to get the transaction");
-    let transaction_receipt: Option<ethers::core::types::transaction::response::TransactionReceipt> = provider
+    let transaction_receipt: Option<
+        ethers::core::types::transaction::response::TransactionReceipt,
+    > = provider
         .get_transaction_receipt(transaction_hash)
         .await
         .expect("Couldn't get the transaction receipt");
 
     let transaction_receipt_formatted:ethers::core::types::transaction::response::TransactionReceipt;
-    match transaction_receipt.unwrap(){
-        (txn)=>{
-            transaction_receipt_formatted=txn;
+    match transaction_receipt {
+        (txn) => {
+            match txn {
+                Some(object) => {
+                    transaction_receipt_formatted = object;
+                },
+                None => {
+                    transaction_receipt_formatted = TransactionReceipt::default();
+                }
+            }
+            // transaction_receipt_formatted = txn;
         }
-       _=>{
-        transaction_receipt_formatted=TransactionReceipt::default();
-       }
+        _ => {
+            transaction_receipt_formatted = TransactionReceipt::default();
+        }
     }
-
 
     let contract_abi: &'static Abi = Box::leak(Box::new(
         serde_json::from_str(&abi).expect("Failed to parse abi"),
@@ -149,11 +158,11 @@ pub async fn get_transaction_method_params<'a>(
                                     kind: "".to_string(),
                                     internal_type: &input.internal_type,
                                     data_type: MethodParamDataType::StringValue,
-                                    value: value.to_string(), 
+                                    value: value.to_string(),
                                 };
                                 method_params.push(input_struct);
                                 // input_params.insert(key, value.to_string());
-                            },
+                            }
                             None => {
                                 continue;
                             }
@@ -180,7 +189,6 @@ pub async fn get_transaction_method_params<'a>(
             };
             method_params.push(method_param);
         }
-
     }
     println!(
         "The method params are@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ {:?}",
