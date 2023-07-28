@@ -9,7 +9,6 @@ use mongodb::bson::Document;
 use std::collections::HashSet;
 use std::string::String;
 use std::{error::Error, str::FromStr};
-use tokio::net::tcp::OwnedReadHalf;
 use tokio::time::{sleep, Duration};
 use web3::transports::Http;
 use web3::Web3;
@@ -19,12 +18,14 @@ mod db;
 mod middleware;
 mod structs;
 mod transactions;
+mod history;
 mod utils;
+
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let contract_result: (structs::ContractMetaData, String, web3::ethabi::Contract) =
-        utils::get_contract_data("lens_polygon").await;
+        utils::get_contract_data("ens_ethereum").await;
 
     let contract_metadata: structs::ContractMetaData = contract_result.0;
     let contract_fetched_abi: String = contract_result.1;
@@ -46,26 +47,42 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let s_contract_address = format!("{}{}", initial, contract_address_string);
     // println!("{}",s_contract_address);
 
-    get_txns(
-        &contract_fetched_abi,
-        &contract_instance,
-        contract_metadata.function_of_interest,
-        s_contract_address,
-        contract_metadata.chain_id,
-        contract_metadata.contract_name,
-        contract_metadata.contract_description,
-        contract_metadata.contract_slug,
-        network_metadata.network_rpc_url,
-        network_metadata.start_block_number,
-        contract_metadata.method_of_interest,
-        contract_metadata.methods,
-    )
-    .await;
+
+//for eth:
+//start: 17394000
+//end: 17394604
+
+//for polygon:
+//start: 45608700
+//end: 45608720
+
+    let start_block:u64=17394000; 
+    let end_block:u64=17394604;
+    let chain_name=String::from("Mainnet");  //can be either Mainnet/Polygon
+    history::get_history(&s_contract_address,chain_name,start_block,end_block).await;
+
+    // get_txns(
+    //     &contract_fetched_abi,
+    //     &contract_instance,
+    //     contract_metadata.function_of_interest,
+    //     s_contract_address,
+    //     contract_metadata.chain_id,
+    //     contract_metadata.contract_name,
+    //     contract_metadata.contract_description,
+    //     contract_metadata.contract_slug,
+    //     network_metadata.network_rpc_url,
+    //     network_metadata.start_block_number,
+    //     contract_metadata.method_of_interest,
+    //     contract_metadata.methods,
+    // )
+    // .await;
 
     // let _ = get_events(contract_instance, 17630615).await;
 
     Ok(())
 }
+
+
 
 async fn get_txns(
     contract_abi: &str,
@@ -87,7 +104,7 @@ async fn get_txns(
     //polygon block number:45033964
     let event_stream = contract_instance
         .all_events()
-        .from_block(BlockNumber::from(network_block_number))
+        .from_block(ethcontract::BlockNumber::from(network_block_number))
         .stream();
     println!("fetching...");
     let mut event_stream = Box::pin(event_stream);
@@ -167,7 +184,7 @@ async fn get_txns(
                 event_stream = Box::pin(
                     contract_instance
                         .all_events()
-                        .from_block(BlockNumber::from(network_block_number))
+                        .from_block(ethcontract::BlockNumber::from(network_block_number))
                         .stream(),
                 );
             }
@@ -182,7 +199,7 @@ async fn get_events(
     // Subscribe to all events
     let mut event_streams = contract_instance
         .all_events()
-        .from_block(BlockNumber::from(block_number))
+        .from_block(ethcontract::BlockNumber::from(block_number))
         .stream()
         .boxed();
 
