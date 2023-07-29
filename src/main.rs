@@ -65,21 +65,21 @@ async fn main() -> Result<(), Box<dyn Error>> {
     // let chain_name=String::from("Mainnet");  //can be either Mainnet/Polygon
     // history::get_history(&s_contract_address,chain_name,start_block,end_block).await;
 
-    // get_txns(
-    //     &contract_fetched_abi,
-    //     &contract_instance,
-    //     contract_metadata.function_of_interest,
-    //     s_contract_address,
-    //     contract_metadata.chain_id,
-    //     contract_metadata.contract_name,
-    //     contract_metadata.contract_description,
-    //     contract_metadata.contract_slug,
-    //     network_metadata.network_rpc_url,
-    //     network_metadata.start_block_number,
-    //     contract_metadata.method_of_interest,
-    //     contract_metadata.methods,
-    // )
-    // .await;
+    get_txns(
+        &contract_fetched_abi,
+        &contract_instance,
+        contract_metadata.function_of_interest,
+        s_contract_address,
+        contract_metadata.chain_id,
+        contract_metadata.contract_name,
+        contract_metadata.contract_description,
+        contract_metadata.contract_slug,
+        network_metadata.network_rpc_url,
+        network_metadata.start_block_number,
+        contract_metadata.method_of_interest,
+        contract_metadata.methods,
+    )
+    .await;
 
     // let _ = get_events(contract_instance, 17630615).await;
 
