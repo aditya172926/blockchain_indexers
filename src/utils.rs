@@ -71,7 +71,7 @@ pub async fn get_contract_data(
 
 pub async fn get_contract_metadata(protocol_name: &str) -> Option<ContractMetaData> {
     let contract_result: mongodb::bson::Document =
-        db::db_contract_data(protocol_name).await.unwrap().clone();
+        db::db_contract_data(protocol_name).await.unwrap_or(mongodb::bson::Document::default()).clone();
     let contract_meta_data: Result<
         &mongodb::bson::Document,
         mongodb::bson::document::ValueAccessError,

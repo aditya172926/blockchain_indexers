@@ -24,11 +24,14 @@ mod utils;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let contract_result: (structs::ContractMetaData, String, web3::ethabi::Contract) =
-        utils::get_contract_data("ens_ethereum").await;
+        utils::get_contract_data("opensea_ethereum").await;
 
     let contract_metadata: structs::ContractMetaData = contract_result.0;
     let contract_fetched_abi: String = contract_result.1;
     let contract_abi: web3::ethabi::Contract = contract_result.2;
+    // println!("fulfillAdvancedOrder input params=={:?}",contract_abi.functions["fulfillAdvancedOrder"][0].inputs[0].kind);
+    // println!("*********************************");
+    // println!("matchAdvancedOrders input params=={:?}",contract_abi.functions["matchAdvancedOrders"][0].inputs[0].kind);
 
     let network_metadata: structs::NetworkMetaData =
         utils::get_network_data(&contract_metadata.chain_id).unwrap();
@@ -37,7 +40,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     // println!("The contract ABI is {:?}", contract_abi);
     let contract_address_h160 = contract_metadata.contract_address.parse().unwrap();
-    let contract_instance: Instance<Http> = Instance::at(web3, contract_abi, contract_address_h160);
+    let contract_instance: Instance<Http> =
+        Instance::at(web3, contract_abi, contract_address_h160);
+        
 
     let contract_h160 = contract_metadata.contract_address;
     let contract_address_string = format!("{:020x}", contract_address_h160);
@@ -55,10 +60,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let start_block: u64 = 17394000;
     let end_block: u64 = 17394604;
-    let chain_name = String::from("Mainnet"); //can be either Mainnet/Polygon
     let _ = history::get_history(
         &s_contract_address,
-        chain_name,
         start_block,
         end_block,
         &network_metadata.network_rpc_url,
@@ -66,21 +69,21 @@ async fn main() -> Result<(), Box<dyn Error>> {
     )
     .await;
 
-    // get_txns(
-    //     &contract_fetched_abi,
-    //     &contract_instance,
-    //     contract_metadata.function_of_interest,
-    //     s_contract_address,
-    //     contract_metadata.chain_id,
-    //     contract_metadata.contract_name,
-    //     contract_metadata.contract_description,
-    //     contract_metadata.contract_slug,
-    //     network_metadata.network_rpc_url,
-    //     network_metadata.start_block_number,
-    //     contract_metadata.method_of_interest,
-    //     contract_metadata.methods,
-    // )
-    // .await;
+    get_txns(
+        &contract_fetched_abi,
+        &contract_instance,
+        contract_metadata.function_of_interest,
+        s_contract_address,
+        contract_metadata.chain_id,
+        contract_metadata.contract_name,
+        contract_metadata.contract_description,
+        contract_metadata.contract_slug,
+        network_metadata.network_rpc_url,
+        network_metadata.start_block_number,
+        contract_metadata.method_of_interest,
+        contract_metadata.methods,
+    )
+    .await;
 
     // let _ = get_events(contract_instance, 17630615).await;
 
@@ -102,6 +105,7 @@ async fn get_txns(
     methods: Document,
 ) {
     println!("The RPC is {}", network_rpc_url);
+    println!("{:?}",contract_instance.abi().functions["fulfillAdvancedOrder"][0].inputs[0].kind);
 
     // eth block number:17691422
     //polygon block number:45033964

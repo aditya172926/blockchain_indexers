@@ -65,17 +65,7 @@
     "slug": "opensea_ethereum",
     "image": ""
   },
-  "mintKudos_polygon": {
-    "contract_address": "0x60576A64851C5B42e8c57E3E4A5cF3CF4eEb2ED6",
-    "chainId": "137",
-    "name": "MintKudos",
-    "function_of_interest": "",
-    "method_of_interest": [],
-    "event_of_interest": [],
-    "description": "MintKudos contract deployed on network Polygon",
-    "slug": "mintKudos_polygon",
-    "image": ""
-  },
+
   "lens_polygon": {
     "contract_address": "0xDb46d1Dc155634FbC732f92E853b10B288AD5a1d",
     "read_abi_from": "0xBA97fc9137b7cbBBC7fcB70a87DA645d917C902F",
@@ -88,5 +78,4 @@
     "slug": "lens_polygon",
     "image": ""
   }
-
 }

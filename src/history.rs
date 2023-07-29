@@ -9,23 +9,12 @@ use ethers::{
 
 pub async fn get_history(
     contract_address: &str,
-    chain_name: String,
     start_block: u64,
     end_block: u64,
     rpc_url: &str,
     api_key: &str
 ) -> eyre::Result<()> {
     println!("CHECKING HISTORY...");
-
-    // let rpc_url: = rpc_url;
-    // let api_key: = api_key;
-    // if chain_name == "Mainnet" {
-    //     rpc_url = "https://eth-mainnet.g.alchemy.com/v2/hWEjq_fZYfTWahuiJ77jQ8weh_1gTW0y";
-    //     api_key = "ER9VKT8AXAI2WTPSCRNANN69W67V7PRU59";
-    // } else {
-    //     rpc_url = "https://polygon-mainnet.g.alchemy.com/v2/Ijw3Y5X492F2UhygJoD162ax-3R-NbPk";
-    //     api_key = "YFV2FG443XMWB774JJ4PD56Q7UBWFQ6KE1";
-    // }
     let _provider = Provider::try_from(rpc_url)?;
 
     //chain was to be generalized
