@@ -15,12 +15,11 @@ use web3::Web3;
 
 // modules
 mod db;
+mod history;
 mod middleware;
 mod structs;
 mod transactions;
-mod history;
 mod utils;
-
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -38,8 +37,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     // println!("The contract ABI is {:?}", contract_abi);
     let contract_address_h160 = contract_metadata.contract_address.parse().unwrap();
-    let contract_instance: Instance<Http> =
-        Instance::at(web3, contract_abi, contract_address_h160);
+    let contract_instance: Instance<Http> = Instance::at(web3, contract_abi, contract_address_h160);
 
     let contract_h160 = contract_metadata.contract_address;
     let contract_address_string = format!("{:020x}", contract_address_h160);
@@ -47,19 +45,26 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let s_contract_address = format!("{}{}", initial, contract_address_string);
     // println!("{}",s_contract_address);
 
+    //for eth:
+    //start: 17394000
+    //end: 17394604
 
-//for eth:
-//start: 17394000
-//end: 17394604
+    //for polygon:
+    //start: 45608700
+    //end: 45608720
 
-//for polygon:
-//start: 45608700
-//end: 45608720
-
-    let start_block:u64=17394000; 
-    let end_block:u64=17394604;
-    let chain_name=String::from("Mainnet");  //can be either Mainnet/Polygon
-    history::get_history(&s_contract_address,chain_name,start_block,end_block).await;
+    let start_block: u64 = 17394000;
+    let end_block: u64 = 17394604;
+    let chain_name = String::from("Mainnet"); //can be either Mainnet/Polygon
+    let _ = history::get_history(
+        &s_contract_address,
+        chain_name,
+        start_block,
+        end_block,
+        &network_metadata.network_rpc_url,
+        &network_metadata.network_api_key,
+    )
+    .await;
 
     // get_txns(
     //     &contract_fetched_abi,
@@ -81,8 +86,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     Ok(())
 }
-
-
 
 async fn get_txns(
     contract_abi: &str,
@@ -121,9 +124,9 @@ async fn get_txns(
 
                 if transaction_hash != prev_txn_hash {
                     let mut decoded_txn_data: (
-                        Vec<structs::MethodParam>, // method params array
-                        String, // function name
-                        String, // transaction hash
+                        Vec<structs::MethodParam>,         // method params array
+                        String,                            // function name
+                        String,                            // transaction hash
                         ethers::types::TransactionReceipt, // transaction receipt
                     ) = transactions::get_transaction_data(
                         contract_abi,
@@ -151,7 +154,7 @@ async fn get_txns(
                         }
 
                         println!("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-                        println!("{:?}",decoded_txn_data);
+                        println!("{:?}", decoded_txn_data);
                         println!("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                         let _ = db::save_txn_to_db(
                             decoded_txn_data.0, //method_params

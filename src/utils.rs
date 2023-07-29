@@ -16,6 +16,7 @@ pub fn get_network_data(chain_id: &str) -> Option<NetworkMetaData> {
         Ok(object) => {
             let mut network_name: String = object["dev"][chain_id]["network_name"].to_string();
             let mut network_rpc_url: String = object["dev"][chain_id]["network_rpc_url"].to_string();
+            let mut network_api_key: String = object["dev"][chain_id]["network_api_key"].to_string();
             let start_block_number: i64 = object["dev"][chain_id]["start_block_number"]
                 .to_string()
                 .parse()
@@ -23,11 +24,13 @@ pub fn get_network_data(chain_id: &str) -> Option<NetworkMetaData> {
 
             network_name = network_name[1..network_name.len() - 1].to_string();
             network_rpc_url = network_rpc_url[1..network_rpc_url.len() - 1].to_string();
+            network_api_key = network_api_key[1..network_api_key.len() - 1].to_string();
 
             let result: NetworkMetaData = NetworkMetaData {
                 network_name: network_name,
                 network_rpc_url: network_rpc_url,
                 start_block_number: start_block_number,
+                network_api_key: network_api_key
             };
             Some(result)
         }
@@ -73,7 +76,7 @@ pub async fn get_contract_metadata(protocol_name: &str) -> Option<ContractMetaDa
         &mongodb::bson::Document,
         mongodb::bson::document::ValueAccessError,
     > = contract_result.get_document("contract");
-
+ 
     let mut methods: &Document = &Document::new();
 
     let contract_metadata: Option<ContractMetaData> = match contract_meta_data {
