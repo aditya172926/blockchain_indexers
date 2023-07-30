@@ -24,7 +24,7 @@ mod utils;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let contract_result: (structs::ContractMetaData, String, web3::ethabi::Contract) =
-        utils::get_contract_data("opensea_ethereum").await;
+        utils::get_contract_data("lens_polygon").await;
 
     let contract_metadata: structs::ContractMetaData = contract_result.0;
     let contract_fetched_abi: String = contract_result.1;
@@ -32,9 +32,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
     // println!("fulfillAdvancedOrder input params=={:?}",contract_abi.functions["fulfillAdvancedOrder"][0].inputs[0].kind);
     // println!("*********************************");
     // println!("matchAdvancedOrders input params=={:?}",contract_abi.functions["matchAdvancedOrders"][0].inputs[0].kind);
-
+    println!("{}",contract_metadata.chain_id);
     let network_metadata: structs::NetworkMetaData =
         utils::get_network_data(&contract_metadata.chain_id).unwrap();
+        println!("{}",network_metadata.network_api_key);
     let transport: Http = Http::new(&network_metadata.network_rpc_url)?;
     let web3: Web3<Http> = Web3::new(transport);
 
@@ -48,7 +49,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let contract_address_string = format!("{:020x}", contract_address_h160);
     let initial = String::from("0x");
     let s_contract_address = format!("{}{}", initial, contract_address_string);
-    // println!("{}",s_contract_address);
 
     //for eth:
     //start: 17394000
@@ -58,32 +58,36 @@ async fn main() -> Result<(), Box<dyn Error>> {
     //start: 45608700
     //end: 45608720
 
-    let start_block: u64 = 17394000;
-    let end_block: u64 = 17394604;
+    let start_block: u64 = 45608400;
+    let end_block: u64 = 45608520;
     let _ = history::get_history(
         &s_contract_address,
+        &contract_fetched_abi,
         start_block,
         end_block,
+        contract_metadata.chain_id,
+        contract_metadata.contract_slug,
         &network_metadata.network_rpc_url,
         &network_metadata.network_api_key,
+        contract_metadata.methods
     )
     .await;
 
-    get_txns(
-        &contract_fetched_abi,
-        &contract_instance,
-        contract_metadata.function_of_interest,
-        s_contract_address,
-        contract_metadata.chain_id,
-        contract_metadata.contract_name,
-        contract_metadata.contract_description,
-        contract_metadata.contract_slug,
-        network_metadata.network_rpc_url,
-        network_metadata.start_block_number,
-        contract_metadata.method_of_interest,
-        contract_metadata.methods,
-    )
-    .await;
+    // get_txns(
+    //     &contract_fetched_abi,
+    //     &contract_instance,
+    //     contract_metadata.function_of_interest,
+    //     s_contract_address,
+    //     contract_metadata.chain_id,
+    //     contract_metadata.contract_name,
+    //     contract_metadata.contract_description,
+    //     contract_metadata.contract_slug,
+    //     network_metadata.network_rpc_url,
+    //     network_metadata.start_block_number,
+    //     contract_metadata.method_of_interest,
+    //     contract_metadata.methods,
+    // )
+    // .await;
 
     // let _ = get_events(contract_instance, 17630615).await;
 
