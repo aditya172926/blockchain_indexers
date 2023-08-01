@@ -24,7 +24,7 @@ mod utils;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let contract_result: (structs::ContractMetaData, String, web3::ethabi::Contract) =
-        utils::get_contract_data("lens_polygon").await;
+        utils::get_contract_data("poap_ethereum").await;
 
     let contract_metadata: structs::ContractMetaData = contract_result.0;
     let contract_fetched_abi: String = contract_result.1;
@@ -58,8 +58,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
     //start: 45608700
     //end: 45608720
 
-    let start_block: u64 = 45608400;
-    let end_block: u64 = 45608520;
+    let start_block: u64 = 	17086038;
+    let end_block: u64 = 17090591;
     let _ = history::get_history(
         &s_contract_address,
         &contract_fetched_abi,
@@ -69,7 +69,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
         contract_metadata.contract_slug,
         &network_metadata.network_rpc_url,
         &network_metadata.network_api_key,
-        contract_metadata.methods
+        contract_metadata.methods,
+        contract_metadata.method_of_interest,
     )
     .await;
 
@@ -109,7 +110,7 @@ async fn get_txns(
     methods: Document,
 ) {
     println!("The RPC is {}", network_rpc_url);
-    println!("{:?}",contract_instance.abi().functions["fulfillAdvancedOrder"][0].inputs[0].kind);
+    // println!("{:?}",contract_instance.abi().functions["fulfillAdvancedOrder"][0].inputs[0].kind);
 
     // eth block number:17691422
     //polygon block number:45033964
@@ -164,6 +165,7 @@ async fn get_txns(
                         println!("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                         println!("{:?}", decoded_txn_data);
                         println!("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+                        if is_interesting_method(&method_of_interest,&decoded_txn_data.1) {
                         let _ = db::save_txn_to_db(
                             decoded_txn_data.0, //method_params
                             decoded_txn_data.1, // function name
@@ -175,6 +177,7 @@ async fn get_txns(
                         )
                         .await;
                         println!("Added txn:{:?}", transaction_hash);
+                    }
                         // println!("{:?}",decoded_txn_data);
                         // println!("{:?}",decoded_txn_data);
                         println!("cont_add txn:{:?}", contract_address.clone());
@@ -225,6 +228,16 @@ async fn get_events(
         };
     }
 }
+
+
+fn is_interesting_method(method_of_interest:&HashSet<String>,method_name:&String)-> bool{
+    if !method_of_interest.is_empty(){
+        return method_of_interest.contains(method_name.as_str());
+    }
+    return true;
+}
+
+
 
 // #[derive(Debug, FromRow)]
 // pub struct MyEvent {

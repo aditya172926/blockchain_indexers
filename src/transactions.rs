@@ -136,7 +136,7 @@ pub async fn get_transaction_method_params<'a>(
             }
         };
 
-        println!("{}", token_length);
+        println!("Total Length:{}", token_length);
 
         // complex DT
         // let mut input_hashmap: Vec<MethodParam> = Vec::new();
@@ -176,7 +176,7 @@ pub async fn get_transaction_method_params<'a>(
             };
         }
 
-        // println!("INPUT PARAMS=========================={:?}", input_hashmap);
+        // println!("INPUT PARAMS=========================={:?}", method_params);
 
         let mut method_param: MethodParam;
         if token_length == 0 {
