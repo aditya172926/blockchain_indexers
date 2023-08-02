@@ -158,7 +158,7 @@ pub async fn get_transaction_method_params<'a>(
                                     kind: "".to_string(),
                                     internal_type: &input.internal_type,
                                     data_type: MethodParamDataType::StringValue,
-                                    value: value.to_string(),
+                                    value: ToString::to_string(&value),
                                 };
                                 method_params.push(input_struct);
                                 // input_params.insert(key, value.to_string());
@@ -185,7 +185,7 @@ pub async fn get_transaction_method_params<'a>(
                 kind: input.kind.to_string(),
                 internal_type: &input.internal_type,
                 data_type: crate::structs::MethodParamDataType::StringValue,
-                value: cloned_token.to_string(),
+                value: ToString::to_string(&cloned_token),
             };
             method_params.push(method_param);
         }
@@ -195,4 +195,37 @@ pub async fn get_transaction_method_params<'a>(
         method_params
     );
     return (method_params, method_name.to_string());
+}
+
+
+
+// Implement a trait for Token
+pub trait TokenToString {
+    fn to_string(&self) -> String;
+}
+
+impl TokenToString for Token {
+    fn to_string(&self) -> String {
+        match self {
+            Token::Address(addr) => addr.to_string(),
+            Token::FixedBytes(bytes) => format!("{:?}", bytes),
+            Token::Bytes(bytes) => format!("{:?}", bytes),
+            Token::Int(int) => int.to_string(),
+            Token::Uint(uint) => uint.to_string(),
+            Token::Bool(boolean) => boolean.to_string(),
+            Token::String(string) => string.clone(),
+            Token::FixedArray(tokens) => {
+                let elements: Vec<String> = tokens.iter().map(|t| ToString::to_string(&t)).collect();
+                format!("[{}]", elements.join(", "))
+            }
+            Token::Array(tokens) => {
+                let elements: Vec<String> = tokens.iter().map(|t| TokenToString::to_string(t)).collect();
+                format!("[{}]", elements.join(", "))
+            }
+            Token::Tuple(tokens) => {
+                let elements: Vec<String> = tokens.iter().map(|t| ToString::to_string(&t)).collect();
+                format!("({})", elements.join(", "))
+            }
+        }
+    }
 }

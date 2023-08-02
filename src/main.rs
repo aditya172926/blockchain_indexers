@@ -1,6 +1,7 @@
 use ethcontract::contract::Instance;
 use ethcontract::prelude::*;
-use ethers::types::H256;
+use ethers::providers::Provider;
+use ethers::types::{H256, Filter};
 use futures::join;
 use futures::stream::StreamExt;
 use hex::ToHex;
@@ -24,15 +25,11 @@ mod utils;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let contract_result: (structs::ContractMetaData, String, web3::ethabi::Contract) =
-        utils::get_contract_data("sandbox_ethereum").await;
+        utils::get_contract_data("lens_polygon").await;
 
     let contract_metadata: structs::ContractMetaData = contract_result.0;
     let contract_fetched_abi: String = contract_result.1;
     let contract_abi: web3::ethabi::Contract = contract_result.2;
-    // println!("fulfillAdvancedOrder input params=={:?}",contract_abi.functions["fulfillAdvancedOrder"][0].inputs[0].kind);
-    // println!("*********************************");
-    // println!("matchAdvancedOrders input params=={:?}",contract_abi.functions["matchAdvancedOrders"][0].inputs[0].kind);
-    println!("{}",contract_metadata.chain_id);
     let network_metadata: structs::NetworkMetaData =
         utils::get_network_data(&contract_metadata.chain_id).unwrap();
         println!("{}",network_metadata.network_api_key);
@@ -44,8 +41,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let contract_instance: Instance<Http> =
         Instance::at(web3, contract_abi, contract_address_h160);
         
-
-    let contract_h160 = contract_metadata.contract_address;
     let contract_address_string = format!("{:020x}", contract_address_h160);
     let initial = String::from("0x");
     let s_contract_address = format!("{}{}", initial, contract_address_string);
@@ -58,38 +53,37 @@ async fn main() -> Result<(), Box<dyn Error>> {
     //start: 45608700
     //end: 45608720
 
-    let start_block: u64 = 	17090591;
-    let end_block: u64 = 17827078;
-
-    let _ = history::get_history(
-        &s_contract_address,
-        &contract_fetched_abi,
-        start_block,
-        end_block,
-        contract_metadata.chain_id,
-        contract_metadata.contract_slug,
-        &network_metadata.network_rpc_url,
-        &network_metadata.network_api_key,
-        contract_metadata.methods,
-        contract_metadata.method_of_interest,
-    )
-    .await;
-
-    // get_txns(
+    // let start_block: u64 = 	17086038;
+    // let end_block: u64 = 17090591;
+    // let _ = history::get_history(
+    //     &s_contract_address,
     //     &contract_fetched_abi,
-    //     &contract_instance,
-    //     contract_metadata.function_of_interest,
-    //     s_contract_address,
+    //     start_block,
+    //     end_block,
     //     contract_metadata.chain_id,
-    //     contract_metadata.contract_name,
-    //     contract_metadata.contract_description,
     //     contract_metadata.contract_slug,
-    //     network_metadata.network_rpc_url,
-    //     network_metadata.start_block_number,
-    //     contract_metadata.method_of_interest,
+    //     &network_metadata.network_rpc_url,
+    //     &network_metadata.network_api_key,
     //     contract_metadata.methods,
+    //     contract_metadata.method_of_interest,
     // )
     // .await;
+
+    get_txns(
+        &contract_fetched_abi,
+        &contract_instance,
+        contract_metadata.function_of_interest,
+        s_contract_address,
+        contract_metadata.chain_id,
+        contract_metadata.contract_name,
+        contract_metadata.contract_description,
+        contract_metadata.contract_slug,
+        network_metadata.network_rpc_url,
+        network_metadata.start_block_number,
+        contract_metadata.method_of_interest,
+        contract_metadata.methods,
+    )
+    .await;
 
     // let _ = get_events(contract_instance, 17630615).await;
 
@@ -111,7 +105,7 @@ async fn get_txns(
     methods: Document,
 ) {
     println!("The RPC is {}", network_rpc_url);
-    // println!("{:?}",contract_instance.abi().functions["fulfillAdvancedOrder"][0].inputs[0].kind);
+    println!("The block number is {:?}", ethcontract::BlockNumber::from(network_block_number));
 
     // eth block number:17691422
     //polygon block number:45033964
@@ -127,10 +121,13 @@ async fn get_txns(
 
     println!("Trying...");
     loop {
+
         match event_stream.next().await {
             Some(Ok(log)) => {
+
                 let txn_hash = log.meta.as_ref().unwrap().transaction_hash.to_fixed_bytes();
                 let transaction_hash: H256 = ethers::core::types::TxHash::from(txn_hash);
+                println!("{:?}",transaction_hash);
 
                 if transaction_hash != prev_txn_hash {
                     let mut decoded_txn_data: (
@@ -190,7 +187,7 @@ async fn get_txns(
                 );
             }
             Some(Err(e)) => {
-                eprintln!("Error: {}", e);
+                println!("Error: {}", e);
             }
             None => {
                 println!("Stream ended, reconnecting...");
