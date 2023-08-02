@@ -24,7 +24,7 @@ mod utils;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let contract_result: (structs::ContractMetaData, String, web3::ethabi::Contract) =
-        utils::get_contract_data("poap_ethereum").await;
+        utils::get_contract_data("sandbox_ethereum").await;
 
     let contract_metadata: structs::ContractMetaData = contract_result.0;
     let contract_fetched_abi: String = contract_result.1;
@@ -58,8 +58,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
     //start: 45608700
     //end: 45608720
 
-    let start_block: u64 = 	17086038;
-    let end_block: u64 = 17090591;
+    let start_block: u64 = 	17090591;
+    let end_block: u64 = 17827078;
+
     let _ = history::get_history(
         &s_contract_address,
         &contract_fetched_abi,

@@ -110,7 +110,7 @@ pub async fn get_history(
 
     if decoded_txn_data.1 != "".to_string() {
         if is_interesting_method(&method_of_interest,&decoded_txn_data.1) {
-    let _ = db::save_history_to_db(
+    let _ = db::save_txn_to_db(
             decoded_txn_data.0, //method_params
             decoded_txn_data.1, // function name
             decoded_txn_data.2, // function id
