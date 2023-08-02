@@ -55,8 +55,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
     //start: 45608700
     //end: 45608720
 
-    // let start_block: u64 = 	17086038;
-    // let end_block: u64 = 17090591;
+    // let start_block: u64 = 	17036038;
+    // let end_block: u64 = 170370591;
     // let _ = history::get_history(
     //     &s_contract_address,
     //     &contract_fetched_abi,
@@ -166,16 +166,16 @@ async fn get_txns(
                         println!("{:?}", decoded_txn_data);
                         println!("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                         if is_interesting_method(&method_of_interest,&decoded_txn_data.1) {
-                        let _ = db::save_txn_to_db(
-                            decoded_txn_data.0, //method_params
-                            decoded_txn_data.1, // function name
-                            decoded_txn_data.2, // function id
-                            decoded_txn_data.3, // transaction receipt
-                            contract_address.clone(),
-                            String::from(&contract_slug),
-                            &chain_id,
-                        )
-                        .await;
+                        // let _ = db::save_txn_to_db(
+                        //     decoded_txn_data.0, //method_params
+                        //     decoded_txn_data.1, // function name
+                        //     decoded_txn_data.2, // function id
+                        //     decoded_txn_data.3, // transaction receipt
+                        //     contract_address.clone(),
+                        //     String::from(&contract_slug),
+                        //     &chain_id,
+                        // )
+                        // .await;
                         println!("Added txn:{:?}", transaction_hash);
                     }
                         // println!("{:?}",decoded_txn_data);

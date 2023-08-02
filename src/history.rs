@@ -106,7 +106,7 @@ pub async fn get_history(
             &methods,
         )
         .await;
-        println!("{:?}",decoded_txn_data);
+        println!("{:?}",decoded_txn_data.0);
 
     if decoded_txn_data.1 != "".to_string() {
         if is_interesting_method(&method_of_interest,&decoded_txn_data.1) {

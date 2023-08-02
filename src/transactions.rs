@@ -115,7 +115,9 @@ pub async fn get_transaction_method_params<'a>(
     let decoded_inputs: Vec<Token> = function
         .decode_input(&input_bytes)
         .expect("failed to decode inputs");
+    println!("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%: {:?}",decoded_inputs);
 
+    let mut k=0;
     for (index, input) in function.inputs.iter().enumerate() {
         let cloned_token: Token = decoded_inputs[index].clone();
         println!("The cloned token is {:?}", cloned_token);
@@ -137,28 +139,30 @@ pub async fn get_transaction_method_params<'a>(
         };
 
         println!("Total Length:{}", token_length);
-
+        let mut method_param: MethodParam;
         // complex DT
-        // let mut input_hashmap: Vec<MethodParam> = Vec::new();
+
         if token_length > 0 {
             match name {
                 Ok(i) => {
                     // let mut input_params: HashMap<String, String> = HashMap::new();
                     let mut input_params: Vec<MethodParam> = Vec::new();
+                    println!("this is I:{:?}",i);
                     while ind < token_length - 1 {
                         let final_tuple: Option<Vec<Token>> = cloned_token.clone().into_tuple();
                         let test = match final_tuple {
                             Some(data) => {
                                 println!("=====DATA====={:?}", data.get(ind));
                                 let value = data.get(ind).unwrap().to_owned();
-                                let mut key = i.get_array("params").unwrap()[ind].to_string();
+                                let mut pkey = i.get_array("params").unwrap()[k].as_array().unwrap();
+                                let mut key=pkey.get(ind).unwrap().to_string();
                                 let input_key = key[1..key.len() - 1].to_string();
                                 let input_struct: MethodParam = MethodParam {
                                     name: input_key,
                                     kind: "".to_string(),
                                     internal_type: &input.internal_type,
                                     data_type: MethodParamDataType::StringValue,
-                                    value: value.to_string(),
+                                    value: ToString::to_string(&value),
                                 };
                                 method_params.push(input_struct);
                                 // input_params.insert(key, value.to_string());
@@ -169,30 +173,63 @@ pub async fn get_transaction_method_params<'a>(
                         };
                         ind += 1;
                     }
+                    k+=1;
                 }
                 Err(e) => {
                     println!("Error {:?}", e);
                 }
             };
+        }else{
+                method_param = MethodParam {
+                    name: String::from(&input.name),
+                    kind: input.kind.to_string(),
+                    internal_type: &input.internal_type,
+                    data_type: crate::structs::MethodParamDataType::StringValue,
+                    value: ToString::to_string(&cloned_token),
+                };
+                method_params.push(method_param);
+                k+=1;
         }
 
-        // println!("INPUT PARAMS=========================={:?}", method_params);
-
-        let mut method_param: MethodParam;
-        if token_length == 0 {
-            method_param = MethodParam {
-                name: String::from(&input.name),
-                kind: input.kind.to_string(),
-                internal_type: &input.internal_type,
-                data_type: crate::structs::MethodParamDataType::StringValue,
-                value: cloned_token.to_string(),
-            };
-            method_params.push(method_param);
-        }
+  
+        
     }
     println!(
         "The method params are@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ {:?}",
         method_params
     );
     return (method_params, method_name.to_string());
+}
+
+
+
+// Implement a trait for Token
+pub trait TokenToString {
+    fn to_string(&self) -> String;
+}
+
+impl TokenToString for Token {
+    fn to_string(&self) -> String {
+        match self {
+            Token::Address(addr) => addr.to_string(),
+            Token::FixedBytes(bytes) => format!("{:?}", bytes),
+            Token::Bytes(bytes) => format!("{:?}", bytes),
+            Token::Int(int) => int.to_string(),
+            Token::Uint(uint) => uint.to_string(),
+            Token::Bool(boolean) => boolean.to_string(),
+            Token::String(string) => string.clone(),
+            Token::FixedArray(tokens) => {
+                let elements: Vec<String> = tokens.iter().map(|t| ToString::to_string(&t)).collect();
+                format!("[{}]", elements.join(", "))
+            }
+            Token::Array(tokens) => {
+                let elements: Vec<String> = tokens.iter().map(|t| TokenToString::to_string(t)).collect();
+                format!("[{}]", elements.join(", "))
+            }
+            Token::Tuple(tokens) => {
+                let elements: Vec<String> = tokens.iter().map(|t| ToString::to_string(&t)).collect();
+                format!("({})", elements.join(", "))
+            }
+        }
+    }
 }
