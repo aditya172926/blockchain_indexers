@@ -1,6 +1,7 @@
 use ethcontract::contract::Instance;
 use ethcontract::prelude::*;
-use ethers::types::H256;
+use ethers::providers::Provider;
+use ethers::types::{H256, Filter};
 use futures::join;
 use futures::stream::StreamExt;
 use hex::ToHex;
@@ -106,7 +107,7 @@ async fn get_txns(
     methods: Document,
 ) {
     println!("The RPC is {}", network_rpc_url);
-    // println!("{:?}",contract_instance.abi().functions["fulfillAdvancedOrder"][0].inputs[0].kind);
+    println!("The block number is {:?}", ethcontract::BlockNumber::from(network_block_number));
 
     // eth block number:17691422
     //polygon block number:45033964
@@ -122,10 +123,13 @@ async fn get_txns(
 
     println!("Trying...");
     loop {
+
         match event_stream.next().await {
             Some(Ok(log)) => {
+
                 let txn_hash = log.meta.as_ref().unwrap().transaction_hash.to_fixed_bytes();
                 let transaction_hash: H256 = ethers::core::types::TxHash::from(txn_hash);
+                println!("{:?}",transaction_hash);
 
                 if transaction_hash != prev_txn_hash {
                     let mut decoded_txn_data: (
@@ -185,7 +189,7 @@ async fn get_txns(
                 );
             }
             Some(Err(e)) => {
-                eprintln!("Error: {}", e);
+                println!("Error: {}", e);
             }
             None => {
                 println!("Stream ended, reconnecting...");

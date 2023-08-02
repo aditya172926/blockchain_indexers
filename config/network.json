@@ -28,7 +28,7 @@
     },
     "56": {
       "network_name": "bsc",
-      "network_rpc_url": "https://prettiest-misty-leaf.bsc.discover.quiknode.pro/94ce347d7169dbb33b0652a1e81a2aef94939c70/",
+      "network_rpc_url": "https://bsc.getblock.io/7810614b-267b-4f92-adcc-77b98fb53eca/mainnet/",
       "network_api_key": "94ce347d7169dbb33b0652a1e81a2aef94939c70",
       "start_block_number": 30474560
     }
