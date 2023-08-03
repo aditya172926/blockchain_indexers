@@ -1,7 +1,7 @@
 use ethcontract::contract::Instance;
 use ethcontract::prelude::*;
 use ethers::providers::Provider;
-use ethers::types::{H256, Filter};
+use ethers::types::{H256, Filter, U256};
 use futures::join;
 use futures::stream::StreamExt;
 use hex::ToHex;
@@ -25,7 +25,7 @@ mod utils;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let contract_result: (structs::ContractMetaData, String, web3::ethabi::Contract) =
-        utils::get_contract_data("cyberconnect_bsc").await;
+        utils::get_contract_data("ens_ethereum").await;
 
     let contract_metadata: structs::ContractMetaData = contract_result.0;
     let contract_fetched_abi: String = contract_result.1;
@@ -46,6 +46,9 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let contract_address_string = format!("{:020x}", contract_address_h160);
     let initial = String::from("0x");
     let s_contract_address = format!("{}{}", initial, contract_address_string);
+
+
+
 
     //for eth:
     //start: 17394000
@@ -166,20 +169,18 @@ async fn get_txns(
                         println!("{:?}", decoded_txn_data);
                         println!("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                         if is_interesting_method(&method_of_interest,&decoded_txn_data.1) {
-                        // let _ = db::save_txn_to_db(
-                        //     decoded_txn_data.0, //method_params
-                        //     decoded_txn_data.1, // function name
-                        //     decoded_txn_data.2, // function id
-                        //     decoded_txn_data.3, // transaction receipt
-                        //     contract_address.clone(),
-                        //     String::from(&contract_slug),
-                        //     &chain_id,
-                        // )
-                        // .await;
+                        let _ = db::save_txn_to_db(
+                            decoded_txn_data.0, //method_params
+                            decoded_txn_data.1, // function name
+                            decoded_txn_data.2, // function id
+                            decoded_txn_data.3, // transaction receipt
+                            contract_address.clone(),
+                            String::from(&contract_slug),
+                            &chain_id,
+                        )
+                        .await;
                         println!("Added txn:{:?}", transaction_hash);
                     }
-                        // println!("{:?}",decoded_txn_data);
-                        // println!("{:?}",decoded_txn_data);
                         println!("cont_add txn:{:?}", contract_address.clone());
                         prev_txn_hash = transaction_hash;
                     }
