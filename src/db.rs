@@ -38,6 +38,7 @@ pub async fn db_contract_data(contract_slug: &str) -> Option<Document> {
         .find_one(doc! {"contract.slug": contract_slug}, None)
         .await
         .unwrap();
+
     // match &result {
     //      Some(doc) => println!("The document result is {:?}", doc),
     //      None => println!("No document found")

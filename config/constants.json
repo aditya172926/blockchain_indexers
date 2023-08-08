@@ -10,5 +10,9 @@
   "56": {
     "api_token": "T58P13HQRUTE28F6VSAF3VII4JXTUZ76E3",
     "_api": "https://api.bscscan.com/api?module=contract&action=getabi&address={}&apikey=T58P13HQRUTE28F6VSAF3VII4JXTUZ76E3"
+  },
+  "10": {
+    "api_token": "I9KU6GZQHZEUAFAK9KNUXBFX3KXZH7UD6R",
+    "_api": "https://api-optimistic.etherscan.io/api?module=contract&action=getabi&address={}&apikey=I9KU6GZQHZEUAFAK9KNUXBFX3KXZH7UD6R"
   }
 }
