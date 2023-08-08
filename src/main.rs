@@ -21,6 +21,7 @@ mod middleware;
 mod structs;
 mod transactions;
 mod utils;
+mod shardeum;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -45,6 +46,13 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let initial = String::from("0x");
     let s_contract_address = format!("{}{}", initial, contract_address_string);
 
+
+//SHARDEUM STARTS
+     shardeum::get_shardeum_data().await;
+//SHARDEUM STOPS
+
+
+// HISTORY DATA STARTS
     //for eth:
     //start: 17394000
     //end: 17394604
@@ -69,26 +77,31 @@ async fn main() -> Result<(), Box<dyn Error>> {
     // )
     // .await;
 
-    get_txns(
-        &contract_fetched_abi,
-        &contract_instance,
-        contract_metadata.function_of_interest,
-        s_contract_address,
-        contract_metadata.chain_id,
-        contract_metadata.contract_name,
-        contract_metadata.contract_description,
-        contract_metadata.contract_slug,
-        network_metadata.network_rpc_url,
-        network_metadata.start_block_number,
-        contract_metadata.method_of_interest,
-        contract_metadata.methods,
-    )
-    .await;
+// HISTORY DATA ENDS
+
+// GETTING REAL TIME TRANSACTIONS STARTS
+
+    // get_txns(
+    //     &contract_fetched_abi,
+    //     &contract_instance,
+    //     contract_metadata.function_of_interest,
+    //     s_contract_address,
+    //     contract_metadata.chain_id,
+    //     contract_metadata.contract_name,
+    //     contract_metadata.contract_description,
+    //     contract_metadata.contract_slug,
+    //     network_metadata.network_rpc_url,
+    //     network_metadata.start_block_number,
+    //     contract_metadata.method_of_interest,
+    //     contract_metadata.methods,
+    // )
+    // .await;
 
     // let _ = get_events(contract_instance, 17630615).await;
 
     Ok(())
 }
+
 
 async fn get_txns(
     contract_abi: &str,
