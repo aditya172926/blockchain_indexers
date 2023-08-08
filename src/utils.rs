@@ -64,7 +64,7 @@ pub async fn get_contract_data(
         // println!("Printing abi from ")
     }
 
-    let contract_abi: web3::ethabi::Contract = serde_json::from_str(&contract_fetched_abi).unwrap();
+    let contract_abi = serde_json::from_str(&contract_fetched_abi).unwrap();
 
     return (contract_metadata, contract_fetched_abi, contract_abi);
 }
