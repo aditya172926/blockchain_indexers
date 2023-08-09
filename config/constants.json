@@ -14,5 +14,9 @@
   "10": {
     "api_token": "I9KU6GZQHZEUAFAK9KNUXBFX3KXZH7UD6R",
     "_api": "https://api-optimistic.etherscan.io/api?module=contract&action=getabi&address={}&apikey=I9KU6GZQHZEUAFAK9KNUXBFX3KXZH7UD6R"
+  },
+  "8453": {
+    "api_token": "BNB4D32DID6SRTDUSBVJAAU12SP75WQHNT",
+    "_api": "https://api.basescan.org/api?module=contract&action=getabi&address={}&apikey=BNB4D32DID6SRTDUSBVJAAU12SP75WQHNT"
   }
 }

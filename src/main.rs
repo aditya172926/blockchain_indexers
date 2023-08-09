@@ -25,7 +25,7 @@ mod utils;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let contract_result: (structs::ContractMetaData, String, web3::ethabi::Contract) =
-        utils::get_contract_data("usd_optimism").await;
+        utils::get_contract_data("flip_base").await;
 
     let contract_metadata: structs::ContractMetaData = contract_result.0;
     let contract_fetched_abi: String = contract_result.1;

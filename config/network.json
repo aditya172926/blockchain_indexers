@@ -38,11 +38,18 @@
       "network_api_key": "94ce347d7169dbb33b0652a1e81a2aef94939c70",
       "start_block_number": 30474560
     },
+
     "10": {
       "network_name": "optimism",
       "network_rpc_url": "https://opt-mainnet.g.alchemy.com/v2/cNbADp1_j4D3mL27URpldvfezV7p_az-",
       "network_api_key": "cNbADp1_j4D3mL27URpldvfezV7p_az-",
       "start_block_number": 107948402
+    },
+    "8453": {
+      "network_name": "base",
+      "network_rpc_url": "https://base-mainnet.unifra.io/v1/b1c589cf045242ab9393075ee56a70bb",
+      "network_api_key": "b1c589cf045242ab9393075ee56a70bb",
+      "start_block_number": 2393029
     }
   }
 }
