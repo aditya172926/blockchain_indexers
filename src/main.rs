@@ -25,7 +25,7 @@ mod utils;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let contract_result: (structs::ContractMetaData, String, web3::ethabi::Contract) =
-        utils::get_contract_data("flip_base").await;
+        utils::get_contract_data("omnia_optimism").await;
 
     let contract_metadata: structs::ContractMetaData = contract_result.0;
     let contract_fetched_abi: String = contract_result.1;
@@ -164,16 +164,16 @@ async fn get_txns(
                         println!("{:?}", decoded_txn_data);
                         println!("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                         if is_interesting_method(&method_of_interest,&decoded_txn_data.1) {
-                        // let _ = db::save_txn_to_db(
-                        //     decoded_txn_data.0, //method_params
-                        //     decoded_txn_data.1, // function name
-                        //     decoded_txn_data.2, // function id
-                        //     decoded_txn_data.3, // transaction receipt
-                        //     contract_address.clone(),
-                        //     String::from(&contract_slug),
-                        //     &chain_id,
-                        // )
-                        // .await;
+                        let _ = db::save_txn_to_db(
+                            decoded_txn_data.0, //method_params
+                            decoded_txn_data.1, // function name
+                            decoded_txn_data.2, // function id
+                            decoded_txn_data.3, // transaction receipt
+                            contract_address.clone(),
+                            String::from(&contract_slug),
+                            &chain_id,
+                        )
+                        .await;
                         println!("Added txn:{:?}", transaction_hash);
                     }
                         // println!("{:?}",decoded_txn_data);

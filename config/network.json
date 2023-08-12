@@ -11,8 +11,27 @@
       "network_rpc_url": "https://polygon-mainnet.g.alchemy.com/v2/Eg_FSYfeQu8h6QKbUL9A10wNprVI_bTw",
       "network_api_key": "YFV2FG443XMWB774JJ4PD56Q7UBWFQ6KE1",
       "start_block_number": 45033964
+    },
+    "10": {
+      "network_name": "optimism",
+      "network_rpc_url": "https://opt-mainnet.g.alchemy.com/v2/cNbADp1_j4D3mL27URpldvfezV7p_az-",
+      "network_api_key": "cNbADp1_j4D3mL27URpldvfezV7p_az-",
+      "start_block_number": 107948402
+    },
+    "8453": {
+      "network_name": "base",
+      "network_rpc_url": "https://base-mainnet.unifra.io/v1/b1c589cf045242ab9393075ee56a70bb",
+      "network_api_key": "b1c589cf045242ab9393075ee56a70bb",
+      "start_block_number": 2393029
+    },
+    "56": {
+      "network_name": "bsc",
+      "network_rpc_url": "https://bsc.getblock.io/7810614b-267b-4f92-adcc-77b98fb53eca/mainnet/",
+      "network_api_key": "94ce347d7169dbb33b0652a1e81a2aef94939c70",
+      "start_block_number": 30474560
     }
   },
+  
   "dev": {
     "1": {
       "network_name": "mainnet",
