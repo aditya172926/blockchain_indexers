@@ -3,7 +3,6 @@ use ethcontract::RawLog;
 use ethers::types::TransactionReceipt;
 use mongodb::{
     bson::{doc, to_bson, Bson, Document},
-    error::Error,
     options::ClientOptions,
     Client, 
 };

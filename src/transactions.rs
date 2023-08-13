@@ -1,17 +1,10 @@
-use std::any::Any;
-use std::clone;
-use std::collections::HashMap;
-use std::str::FromStr;
-
-use crate::structs::{MethodParam, MethodParamDataType, MethodParamValue};
-use ethcontract::H256;
+use crate::structs::{MethodParam, MethodParamDataType};
 use ethers::abi::{Abi, Function, Token};
 use ethers::{
     providers::{Http, Middleware, Provider},
     types::{Transaction, TransactionReceipt, TxHash},
 };
 use mongodb::bson::Document;
-use serde_json::from_str;
 
 pub async fn get_transaction_data<'a>(
     abi: &str,
@@ -38,7 +31,7 @@ pub async fn get_transaction_data<'a>(
 
     let transaction_receipt_formatted:ethers::core::types::transaction::response::TransactionReceipt;
     match transaction_receipt {
-        (txn) => {
+        txn => {
             match txn {
                 Some(object) => {
                     transaction_receipt_formatted = object;
