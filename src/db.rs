@@ -89,7 +89,11 @@ pub async fn save_txn_to_db(
     let db: mongodb::Database = client.database("macha_sdk"); // writing transactions to db
     let collection: mongodb::Collection<Document> = db.collection::<Document>("transactions");
 
-    let block_number=transaction_receipt.block_number.unwrap().as_u64();
+    let block_number_option=transaction_receipt.block_number;
+    let block_number = match block_number_option {
+        Some (object) => object.as_u64(),
+        None => 0
+    };
     // let block_number=transaction_receipt.block_number.unwrap().to_string();
 
     let transaction_struct: TransactionData = TransactionData {
