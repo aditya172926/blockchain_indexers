@@ -26,7 +26,7 @@ mod utils;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let contract_result: (structs::ContractMetaData, String, web3::ethabi::Contract) =
-        utils::get_contract_data("poap_ethereum").await;
+        utils::get_contract_data("omnia_optimism").await;
 
     let contract_metadata: structs::ContractMetaData = contract_result.0;
     let contract_fetched_abi: String = contract_result.1;
@@ -55,8 +55,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
     //end: 45608720
 
 //HISTORY FETCHING STARTS HERE
-let start_block: u64 = 	17086038;
-let end_block: u64 = 17090591;
+let start_block: u64 = 	17394000;
+let end_block: u64 = 17394604;
 let _ = history::get_history(
     &s_contract_address,
     &contract_fetched_abi,
@@ -163,7 +163,7 @@ async fn get_txns(
                             );
                         }
 //fetching current time here
-                        let now = Utc::now();
+                        let now: DateTime<Utc> = Utc::now();
                         let timestamp: String = now.timestamp().to_string();
                          println!("Current timestamp is: {}", timestamp);
 
