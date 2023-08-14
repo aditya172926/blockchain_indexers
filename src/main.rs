@@ -13,6 +13,7 @@ use std::{error::Error, str::FromStr};
 use tokio::time::{sleep, Duration};
 use web3::transports::Http;
 use web3::Web3;
+use chrono::prelude::*;
 
 // modules
 mod db;
@@ -26,7 +27,7 @@ mod shardeum;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let contract_result: (structs::ContractMetaData, String, web3::ethabi::Contract) =
-        utils::get_contract_data("omnia_optimism").await;
+        utils::get_contract_data("poap_ethereum").await;
 
     let contract_metadata: structs::ContractMetaData = contract_result.0;
     let contract_fetched_abi: String = contract_result.1;
@@ -37,7 +38,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let transport: Http = Http::new(&network_metadata.network_rpc_url)?;
     let web3: Web3<Http> = Web3::new(transport);
 
-    // println!("The contract ABI is {:?}", contract_abi);
     let contract_address_h160 = contract_metadata.contract_address.parse().unwrap();
     let contract_instance: Instance<Http> =
         Instance::at(web3, contract_abi, contract_address_h160);
@@ -48,7 +48,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
 
 //SHARDEUM STARTS
-     shardeum::get_shardeum_data().await;
+    //  shardeum::get_shardeum_data().await;
 //SHARDEUM STOPS
 
 
@@ -61,21 +61,21 @@ async fn main() -> Result<(), Box<dyn Error>> {
     //start: 45608700
     //end: 45608720
 
-    // let start_block: u64 = 	17086038;
-    // let end_block: u64 = 17090591;
-    // let _ = history::get_history(
-    //     &s_contract_address,
-    //     &contract_fetched_abi,
-    //     start_block,
-    //     end_block,
-    //     contract_metadata.chain_id,
-    //     contract_metadata.contract_slug,
-    //     &network_metadata.network_rpc_url,
-    //     &network_metadata.network_api_key,
-    //     contract_metadata.methods,
-    //     contract_metadata.method_of_interest,
-    // )
-    // .await;
+    let start_block: u64 = 	17872344;
+    let end_block: u64 = 17892570;
+    let _ = history::get_history(
+        &s_contract_address,
+        &contract_fetched_abi,
+        start_block,
+        end_block,
+        contract_metadata.chain_id,
+        contract_metadata.contract_slug,
+        &network_metadata.network_rpc_url,
+        &network_metadata.network_api_key,
+        contract_metadata.methods,
+        contract_metadata.method_of_interest,
+    )
+    .await;
 
 // HISTORY DATA ENDS
 
@@ -117,11 +117,9 @@ async fn get_txns(
     method_of_interest: HashSet<String>,
     methods: Document,
 ) {
-    println!("The RPC is {}", network_rpc_url);
-    println!("The block number is {:?}", ethcontract::BlockNumber::from(network_block_number));
+    // println!("The RPC is {}", network_rpc_url);
+    // println!("The block number is {:?}", ethcontract::BlockNumber::from(network_block_number));
 
-    // eth block number:17691422
-    //polygon block number:45033964
     let event_stream = contract_instance
         .all_events()
         .from_block(ethcontract::BlockNumber::from(network_block_number))
@@ -173,6 +171,11 @@ async fn get_txns(
                             );
                         }
 
+                        //getting current time here
+                        let now = Utc::now();
+                        let timestamp: String = now.timestamp().to_string();
+                        println!("Current timestamp is: {}", timestamp);
+
                         println!("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                         println!("{:?}", decoded_txn_data);
                         println!("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
@@ -185,12 +188,11 @@ async fn get_txns(
                             contract_address.clone(),
                             String::from(&contract_slug),
                             &chain_id,
+                            timestamp
                         )
                         .await;
                         println!("Added txn:{:?}", transaction_hash);
                     }
-                        // println!("{:?}",decoded_txn_data);
-                        // println!("{:?}",decoded_txn_data);
                         println!("cont_add txn:{:?}", contract_address.clone());
                         prev_txn_hash = transaction_hash;
                     }

@@ -69,26 +69,7 @@ pub async fn get_history(
         if let Some(i) = to {
             s_to = i.to_string();
         }
-        // let value = txn.value.to_string();
-        // let contract_used = txn.contract_address;
-
-        // let s_contract_used: String = match contract_used {
-        //     Some(i) => i.to_string(),
-        //     None => String::from("NA"),
-        // };
-        // let block_number = txn.block_number.to_string();
-        // let function_name: String = match txn.function_name {
-        //     Some(i) => i.to_string(),
-        //     None => String::from("NA"),
-        // };
-        // let t_hash: String = match txn.hash {
-        //     account::GenesisOption::None => String::from("NA"),
-        //     account::GenesisOption::Genesis => String::from("0x00"),
-        //     account::GenesisOption::Some(i) => i.to_string(),
-        // };
-
-        // println!("Sender:{:?},Recipient:{:?}, Value:{:?}, Contract used:{:?}, Block Number:{:?}, Function Used:{}",from,to,value,contract_used,block_number,function_name);
-
+        let timestamp=txn.time_stamp.to_string();
 
         let txn_hash=txn.hash.value().unwrap().to_owned();
 
@@ -118,6 +99,7 @@ pub async fn get_history(
             contract_address.clone().to_owned(),
             String::from(&contract_slug),
             &chain_id,
+            timestamp
         )
         .await;
 
