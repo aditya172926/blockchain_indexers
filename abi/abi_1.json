@@ -1,42 +1,57 @@
 [
   {
     "inputs": [
-      { "internalType": "address", "name": "followNFTImpl", "type": "address" },
-      {
-        "internalType": "address",
-        "name": "collectNFTImpl",
-        "type": "address"
-      },
-      {
-        "internalType": "uint256",
-        "name": "tokenGuardianCooldown",
-        "type": "uint256"
-      }
+      { "internalType": "string", "name": "_name", "type": "string" },
+      { "internalType": "string", "name": "_symbol", "type": "string" },
+      { "internalType": "address", "name": "_lzEndpoint", "type": "address" },
+      { "internalType": "uint256", "name": "_startId", "type": "uint256" },
+      { "internalType": "uint256", "name": "_maxId", "type": "uint256" },
+      { "internalType": "uint256", "name": "_maxGlobalId", "type": "uint256" },
+      { "internalType": "string", "name": "_baseTokenURI", "type": "string" },
+      { "internalType": "string", "name": "_hiddenURI", "type": "string" },
+      { "internalType": "uint16", "name": "_tax", "type": "uint16" },
+      { "internalType": "uint256", "name": "_price", "type": "uint256" },
+      { "internalType": "address", "name": "_taxRecipient", "type": "address" }
     ],
     "stateMutability": "nonpayable",
     "type": "constructor"
   },
-  { "inputs": [], "name": "AlreadyEnabled", "type": "error" },
-  { "inputs": [], "name": "CallerNotCollectNFT", "type": "error" },
-  { "inputs": [], "name": "CallerNotFollowNFT", "type": "error" },
-  { "inputs": [], "name": "DisablingAlreadyTriggered", "type": "error" },
-  { "inputs": [], "name": "DispatcherNotSet", "type": "error" },
-  { "inputs": [], "name": "EmergencyAdminCannotUnpause", "type": "error" },
-  { "inputs": [], "name": "GuardianEnabled", "type": "error" },
-  { "inputs": [], "name": "InitParamsInvalid", "type": "error" },
-  { "inputs": [], "name": "NotEOA", "type": "error" },
-  { "inputs": [], "name": "NotGovernance", "type": "error" },
-  { "inputs": [], "name": "NotGovernanceOrEmergencyAdmin", "type": "error" },
-  { "inputs": [], "name": "NotOwnerOrApproved", "type": "error" },
-  { "inputs": [], "name": "NotProfileOwner", "type": "error" },
-  { "inputs": [], "name": "NotProfileOwnerOrDispatcher", "type": "error" },
-  { "inputs": [], "name": "Paused", "type": "error" },
-  { "inputs": [], "name": "ProfileCreatorNotWhitelisted", "type": "error" },
-  { "inputs": [], "name": "ProfileImageURILengthInvalid", "type": "error" },
-  { "inputs": [], "name": "PublicationDoesNotExist", "type": "error" },
-  { "inputs": [], "name": "PublishingPaused", "type": "error" },
-  { "inputs": [], "name": "SignatureExpired", "type": "error" },
-  { "inputs": [], "name": "SignatureInvalid", "type": "error" },
+  {
+    "inputs": [],
+    "name": "ApprovalCallerNotOwnerNorApproved",
+    "type": "error"
+  },
+  { "inputs": [], "name": "ApprovalQueryForNonexistentToken", "type": "error" },
+  { "inputs": [], "name": "BalanceQueryForZeroAddress", "type": "error" },
+  { "inputs": [], "name": "MintERC2309QuantityExceedsLimit", "type": "error" },
+  { "inputs": [], "name": "MintToZeroAddress", "type": "error" },
+  { "inputs": [], "name": "MintZeroQuantity", "type": "error" },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "operator", "type": "address" }
+    ],
+    "name": "OperatorNotAllowed",
+    "type": "error"
+  },
+  { "inputs": [], "name": "OwnerQueryForNonexistentToken", "type": "error" },
+  {
+    "inputs": [],
+    "name": "OwnershipNotInitializedForExtraData",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "TransferCallerNotOwnerNorApproved",
+    "type": "error"
+  },
+  { "inputs": [], "name": "TransferFromIncorrectOwner", "type": "error" },
+  {
+    "inputs": [],
+    "name": "TransferToNonERC721ReceiverImplementer",
+    "type": "error"
+  },
+  { "inputs": [], "name": "TransferToZeroAddress", "type": "error" },
+  { "inputs": [], "name": "URIQueryForNonexistentToken", "type": "error" },
   {
     "anonymous": false,
     "inputs": [
@@ -92,6 +107,345 @@
     "inputs": [
       {
         "indexed": true,
+        "internalType": "uint256",
+        "name": "fromTokenId",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "toTokenId",
+        "type": "uint256"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "from",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
+      }
+    ],
+    "name": "ConsecutiveTransfer",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "_hashedPayload",
+        "type": "bytes32"
+      }
+    ],
+    "name": "CreditCleared",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "_hashedPayload",
+        "type": "bytes32"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes",
+        "name": "_payload",
+        "type": "bytes"
+      }
+    ],
+    "name": "CreditStored",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint16",
+        "name": "_srcChainId",
+        "type": "uint16"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes",
+        "name": "_srcAddress",
+        "type": "bytes"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint64",
+        "name": "_nonce",
+        "type": "uint64"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes",
+        "name": "_payload",
+        "type": "bytes"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes",
+        "name": "_reason",
+        "type": "bytes"
+      }
+    ],
+    "name": "MessageFailed",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "previousOwner",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "OwnershipTransferred",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint16",
+        "name": "_srcChainId",
+        "type": "uint16"
+      },
+      {
+        "indexed": true,
+        "internalType": "bytes",
+        "name": "_srcAddress",
+        "type": "bytes"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "_toAddress",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256[]",
+        "name": "_tokenIds",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "ReceiveFromChain",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint16",
+        "name": "_srcChainId",
+        "type": "uint16"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes",
+        "name": "_srcAddress",
+        "type": "bytes"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint64",
+        "name": "_nonce",
+        "type": "uint64"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32",
+        "name": "_payloadHash",
+        "type": "bytes32"
+      }
+    ],
+    "name": "RetryMessageSuccess",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint16",
+        "name": "_dstChainId",
+        "type": "uint16"
+      },
+      {
+        "indexed": true,
+        "internalType": "address",
+        "name": "_from",
+        "type": "address"
+      },
+      {
+        "indexed": true,
+        "internalType": "bytes",
+        "name": "_toAddress",
+        "type": "bytes"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256[]",
+        "name": "_tokenIds",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "SendToChain",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint16",
+        "name": "_dstChainId",
+        "type": "uint16"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_dstChainIdToBatchLimit",
+        "type": "uint256"
+      }
+    ],
+    "name": "SetDstChainIdToBatchLimit",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint16",
+        "name": "_dstChainId",
+        "type": "uint16"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_dstChainIdToTransferGas",
+        "type": "uint256"
+      }
+    ],
+    "name": "SetDstChainIdToTransferGas",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint16",
+        "name": "_dstChainId",
+        "type": "uint16"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint16",
+        "name": "_type",
+        "type": "uint16"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_minDstGas",
+        "type": "uint256"
+      }
+    ],
+    "name": "SetMinDstGas",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "_minGasToTransferAndStore",
+        "type": "uint256"
+      }
+    ],
+    "name": "SetMinGasToTransferAndStore",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "precrime",
+        "type": "address"
+      }
+    ],
+    "name": "SetPrecrime",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint16",
+        "name": "_remoteChainId",
+        "type": "uint16"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes",
+        "name": "_path",
+        "type": "bytes"
+      }
+    ],
+    "name": "SetTrustedRemote",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint16",
+        "name": "_remoteChainId",
+        "type": "uint16"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes",
+        "name": "_remoteAddress",
+        "type": "bytes"
+      }
+    ],
+    "name": "SetTrustedRemoteAddress",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
         "internalType": "address",
         "name": "from",
         "type": "address"
@@ -114,19 +468,59 @@
   },
   {
     "inputs": [],
-    "name": "DANGER__disableTokenGuardian",
-    "outputs": [],
-    "stateMutability": "nonpayable",
+    "name": "DEFAULT_PAYLOAD_SIZE_LIMIT",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "FUNCTION_TYPE_SEND",
+    "outputs": [{ "internalType": "uint16", "name": "", "type": "uint16" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "OPERATOR_FILTER_REGISTRY",
+    "outputs": [
+      {
+        "internalType": "contract IOperatorFilterRegistry",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "_financeDetails",
+    "outputs": [
+      {
+        "internalType": "address payable",
+        "name": "beneficiary",
+        "type": "address"
+      },
+      {
+        "internalType": "address payable",
+        "name": "taxRecipient",
+        "type": "address"
+      },
+      { "internalType": "uint16", "name": "tax", "type": "uint16" },
+      { "internalType": "uint256", "name": "price", "type": "uint256" }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "to", "type": "address" },
+      { "internalType": "address", "name": "operator", "type": "address" },
       { "internalType": "uint256", "name": "tokenId", "type": "uint256" }
     ],
     "name": "approve",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -140,395 +534,77 @@
   },
   {
     "inputs": [
-      { "internalType": "uint256", "name": "tokenId", "type": "uint256" }
+      { "internalType": "bytes", "name": "_payload", "type": "bytes" }
     ],
-    "name": "burn",
+    "name": "clearCredits",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "inputs": [
-      { "internalType": "uint256", "name": "", "type": "uint256" },
-      {
-        "components": [
-          { "internalType": "uint8", "name": "v", "type": "uint8" },
-          { "internalType": "bytes32", "name": "r", "type": "bytes32" },
-          { "internalType": "bytes32", "name": "s", "type": "bytes32" },
-          { "internalType": "uint256", "name": "deadline", "type": "uint256" }
-        ],
-        "internalType": "struct DataTypes.EIP712Signature",
-        "name": "",
-        "type": "tuple"
-      }
-    ],
-    "name": "burnWithSig",
-    "outputs": [],
-    "stateMutability": "pure",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "uint256", "name": "profileId", "type": "uint256" },
-      { "internalType": "uint256", "name": "pubId", "type": "uint256" },
-      { "internalType": "bytes", "name": "data", "type": "bytes" }
-    ],
-    "name": "collect",
+    "inputs": [{ "internalType": "uint16", "name": "", "type": "uint16" }],
+    "name": "dstChainIdToBatchLimit",
     "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "stateMutability": "nonpayable",
+    "stateMutability": "view",
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "components": [
-          { "internalType": "address", "name": "collector", "type": "address" },
-          { "internalType": "uint256", "name": "profileId", "type": "uint256" },
-          { "internalType": "uint256", "name": "pubId", "type": "uint256" },
-          { "internalType": "bytes", "name": "data", "type": "bytes" },
-          {
-            "components": [
-              { "internalType": "uint8", "name": "v", "type": "uint8" },
-              { "internalType": "bytes32", "name": "r", "type": "bytes32" },
-              { "internalType": "bytes32", "name": "s", "type": "bytes32" },
-              {
-                "internalType": "uint256",
-                "name": "deadline",
-                "type": "uint256"
-              }
-            ],
-            "internalType": "struct DataTypes.EIP712Signature",
-            "name": "sig",
-            "type": "tuple"
-          }
-        ],
-        "internalType": "struct DataTypes.CollectWithSigData",
-        "name": "vars",
-        "type": "tuple"
-      }
-    ],
-    "name": "collectWithSig",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "components": [
-          { "internalType": "uint256", "name": "profileId", "type": "uint256" },
-          { "internalType": "string", "name": "contentURI", "type": "string" },
-          {
-            "internalType": "uint256",
-            "name": "profileIdPointed",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "pubIdPointed",
-            "type": "uint256"
-          },
-          {
-            "internalType": "bytes",
-            "name": "referenceModuleData",
-            "type": "bytes"
-          },
-          {
-            "internalType": "address",
-            "name": "collectModule",
-            "type": "address"
-          },
-          {
-            "internalType": "bytes",
-            "name": "collectModuleInitData",
-            "type": "bytes"
-          },
-          {
-            "internalType": "address",
-            "name": "referenceModule",
-            "type": "address"
-          },
-          {
-            "internalType": "bytes",
-            "name": "referenceModuleInitData",
-            "type": "bytes"
-          }
-        ],
-        "internalType": "struct DataTypes.CommentData",
-        "name": "vars",
-        "type": "tuple"
-      }
-    ],
-    "name": "comment",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "components": [
-          { "internalType": "uint256", "name": "profileId", "type": "uint256" },
-          { "internalType": "string", "name": "contentURI", "type": "string" },
-          {
-            "internalType": "uint256",
-            "name": "profileIdPointed",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "pubIdPointed",
-            "type": "uint256"
-          },
-          {
-            "internalType": "bytes",
-            "name": "referenceModuleData",
-            "type": "bytes"
-          },
-          {
-            "internalType": "address",
-            "name": "collectModule",
-            "type": "address"
-          },
-          {
-            "internalType": "bytes",
-            "name": "collectModuleInitData",
-            "type": "bytes"
-          },
-          {
-            "internalType": "address",
-            "name": "referenceModule",
-            "type": "address"
-          },
-          {
-            "internalType": "bytes",
-            "name": "referenceModuleInitData",
-            "type": "bytes"
-          },
-          {
-            "components": [
-              { "internalType": "uint8", "name": "v", "type": "uint8" },
-              { "internalType": "bytes32", "name": "r", "type": "bytes32" },
-              { "internalType": "bytes32", "name": "s", "type": "bytes32" },
-              {
-                "internalType": "uint256",
-                "name": "deadline",
-                "type": "uint256"
-              }
-            ],
-            "internalType": "struct DataTypes.EIP712Signature",
-            "name": "sig",
-            "type": "tuple"
-          }
-        ],
-        "internalType": "struct DataTypes.CommentWithSigData",
-        "name": "vars",
-        "type": "tuple"
-      }
-    ],
-    "name": "commentWithSig",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "components": [
-          { "internalType": "uint256", "name": "profileId", "type": "uint256" },
-          { "internalType": "string", "name": "contentURI", "type": "string" },
-          {
-            "internalType": "uint256",
-            "name": "profileIdPointed",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "pubIdPointed",
-            "type": "uint256"
-          },
-          {
-            "internalType": "bytes",
-            "name": "referenceModuleData",
-            "type": "bytes"
-          },
-          {
-            "internalType": "address",
-            "name": "collectModule",
-            "type": "address"
-          },
-          {
-            "internalType": "bytes",
-            "name": "collectModuleInitData",
-            "type": "bytes"
-          },
-          {
-            "internalType": "address",
-            "name": "referenceModule",
-            "type": "address"
-          },
-          {
-            "internalType": "bytes",
-            "name": "referenceModuleInitData",
-            "type": "bytes"
-          },
-          {
-            "components": [
-              { "internalType": "uint8", "name": "v", "type": "uint8" },
-              { "internalType": "bytes32", "name": "r", "type": "bytes32" },
-              { "internalType": "bytes32", "name": "s", "type": "bytes32" },
-              {
-                "internalType": "uint256",
-                "name": "deadline",
-                "type": "uint256"
-              }
-            ],
-            "internalType": "struct DataTypes.EIP712Signature",
-            "name": "sig",
-            "type": "tuple"
-          }
-        ],
-        "internalType": "struct DataTypes.CommentWithSigData",
-        "name": "vars",
-        "type": "tuple"
-      }
-    ],
-    "name": "commentWithSig_Dispatcher",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "components": [
-          { "internalType": "address", "name": "to", "type": "address" },
-          { "internalType": "string", "name": "handle", "type": "string" },
-          { "internalType": "string", "name": "imageURI", "type": "string" },
-          {
-            "internalType": "address",
-            "name": "followModule",
-            "type": "address"
-          },
-          {
-            "internalType": "bytes",
-            "name": "followModuleInitData",
-            "type": "bytes"
-          },
-          { "internalType": "string", "name": "followNFTURI", "type": "string" }
-        ],
-        "internalType": "struct DataTypes.CreateProfileData",
-        "name": "vars",
-        "type": "tuple"
-      }
-    ],
-    "name": "createProfile",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "address", "name": "wallet", "type": "address" }
-    ],
-    "name": "defaultProfile",
+    "inputs": [{ "internalType": "uint16", "name": "", "type": "uint16" }],
+    "name": "dstChainIdToTransferGas",
     "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "uint256", "name": "profileId", "type": "uint256" },
-      { "internalType": "uint256", "name": "pubId", "type": "uint256" },
-      { "internalType": "uint256", "name": "collectNFTId", "type": "uint256" },
-      { "internalType": "address", "name": "from", "type": "address" },
-      { "internalType": "address", "name": "to", "type": "address" }
+      { "internalType": "uint16", "name": "_dstChainId", "type": "uint16" },
+      { "internalType": "bytes", "name": "_toAddress", "type": "bytes" },
+      { "internalType": "uint256[]", "name": "_tokenIds", "type": "uint256[]" },
+      { "internalType": "bool", "name": "_useZro", "type": "bool" },
+      { "internalType": "bytes", "name": "_adapterParams", "type": "bytes" }
     ],
-    "name": "emitCollectNFTTransferEvent",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "uint256", "name": "profileId", "type": "uint256" },
-      { "internalType": "uint256", "name": "followNFTId", "type": "uint256" },
-      { "internalType": "address", "name": "from", "type": "address" },
-      { "internalType": "address", "name": "to", "type": "address" }
+    "name": "estimateSendBatchFee",
+    "outputs": [
+      { "internalType": "uint256", "name": "nativeFee", "type": "uint256" },
+      { "internalType": "uint256", "name": "zroFee", "type": "uint256" }
     ],
-    "name": "emitFollowNFTTransferEvent",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "enableTokenGuardian",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "uint256", "name": "tokenId", "type": "uint256" }
-    ],
-    "name": "exists",
-    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      {
-        "internalType": "uint256[]",
-        "name": "profileIds",
-        "type": "uint256[]"
-      },
-      { "internalType": "bytes[]", "name": "datas", "type": "bytes[]" }
+      { "internalType": "uint16", "name": "_dstChainId", "type": "uint16" },
+      { "internalType": "bytes", "name": "_toAddress", "type": "bytes" },
+      { "internalType": "uint256", "name": "_tokenId", "type": "uint256" },
+      { "internalType": "bool", "name": "_useZro", "type": "bool" },
+      { "internalType": "bytes", "name": "_adapterParams", "type": "bytes" }
     ],
-    "name": "follow",
+    "name": "estimateSendFee",
     "outputs": [
-      { "internalType": "uint256[]", "name": "", "type": "uint256[]" }
+      { "internalType": "uint256", "name": "nativeFee", "type": "uint256" },
+      { "internalType": "uint256", "name": "zroFee", "type": "uint256" }
     ],
-    "stateMutability": "nonpayable",
+    "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      {
-        "components": [
-          { "internalType": "address", "name": "follower", "type": "address" },
-          {
-            "internalType": "uint256[]",
-            "name": "profileIds",
-            "type": "uint256[]"
-          },
-          { "internalType": "bytes[]", "name": "datas", "type": "bytes[]" },
-          {
-            "components": [
-              { "internalType": "uint8", "name": "v", "type": "uint8" },
-              { "internalType": "bytes32", "name": "r", "type": "bytes32" },
-              { "internalType": "bytes32", "name": "s", "type": "bytes32" },
-              {
-                "internalType": "uint256",
-                "name": "deadline",
-                "type": "uint256"
-              }
-            ],
-            "internalType": "struct DataTypes.EIP712Signature",
-            "name": "sig",
-            "type": "tuple"
-          }
-        ],
-        "internalType": "struct DataTypes.FollowWithSigData",
-        "name": "vars",
-        "type": "tuple"
-      }
+      { "internalType": "uint16", "name": "", "type": "uint16" },
+      { "internalType": "bytes", "name": "", "type": "bytes" },
+      { "internalType": "uint64", "name": "", "type": "uint64" }
     ],
-    "name": "followWithSig",
-    "outputs": [
-      { "internalType": "uint256[]", "name": "", "type": "uint256[]" }
+    "name": "failedMessages",
+    "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint16", "name": "_srcChainId", "type": "uint16" },
+      { "internalType": "bytes", "name": "_srcAddress", "type": "bytes" }
     ],
+    "name": "forceResumeReceive",
+    "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
@@ -543,246 +619,22 @@
   },
   {
     "inputs": [
-      { "internalType": "uint256", "name": "profileId", "type": "uint256" },
-      { "internalType": "uint256", "name": "pubId", "type": "uint256" }
+      { "internalType": "uint16", "name": "_version", "type": "uint16" },
+      { "internalType": "uint16", "name": "_chainId", "type": "uint16" },
+      { "internalType": "address", "name": "", "type": "address" },
+      { "internalType": "uint256", "name": "_configType", "type": "uint256" }
     ],
-    "name": "getCollectModule",
-    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "name": "getConfig",
+    "outputs": [{ "internalType": "bytes", "name": "", "type": "bytes" }],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "uint256", "name": "profileId", "type": "uint256" },
-      { "internalType": "uint256", "name": "pubId", "type": "uint256" }
+      { "internalType": "uint16", "name": "_remoteChainId", "type": "uint16" }
     ],
-    "name": "getCollectNFT",
-    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getCollectNFTImpl",
-    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "uint256", "name": "profileId", "type": "uint256" },
-      { "internalType": "uint256", "name": "pubId", "type": "uint256" }
-    ],
-    "name": "getContentURI",
-    "outputs": [{ "internalType": "string", "name": "", "type": "string" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "uint256", "name": "profileId", "type": "uint256" }
-    ],
-    "name": "getDispatcher",
-    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getDomainSeparator",
-    "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "uint256", "name": "profileId", "type": "uint256" }
-    ],
-    "name": "getFollowModule",
-    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "uint256", "name": "profileId", "type": "uint256" }
-    ],
-    "name": "getFollowNFT",
-    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getFollowNFTImpl",
-    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "uint256", "name": "profileId", "type": "uint256" }
-    ],
-    "name": "getFollowNFTURI",
-    "outputs": [{ "internalType": "string", "name": "", "type": "string" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getGovernance",
-    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "uint256", "name": "profileId", "type": "uint256" }
-    ],
-    "name": "getHandle",
-    "outputs": [{ "internalType": "string", "name": "", "type": "string" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "uint256", "name": "profileId", "type": "uint256" }
-    ],
-    "name": "getProfile",
-    "outputs": [
-      {
-        "components": [
-          { "internalType": "uint256", "name": "pubCount", "type": "uint256" },
-          {
-            "internalType": "address",
-            "name": "followModule",
-            "type": "address"
-          },
-          { "internalType": "address", "name": "followNFT", "type": "address" },
-          { "internalType": "string", "name": "handle", "type": "string" },
-          { "internalType": "string", "name": "imageURI", "type": "string" },
-          { "internalType": "string", "name": "followNFTURI", "type": "string" }
-        ],
-        "internalType": "struct DataTypes.ProfileStruct",
-        "name": "",
-        "type": "tuple"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "string", "name": "handle", "type": "string" }
-    ],
-    "name": "getProfileIdByHandle",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "uint256", "name": "profileId", "type": "uint256" },
-      { "internalType": "uint256", "name": "pubId", "type": "uint256" }
-    ],
-    "name": "getPub",
-    "outputs": [
-      {
-        "components": [
-          {
-            "internalType": "uint256",
-            "name": "profileIdPointed",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "pubIdPointed",
-            "type": "uint256"
-          },
-          { "internalType": "string", "name": "contentURI", "type": "string" },
-          {
-            "internalType": "address",
-            "name": "referenceModule",
-            "type": "address"
-          },
-          {
-            "internalType": "address",
-            "name": "collectModule",
-            "type": "address"
-          },
-          { "internalType": "address", "name": "collectNFT", "type": "address" }
-        ],
-        "internalType": "struct DataTypes.PublicationStruct",
-        "name": "",
-        "type": "tuple"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "uint256", "name": "profileId", "type": "uint256" }
-    ],
-    "name": "getPubCount",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "uint256", "name": "profileId", "type": "uint256" },
-      { "internalType": "uint256", "name": "pubId", "type": "uint256" }
-    ],
-    "name": "getPubPointer",
-    "outputs": [
-      { "internalType": "uint256", "name": "", "type": "uint256" },
-      { "internalType": "uint256", "name": "", "type": "uint256" }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "uint256", "name": "profileId", "type": "uint256" },
-      { "internalType": "uint256", "name": "pubId", "type": "uint256" }
-    ],
-    "name": "getPubType",
-    "outputs": [
-      { "internalType": "enum DataTypes.PubType", "name": "", "type": "uint8" }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "uint256", "name": "profileId", "type": "uint256" },
-      { "internalType": "uint256", "name": "pubId", "type": "uint256" }
-    ],
-    "name": "getReferenceModule",
-    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getState",
-    "outputs": [
-      {
-        "internalType": "enum DataTypes.ProtocolState",
-        "name": "",
-        "type": "uint8"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "address", "name": "wallet", "type": "address" }
-    ],
-    "name": "getTokenGuardianDisablingTimestamp",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "name": "getTrustedRemoteAddress",
+    "outputs": [{ "internalType": "bytes", "name": "", "type": "bytes" }],
     "stateMutability": "view",
     "type": "function"
   },
@@ -798,210 +650,123 @@
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "collectModule", "type": "address" }
+      { "internalType": "uint16", "name": "_srcChainId", "type": "uint16" },
+      { "internalType": "bytes", "name": "_srcAddress", "type": "bytes" }
     ],
-    "name": "isCollectModuleWhitelisted",
+    "name": "isTrustedRemote",
     "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
     "stateMutability": "view",
     "type": "function"
   },
   {
-    "inputs": [
-      { "internalType": "address", "name": "followModule", "type": "address" }
-    ],
-    "name": "isFollowModuleWhitelisted",
-    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "address", "name": "profileCreator", "type": "address" }
-    ],
-    "name": "isProfileCreatorWhitelisted",
-    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
+    "inputs": [],
+    "name": "lzEndpoint",
+    "outputs": [
       {
-        "internalType": "address",
-        "name": "referenceModule",
+        "internalType": "contract ILayerZeroEndpoint",
+        "name": "",
         "type": "address"
       }
     ],
-    "name": "isReferenceModuleWhitelisted",
-    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "uint256", "name": "tokenId", "type": "uint256" }
+      { "internalType": "uint16", "name": "_srcChainId", "type": "uint16" },
+      { "internalType": "bytes", "name": "_srcAddress", "type": "bytes" },
+      { "internalType": "uint64", "name": "_nonce", "type": "uint64" },
+      { "internalType": "bytes", "name": "_payload", "type": "bytes" }
     ],
-    "name": "mintTimestampOf",
+    "name": "lzReceive",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "maxGlobalId",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "maxId",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "maxTokensPerMint",
+    "outputs": [{ "internalType": "uint64", "name": "", "type": "uint64" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "metadata",
+    "outputs": [
+      { "internalType": "string", "name": "baseURI", "type": "string" },
+      {
+        "internalType": "string",
+        "name": "hiddenMetadataURI",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint16", "name": "", "type": "uint16" },
+      { "internalType": "uint16", "name": "", "type": "uint16" }
+    ],
+    "name": "minDstGasLookup",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "minGasToTransferAndStore",
     "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
     "stateMutability": "view",
     "type": "function"
   },
   {
     "inputs": [
-      {
-        "components": [
-          { "internalType": "uint256", "name": "profileId", "type": "uint256" },
-          {
-            "internalType": "uint256",
-            "name": "profileIdPointed",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "pubIdPointed",
-            "type": "uint256"
-          },
-          {
-            "internalType": "bytes",
-            "name": "referenceModuleData",
-            "type": "bytes"
-          },
-          {
-            "internalType": "address",
-            "name": "referenceModule",
-            "type": "address"
-          },
-          {
-            "internalType": "bytes",
-            "name": "referenceModuleInitData",
-            "type": "bytes"
-          }
-        ],
-        "internalType": "struct DataTypes.MirrorData",
-        "name": "vars",
-        "type": "tuple"
-      }
+      { "internalType": "uint256", "name": "_nbTokens", "type": "uint256" }
     ],
-    "name": "mirror",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "components": [
-          { "internalType": "uint256", "name": "profileId", "type": "uint256" },
-          {
-            "internalType": "uint256",
-            "name": "profileIdPointed",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "pubIdPointed",
-            "type": "uint256"
-          },
-          {
-            "internalType": "bytes",
-            "name": "referenceModuleData",
-            "type": "bytes"
-          },
-          {
-            "internalType": "address",
-            "name": "referenceModule",
-            "type": "address"
-          },
-          {
-            "internalType": "bytes",
-            "name": "referenceModuleInitData",
-            "type": "bytes"
-          },
-          {
-            "components": [
-              { "internalType": "uint8", "name": "v", "type": "uint8" },
-              { "internalType": "bytes32", "name": "r", "type": "bytes32" },
-              { "internalType": "bytes32", "name": "s", "type": "bytes32" },
-              {
-                "internalType": "uint256",
-                "name": "deadline",
-                "type": "uint256"
-              }
-            ],
-            "internalType": "struct DataTypes.EIP712Signature",
-            "name": "sig",
-            "type": "tuple"
-          }
-        ],
-        "internalType": "struct DataTypes.MirrorWithSigData",
-        "name": "vars",
-        "type": "tuple"
-      }
-    ],
-    "name": "mirrorWithSig",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "components": [
-          { "internalType": "uint256", "name": "profileId", "type": "uint256" },
-          {
-            "internalType": "uint256",
-            "name": "profileIdPointed",
-            "type": "uint256"
-          },
-          {
-            "internalType": "uint256",
-            "name": "pubIdPointed",
-            "type": "uint256"
-          },
-          {
-            "internalType": "bytes",
-            "name": "referenceModuleData",
-            "type": "bytes"
-          },
-          {
-            "internalType": "address",
-            "name": "referenceModule",
-            "type": "address"
-          },
-          {
-            "internalType": "bytes",
-            "name": "referenceModuleInitData",
-            "type": "bytes"
-          },
-          {
-            "components": [
-              { "internalType": "uint8", "name": "v", "type": "uint8" },
-              { "internalType": "bytes32", "name": "r", "type": "bytes32" },
-              { "internalType": "bytes32", "name": "s", "type": "bytes32" },
-              {
-                "internalType": "uint256",
-                "name": "deadline",
-                "type": "uint256"
-              }
-            ],
-            "internalType": "struct DataTypes.EIP712Signature",
-            "name": "sig",
-            "type": "tuple"
-          }
-        ],
-        "internalType": "struct DataTypes.MirrorWithSigData",
-        "name": "vars",
-        "type": "tuple"
-      }
-    ],
-    "name": "mirrorWithSig_Dispatcher",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "stateMutability": "nonpayable",
+    "name": "mint",
+    "outputs": [],
+    "stateMutability": "payable",
     "type": "function"
   },
   {
     "inputs": [],
     "name": "name",
     "outputs": [{ "internalType": "string", "name": "", "type": "string" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint16", "name": "_srcChainId", "type": "uint16" },
+      { "internalType": "bytes", "name": "_srcAddress", "type": "bytes" },
+      { "internalType": "uint64", "name": "_nonce", "type": "uint64" },
+      { "internalType": "bytes", "name": "_payload", "type": "bytes" }
+    ],
+    "name": "nonblockingLzReceive",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "owner",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
     "stateMutability": "view",
     "type": "function"
   },
@@ -1015,187 +780,36 @@
     "type": "function"
   },
   {
-    "inputs": [
-      { "internalType": "address", "name": "", "type": "address" },
-      { "internalType": "uint256", "name": "", "type": "uint256" },
-      {
-        "components": [
-          { "internalType": "uint8", "name": "v", "type": "uint8" },
-          { "internalType": "bytes32", "name": "r", "type": "bytes32" },
-          { "internalType": "bytes32", "name": "s", "type": "bytes32" },
-          { "internalType": "uint256", "name": "deadline", "type": "uint256" }
-        ],
-        "internalType": "struct DataTypes.EIP712Signature",
-        "name": "",
-        "type": "tuple"
-      }
-    ],
-    "name": "permit",
+    "inputs": [{ "internalType": "uint16", "name": "", "type": "uint16" }],
+    "name": "payloadSizeLimitLookup",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "precrime",
+    "outputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "renounceOwnership",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "", "type": "address" },
-      { "internalType": "address", "name": "", "type": "address" },
-      { "internalType": "bool", "name": "", "type": "bool" },
-      {
-        "components": [
-          { "internalType": "uint8", "name": "v", "type": "uint8" },
-          { "internalType": "bytes32", "name": "r", "type": "bytes32" },
-          { "internalType": "bytes32", "name": "s", "type": "bytes32" },
-          { "internalType": "uint256", "name": "deadline", "type": "uint256" }
-        ],
-        "internalType": "struct DataTypes.EIP712Signature",
-        "name": "",
-        "type": "tuple"
-      }
+      { "internalType": "uint16", "name": "_srcChainId", "type": "uint16" },
+      { "internalType": "bytes", "name": "_srcAddress", "type": "bytes" },
+      { "internalType": "uint64", "name": "_nonce", "type": "uint64" },
+      { "internalType": "bytes", "name": "_payload", "type": "bytes" }
     ],
-    "name": "permitForAll",
+    "name": "retryMessage",
     "outputs": [],
-    "stateMutability": "pure",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "components": [
-          { "internalType": "uint256", "name": "profileId", "type": "uint256" },
-          { "internalType": "string", "name": "contentURI", "type": "string" },
-          {
-            "internalType": "address",
-            "name": "collectModule",
-            "type": "address"
-          },
-          {
-            "internalType": "bytes",
-            "name": "collectModuleInitData",
-            "type": "bytes"
-          },
-          {
-            "internalType": "address",
-            "name": "referenceModule",
-            "type": "address"
-          },
-          {
-            "internalType": "bytes",
-            "name": "referenceModuleInitData",
-            "type": "bytes"
-          }
-        ],
-        "internalType": "struct DataTypes.PostData",
-        "name": "vars",
-        "type": "tuple"
-      }
-    ],
-    "name": "post",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "components": [
-          { "internalType": "uint256", "name": "profileId", "type": "uint256" },
-          { "internalType": "string", "name": "contentURI", "type": "string" },
-          {
-            "internalType": "address",
-            "name": "collectModule",
-            "type": "address"
-          },
-          {
-            "internalType": "bytes",
-            "name": "collectModuleInitData",
-            "type": "bytes"
-          },
-          {
-            "internalType": "address",
-            "name": "referenceModule",
-            "type": "address"
-          },
-          {
-            "internalType": "bytes",
-            "name": "referenceModuleInitData",
-            "type": "bytes"
-          },
-          {
-            "components": [
-              { "internalType": "uint8", "name": "v", "type": "uint8" },
-              { "internalType": "bytes32", "name": "r", "type": "bytes32" },
-              { "internalType": "bytes32", "name": "s", "type": "bytes32" },
-              {
-                "internalType": "uint256",
-                "name": "deadline",
-                "type": "uint256"
-              }
-            ],
-            "internalType": "struct DataTypes.EIP712Signature",
-            "name": "sig",
-            "type": "tuple"
-          }
-        ],
-        "internalType": "struct DataTypes.PostWithSigData",
-        "name": "vars",
-        "type": "tuple"
-      }
-    ],
-    "name": "postWithSig",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "components": [
-          { "internalType": "uint256", "name": "profileId", "type": "uint256" },
-          { "internalType": "string", "name": "contentURI", "type": "string" },
-          {
-            "internalType": "address",
-            "name": "collectModule",
-            "type": "address"
-          },
-          {
-            "internalType": "bytes",
-            "name": "collectModuleInitData",
-            "type": "bytes"
-          },
-          {
-            "internalType": "address",
-            "name": "referenceModule",
-            "type": "address"
-          },
-          {
-            "internalType": "bytes",
-            "name": "referenceModuleInitData",
-            "type": "bytes"
-          },
-          {
-            "components": [
-              { "internalType": "uint8", "name": "v", "type": "uint8" },
-              { "internalType": "bytes32", "name": "r", "type": "bytes32" },
-              { "internalType": "bytes32", "name": "s", "type": "bytes32" },
-              {
-                "internalType": "uint256",
-                "name": "deadline",
-                "type": "uint256"
-              }
-            ],
-            "internalType": "struct DataTypes.EIP712Signature",
-            "name": "sig",
-            "type": "tuple"
-          }
-        ],
-        "internalType": "struct DataTypes.PostWithSigData",
-        "name": "vars",
-        "type": "tuple"
-      }
-    ],
-    "name": "postWithSig_Dispatcher",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -1206,7 +820,7 @@
     ],
     "name": "safeTransferFrom",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -1214,11 +828,57 @@
       { "internalType": "address", "name": "from", "type": "address" },
       { "internalType": "address", "name": "to", "type": "address" },
       { "internalType": "uint256", "name": "tokenId", "type": "uint256" },
-      { "internalType": "bytes", "name": "_data", "type": "bytes" }
+      { "internalType": "bytes", "name": "data", "type": "bytes" }
     ],
     "name": "safeTransferFrom",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "_from", "type": "address" },
+      { "internalType": "uint16", "name": "_dstChainId", "type": "uint16" },
+      { "internalType": "bytes", "name": "_toAddress", "type": "bytes" },
+      { "internalType": "uint256[]", "name": "_tokenIds", "type": "uint256[]" },
+      {
+        "internalType": "address payable",
+        "name": "_refundAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_zroPaymentAddress",
+        "type": "address"
+      },
+      { "internalType": "bytes", "name": "_adapterParams", "type": "bytes" }
+    ],
+    "name": "sendBatchFrom",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "address", "name": "_from", "type": "address" },
+      { "internalType": "uint16", "name": "_dstChainId", "type": "uint16" },
+      { "internalType": "bytes", "name": "_toAddress", "type": "bytes" },
+      { "internalType": "uint256", "name": "_tokenId", "type": "uint256" },
+      {
+        "internalType": "address payable",
+        "name": "_refundAddress",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_zroPaymentAddress",
+        "type": "address"
+      },
+      { "internalType": "bytes", "name": "_adapterParams", "type": "bytes" }
+    ],
+    "name": "sendFrom",
+    "outputs": [],
+    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -1233,51 +893,40 @@
   },
   {
     "inputs": [
-      { "internalType": "uint256", "name": "profileId", "type": "uint256" }
+      { "internalType": "uint16", "name": "_version", "type": "uint16" },
+      { "internalType": "uint16", "name": "_chainId", "type": "uint16" },
+      { "internalType": "uint256", "name": "_configType", "type": "uint256" },
+      { "internalType": "bytes", "name": "_config", "type": "bytes" }
     ],
-    "name": "setDefaultProfile",
+    "name": "setConfig",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [
+      { "internalType": "uint16", "name": "_dstChainId", "type": "uint16" },
       {
-        "components": [
-          { "internalType": "address", "name": "wallet", "type": "address" },
-          { "internalType": "uint256", "name": "profileId", "type": "uint256" },
-          {
-            "components": [
-              { "internalType": "uint8", "name": "v", "type": "uint8" },
-              { "internalType": "bytes32", "name": "r", "type": "bytes32" },
-              { "internalType": "bytes32", "name": "s", "type": "bytes32" },
-              {
-                "internalType": "uint256",
-                "name": "deadline",
-                "type": "uint256"
-              }
-            ],
-            "internalType": "struct DataTypes.EIP712Signature",
-            "name": "sig",
-            "type": "tuple"
-          }
-        ],
-        "internalType": "struct DataTypes.SetDefaultProfileWithSigData",
-        "name": "vars",
-        "type": "tuple"
+        "internalType": "uint256",
+        "name": "_dstChainIdToBatchLimit",
+        "type": "uint256"
       }
     ],
-    "name": "setDefaultProfileWithSig",
+    "name": "setDstChainIdToBatchLimit",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "uint256", "name": "profileId", "type": "uint256" },
-      { "internalType": "address", "name": "dispatcher", "type": "address" }
+      { "internalType": "uint16", "name": "_dstChainId", "type": "uint16" },
+      {
+        "internalType": "uint256",
+        "name": "_dstChainIdToTransferGas",
+        "type": "uint256"
+      }
     ],
-    "name": "setDispatcher",
+    "name": "setDstChainIdToTransferGas",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1286,113 +935,38 @@
     "inputs": [
       {
         "components": [
-          { "internalType": "uint256", "name": "profileId", "type": "uint256" },
           {
-            "internalType": "address",
-            "name": "dispatcher",
+            "internalType": "address payable",
+            "name": "beneficiary",
             "type": "address"
           },
           {
-            "components": [
-              { "internalType": "uint8", "name": "v", "type": "uint8" },
-              { "internalType": "bytes32", "name": "r", "type": "bytes32" },
-              { "internalType": "bytes32", "name": "s", "type": "bytes32" },
-              {
-                "internalType": "uint256",
-                "name": "deadline",
-                "type": "uint256"
-              }
-            ],
-            "internalType": "struct DataTypes.EIP712Signature",
-            "name": "sig",
-            "type": "tuple"
-          }
-        ],
-        "internalType": "struct DataTypes.SetDispatcherWithSigData",
-        "name": "vars",
-        "type": "tuple"
-      }
-    ],
-    "name": "setDispatcherWithSig",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "newEmergencyAdmin",
-        "type": "address"
-      }
-    ],
-    "name": "setEmergencyAdmin",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "uint256", "name": "profileId", "type": "uint256" },
-      { "internalType": "address", "name": "followModule", "type": "address" },
-      {
-        "internalType": "bytes",
-        "name": "followModuleInitData",
-        "type": "bytes"
-      }
-    ],
-    "name": "setFollowModule",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "components": [
-          { "internalType": "uint256", "name": "profileId", "type": "uint256" },
-          {
-            "internalType": "address",
-            "name": "followModule",
+            "internalType": "address payable",
+            "name": "taxRecipient",
             "type": "address"
           },
-          {
-            "internalType": "bytes",
-            "name": "followModuleInitData",
-            "type": "bytes"
-          },
-          {
-            "components": [
-              { "internalType": "uint8", "name": "v", "type": "uint8" },
-              { "internalType": "bytes32", "name": "r", "type": "bytes32" },
-              { "internalType": "bytes32", "name": "s", "type": "bytes32" },
-              {
-                "internalType": "uint256",
-                "name": "deadline",
-                "type": "uint256"
-              }
-            ],
-            "internalType": "struct DataTypes.EIP712Signature",
-            "name": "sig",
-            "type": "tuple"
-          }
+          { "internalType": "uint16", "name": "tax", "type": "uint16" },
+          { "internalType": "uint256", "name": "price", "type": "uint256" }
         ],
-        "internalType": "struct DataTypes.SetFollowModuleWithSigData",
-        "name": "vars",
+        "internalType": "struct AdvancedONFT721ATimed.FinanceDetails",
+        "name": "_finance",
         "type": "tuple"
       }
     ],
-    "name": "setFollowModuleWithSig",
+    "name": "setFinanceDetails",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "uint256", "name": "profileId", "type": "uint256" },
-      { "internalType": "string", "name": "followNFTURI", "type": "string" }
+      {
+        "internalType": "uint64",
+        "name": "_maxTokensPerMint",
+        "type": "uint64"
+      }
     ],
-    "name": "setFollowNFTURI",
+    "name": "setMaxTokensPerMint",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1401,53 +975,53 @@
     "inputs": [
       {
         "components": [
-          { "internalType": "uint256", "name": "profileId", "type": "uint256" },
+          { "internalType": "string", "name": "baseURI", "type": "string" },
           {
             "internalType": "string",
-            "name": "followNFTURI",
+            "name": "hiddenMetadataURI",
             "type": "string"
-          },
-          {
-            "components": [
-              { "internalType": "uint8", "name": "v", "type": "uint8" },
-              { "internalType": "bytes32", "name": "r", "type": "bytes32" },
-              { "internalType": "bytes32", "name": "s", "type": "bytes32" },
-              {
-                "internalType": "uint256",
-                "name": "deadline",
-                "type": "uint256"
-              }
-            ],
-            "internalType": "struct DataTypes.EIP712Signature",
-            "name": "sig",
-            "type": "tuple"
           }
         ],
-        "internalType": "struct DataTypes.SetFollowNFTURIWithSigData",
-        "name": "vars",
+        "internalType": "struct AdvancedONFT721ATimed.Metadata",
+        "name": "_metadata",
         "type": "tuple"
       }
     ],
-    "name": "setFollowNFTURIWithSig",
+    "name": "setMetadata",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "newGovernance", "type": "address" }
+      { "internalType": "uint16", "name": "_dstChainId", "type": "uint16" },
+      { "internalType": "uint16", "name": "_packetType", "type": "uint16" },
+      { "internalType": "uint256", "name": "_minGas", "type": "uint256" }
     ],
-    "name": "setGovernance",
+    "name": "setMinDstGas",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "uint256", "name": "profileId", "type": "uint256" },
-      { "internalType": "string", "name": "imageURI", "type": "string" }
+      {
+        "internalType": "uint256",
+        "name": "_minGasToTransferAndStore",
+        "type": "uint256"
+      }
     ],
-    "name": "setProfileImageURI",
+    "name": "setMinGasToTransferAndStore",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint32", "name": "_start", "type": "uint32" },
+      { "internalType": "uint32", "name": "_end", "type": "uint32" }
+    ],
+    "name": "setMintRange",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1456,51 +1030,106 @@
     "inputs": [
       {
         "components": [
-          { "internalType": "uint256", "name": "profileId", "type": "uint256" },
-          { "internalType": "string", "name": "imageURI", "type": "string" },
-          {
-            "components": [
-              { "internalType": "uint8", "name": "v", "type": "uint8" },
-              { "internalType": "bytes32", "name": "r", "type": "bytes32" },
-              { "internalType": "bytes32", "name": "s", "type": "bytes32" },
-              {
-                "internalType": "uint256",
-                "name": "deadline",
-                "type": "uint256"
-              }
-            ],
-            "internalType": "struct DataTypes.EIP712Signature",
-            "name": "sig",
-            "type": "tuple"
-          }
+          { "internalType": "bool", "name": "saleStarted", "type": "bool" },
+          { "internalType": "bool", "name": "revealed", "type": "bool" },
+          { "internalType": "uint256", "name": "startTime", "type": "uint256" },
+          { "internalType": "uint256", "name": "mintLength", "type": "uint256" }
         ],
-        "internalType": "struct DataTypes.SetProfileImageURIWithSigData",
-        "name": "vars",
+        "internalType": "struct AdvancedONFT721ATimed.NFTState",
+        "name": "_state",
         "type": "tuple"
       }
     ],
-    "name": "setProfileImageURIWithSig",
+    "name": "setNftState",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
     "inputs": [
-      {
-        "internalType": "enum DataTypes.ProtocolState",
-        "name": "newState",
-        "type": "uint8"
-      }
+      { "internalType": "uint16", "name": "_dstChainId", "type": "uint16" },
+      { "internalType": "uint256", "name": "_size", "type": "uint256" }
     ],
-    "name": "setState",
+    "name": "setPayloadSizeLimit",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "inputs": [{ "internalType": "address", "name": "", "type": "address" }],
-    "name": "sigNonces",
+    "inputs": [
+      { "internalType": "address", "name": "_precrime", "type": "address" }
+    ],
+    "name": "setPrecrime",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint16", "name": "_version", "type": "uint16" }
+    ],
+    "name": "setReceiveVersion",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint16", "name": "_version", "type": "uint16" }
+    ],
+    "name": "setSendVersion",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint16", "name": "_srcChainId", "type": "uint16" },
+      { "internalType": "bytes", "name": "_path", "type": "bytes" }
+    ],
+    "name": "setTrustedRemote",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      { "internalType": "uint16", "name": "_remoteChainId", "type": "uint16" },
+      { "internalType": "bytes", "name": "_remoteAddress", "type": "bytes" }
+    ],
+    "name": "setTrustedRemoteAddress",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "startId",
     "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "state",
+    "outputs": [
+      { "internalType": "bool", "name": "saleStarted", "type": "bool" },
+      { "internalType": "bool", "name": "revealed", "type": "bool" },
+      { "internalType": "uint256", "name": "startTime", "type": "uint256" },
+      { "internalType": "uint256", "name": "mintLength", "type": "uint256" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
+    "name": "storedCredits",
+    "outputs": [
+      { "internalType": "uint16", "name": "srcChainId", "type": "uint16" },
+      { "internalType": "address", "name": "toAddress", "type": "address" },
+      { "internalType": "uint256", "name": "index", "type": "uint256" },
+      { "internalType": "bool", "name": "creditsRemain", "type": "bool" }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
@@ -1522,59 +1151,10 @@
   },
   {
     "inputs": [
-      { "internalType": "uint256", "name": "index", "type": "uint256" }
-    ],
-    "name": "tokenByIndex",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "uint256", "name": "tokenId", "type": "uint256" }
-    ],
-    "name": "tokenDataOf",
-    "outputs": [
-      {
-        "components": [
-          { "internalType": "address", "name": "owner", "type": "address" },
-          {
-            "internalType": "uint96",
-            "name": "mintTimestamp",
-            "type": "uint96"
-          }
-        ],
-        "internalType": "struct IERC721Time.TokenData",
-        "name": "",
-        "type": "tuple"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "address", "name": "owner", "type": "address" },
-      { "internalType": "uint256", "name": "index", "type": "uint256" }
-    ],
-    "name": "tokenOfOwnerByIndex",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "uint256", "name": "tokenId", "type": "uint256" }
+      { "internalType": "uint256", "name": "_tokenId", "type": "uint256" }
     ],
     "name": "tokenURI",
     "outputs": [{ "internalType": "string", "name": "", "type": "string" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "totalSupply",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
     "stateMutability": "view",
     "type": "function"
   },
@@ -1586,53 +1166,28 @@
     ],
     "name": "transferFrom",
     "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "payable",
     "type": "function"
   },
   {
     "inputs": [
-      { "internalType": "address", "name": "collectModule", "type": "address" },
-      { "internalType": "bool", "name": "whitelist", "type": "bool" }
+      { "internalType": "address", "name": "newOwner", "type": "address" }
     ],
-    "name": "whitelistCollectModule",
+    "name": "transferOwnership",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
   },
   {
-    "inputs": [
-      { "internalType": "address", "name": "followModule", "type": "address" },
-      { "internalType": "bool", "name": "whitelist", "type": "bool" }
-    ],
-    "name": "whitelistFollowModule",
-    "outputs": [],
-    "stateMutability": "nonpayable",
+    "inputs": [{ "internalType": "uint16", "name": "", "type": "uint16" }],
+    "name": "trustedRemoteLookup",
+    "outputs": [{ "internalType": "bytes", "name": "", "type": "bytes" }],
+    "stateMutability": "view",
     "type": "function"
   },
   {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "profileCreator",
-        "type": "address"
-      },
-      { "internalType": "bool", "name": "whitelist", "type": "bool" }
-    ],
-    "name": "whitelistProfileCreator",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "address",
-        "name": "referenceModule",
-        "type": "address"
-      },
-      { "internalType": "bool", "name": "whitelist", "type": "bool" }
-    ],
-    "name": "whitelistReferenceModule",
+    "inputs": [],
+    "name": "withdraw",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
