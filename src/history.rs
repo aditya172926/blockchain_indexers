@@ -89,6 +89,7 @@ pub async fn get_history(
 
         // println!("Sender:{:?},Recipient:{:?}, Value:{:?}, Contract used:{:?}, Block Number:{:?}, Function Used:{}",from,to,value,contract_used,block_number,function_name);
 
+        let timestamp:String=txn.time_stamp.to_string();
 
         let txn_hash=txn.hash.value().unwrap().to_owned();
 
@@ -118,6 +119,7 @@ pub async fn get_history(
             contract_address.clone().to_owned(),
             String::from(&contract_slug),
             &chain_id,
+            timestamp
         )
         .await;
 

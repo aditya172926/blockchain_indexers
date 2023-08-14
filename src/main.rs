@@ -13,6 +13,7 @@ use std::{error::Error, str::FromStr};
 use tokio::time::{sleep, Duration};
 use web3::transports::Http;
 use web3::Web3;
+use chrono::prelude::*;
 
 // modules
 mod db;
@@ -25,7 +26,7 @@ mod utils;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let contract_result: (structs::ContractMetaData, String, web3::ethabi::Contract) =
-        utils::get_contract_data("omnia_optimism").await;
+        utils::get_contract_data("poap_ethereum").await;
 
     let contract_metadata: structs::ContractMetaData = contract_result.0;
     let contract_fetched_abi: String = contract_result.1;
@@ -53,37 +54,39 @@ async fn main() -> Result<(), Box<dyn Error>> {
     //start: 45608700
     //end: 45608720
 
-    // let start_block: u64 = 	17086038;
-    // let end_block: u64 = 17090591;
-    // let _ = history::get_history(
-    //     &s_contract_address,
+//HISTORY FETCHING STARTS HERE
+let start_block: u64 = 	17086038;
+let end_block: u64 = 17090591;
+let _ = history::get_history(
+    &s_contract_address,
+    &contract_fetched_abi,
+    start_block,
+    end_block,
+    contract_metadata.chain_id,
+    contract_metadata.contract_slug,
+    &network_metadata.network_rpc_url,
+    &network_metadata.network_api_key,
+    contract_metadata.methods,
+    contract_metadata.method_of_interest,
+)
+.await;
+//HISTORY FETCHING ENDS HERE
+
+    // get_txns(
     //     &contract_fetched_abi,
-    //     start_block,
-    //     end_block,
+    //     &contract_instance,
+    //     contract_metadata.function_of_interest,
+    //     s_contract_address,
     //     contract_metadata.chain_id,
+    //     contract_metadata.contract_name,
+    //     contract_metadata.contract_description,
     //     contract_metadata.contract_slug,
-    //     &network_metadata.network_rpc_url,
-    //     &network_metadata.network_api_key,
-    //     contract_metadata.methods,
+    //     network_metadata.network_rpc_url,
+    //     network_metadata.start_block_number,
     //     contract_metadata.method_of_interest,
+    //     contract_metadata.methods,
     // )
     // .await;
-
-    get_txns(
-        &contract_fetched_abi,
-        &contract_instance,
-        contract_metadata.function_of_interest,
-        s_contract_address,
-        contract_metadata.chain_id,
-        contract_metadata.contract_name,
-        contract_metadata.contract_description,
-        contract_metadata.contract_slug,
-        network_metadata.network_rpc_url,
-        network_metadata.start_block_number,
-        contract_metadata.method_of_interest,
-        contract_metadata.methods,
-    )
-    .await;
 
     // let _ = get_events(contract_instance, 17630615).await;
 
@@ -159,6 +162,10 @@ async fn get_txns(
                                 decoded_txn_data.0[1].value
                             );
                         }
+//fetching current time here
+                        let now = Utc::now();
+                        let timestamp: String = now.timestamp().to_string();
+                         println!("Current timestamp is: {}", timestamp);
 
                         println!("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                         println!("{:?}", decoded_txn_data);
@@ -172,6 +179,7 @@ async fn get_txns(
                             contract_address.clone(),
                             String::from(&contract_slug),
                             &chain_id,
+                            timestamp
                         )
                         .await;
                         println!("Added txn:{:?}", transaction_hash);
