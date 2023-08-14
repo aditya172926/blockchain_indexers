@@ -51,10 +51,10 @@
       "network_api_key": "94ce347d7169dbb33b0652a1e81a2aef94939c70",
       "start_block_number": 30474560
     },
-    "8082": {
+     "8082": {
       "network_name": "shardeum",
-      "network_rpc_url": "https://sphinx.shardeum.org/",
-      "network_api_key": "94ce347d7169dbb33b0652a1e81a2aef94939c70",
+      "network_rpc_url": "https://dapps.shardeum.org",
+      "network_api_key": "",
       "start_block_number": 30474560
     },
 
