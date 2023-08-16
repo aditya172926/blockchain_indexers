@@ -14,7 +14,7 @@ pub async fn get_transaction_data<'a>(
 ) -> (Vec<MethodParam<'a>>, String, String, TransactionReceipt) {
     println!("The transaction hash is {:?}", transaction_hash);
 
-    let provider =
+    let provider: Provider<Http> =
         Provider::<Http>::try_from(network_rpc_url).expect("Failed to connect with a Provider");
 
     // getting the transaction details
@@ -22,12 +22,12 @@ pub async fn get_transaction_data<'a>(
         .get_transaction(transaction_hash)
         .await
         .expect("Failed to get the transaction");
-    let transaction_receipt_result = provider
+    let transaction_receipt_result: Result<Option<TransactionReceipt>, ethers::providers::ProviderError> = provider
         .get_transaction_receipt(transaction_hash)
         .await;
         // .expect("Couldn't get the transaction receipt");
 
-    let transaction_receipt = match transaction_receipt_result {
+    let transaction_receipt: TransactionReceipt = match transaction_receipt_result {
         Ok(object) => match object {
             Some(txn_receipt) => txn_receipt,
             None => TransactionReceipt::default()
@@ -145,7 +145,6 @@ pub async fn get_transaction_method_params<'a>(
         if token_length > 0 {
             match name {
                 Ok(i) => {
-                    // let mut input_params: HashMap<String, String> = HashMap::new();
                     let mut input_params: Vec<MethodParam> = Vec::new();
                     while ind < token_length - 1 {
                         let final_tuple: Option<Vec<Token>> = cloned_token.clone().into_tuple();
