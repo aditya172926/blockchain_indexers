@@ -14,10 +14,10 @@ pub fn get_network_data(chain_id: &str) -> Option<NetworkMetaData> {
 
     let network_rpc = match network_details {
         Ok(object) => {
-            let mut network_name: String = object["production"][chain_id]["network_name"].to_string();
-            let mut network_rpc_url: String = object["production"][chain_id]["network_rpc_url"].to_string();
-            let mut network_api_key: String = object["production"][chain_id]["network_api_key"].to_string();
-            let start_block_number: i64 = object["production"][chain_id]["start_block_number"]
+            let mut network_name: String = object["dev"][chain_id]["network_name"].to_string();
+            let mut network_rpc_url: String = object["dev"][chain_id]["network_rpc_url"].to_string();
+            let mut network_api_key: String = object["dev"][chain_id]["network_api_key"].to_string();
+            let start_block_number: i64 = object["dev"][chain_id]["start_block_number"]
                 .to_string()
                 .parse()
                 .unwrap();
