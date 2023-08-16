@@ -15,23 +15,23 @@
     "10": {
       "network_name": "optimism",
       "network_rpc_url": "https://opt-mainnet.g.alchemy.com/v2/cNbADp1_j4D3mL27URpldvfezV7p_az-",
-      "network_api_key": "cNbADp1_j4D3mL27URpldvfezV7p_az-",
+      "network_api_key": "I9KU6GZQHZEUAFAK9KNUXBFX3KXZH7UD6R",
       "start_block_number": 107948402
     },
     "8453": {
       "network_name": "base",
       "network_rpc_url": "https://base-mainnet.unifra.io/v1/b1c589cf045242ab9393075ee56a70bb",
-      "network_api_key": "b1c589cf045242ab9393075ee56a70bb",
+      "network_api_key": "BNB4D32DID6SRTDUSBVJAAU12SP75WQHNT",
       "start_block_number": 2393029
     },
     "56": {
       "network_name": "bsc",
       "network_rpc_url": "https://bsc.getblock.io/7810614b-267b-4f92-adcc-77b98fb53eca/mainnet/",
-      "network_api_key": "94ce347d7169dbb33b0652a1e81a2aef94939c70",
+      "network_api_key": "T58P13HQRUTE28F6VSAF3VII4JXTUZ76E3",
       "start_block_number": 30474560
     }
   },
-  
+
   "dev": {
     "1": {
       "network_name": "mainnet",
@@ -48,26 +48,26 @@
     "56": {
       "network_name": "bsc",
       "network_rpc_url": "https://bsc.getblock.io/7810614b-267b-4f92-adcc-77b98fb53eca/mainnet/",
-      "network_api_key": "94ce347d7169dbb33b0652a1e81a2aef94939c70",
+      "network_api_key": "T58P13HQRUTE28F6VSAF3VII4JXTUZ76E3",
       "start_block_number": 30474560
     },
     "8082": {
       "network_name": "shardeum",
-      "network_rpc_url": "https://sphinx.shardeum.org/",
-      "network_api_key": "94ce347d7169dbb33b0652a1e81a2aef94939c70",
+      "network_rpc_url": "https://dapps.shardeum.org",
+      "network_api_key": "",
       "start_block_number": 30474560
     },
 
     "10": {
       "network_name": "optimism",
       "network_rpc_url": "https://opt-mainnet.g.alchemy.com/v2/cNbADp1_j4D3mL27URpldvfezV7p_az-",
-      "network_api_key": "cNbADp1_j4D3mL27URpldvfezV7p_az-",
+      "network_api_key": "I9KU6GZQHZEUAFAK9KNUXBFX3KXZH7UD6R",
       "start_block_number": 107948402
     },
     "8453": {
       "network_name": "base",
       "network_rpc_url": "https://base-mainnet.unifra.io/v1/b1c589cf045242ab9393075ee56a70bb",
-      "network_api_key": "b1c589cf045242ab9393075ee56a70bb",
+      "network_api_key": "BNB4D32DID6SRTDUSBVJAAU12SP75WQHNT",
       "start_block_number": 2393029
     }
   }

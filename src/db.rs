@@ -1,14 +1,15 @@
+use std::time;
+
 use crate::structs::{ContractData, MethodParam, TransactionData};
 use ethcontract::RawLog;
 use ethers::types::TransactionReceipt;
 use mongodb::{
     bson::{doc, to_bson, Bson, Document},
     options::ClientOptions,
-    Client, 
+    Client,
 };
 use serde::{Serialize, Serializer};
 use serde_json::{json, Value};
-use chrono::prelude::*;
 
 #[derive(Serialize)]
 struct BytesWrapper<'a> {
@@ -60,7 +61,6 @@ pub async fn save_to_db(event: RawLog) -> Result<(), Box<dyn std::error::Error>>
 
     let event_bson: mongodb::bson::Bson = to_bson(&json_object).unwrap();
 
-
     let event_document = doc! {
         "event": event_bson,
         "timestamp": "Testingt time stamp",
@@ -82,23 +82,20 @@ pub async fn save_txn_to_db(
     transaction_receipt: TransactionReceipt,
     contract_address: String,
     contract_slug: String,
-    chain_id: &str
+    chain_id: &str,
+    timestamp: String,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let client_options: ClientOptions = ClientOptions::parse("mongodb+srv://metaworkdao:c106%40bh1@cluster0.h2imk.mongodb.net/metawork?retryWrites=true&w=majority").await?;
     let client: Client = Client::with_options(client_options)?;
     let db: mongodb::Database = client.database("macha_sdk"); // writing transactions to db
     let collection: mongodb::Collection<Document> = db.collection::<Document>("transactions");
 
-    let block_number_option=transaction_receipt.block_number;
-    let block_number = match block_number_option {
-        Some (object) => object.as_u64(),
-        None => 0
-    };
+    let block_number=transaction_receipt.block_number.unwrap().as_u64();
     // let block_number=transaction_receipt.block_number.unwrap().to_string();
 
     let transaction_struct: TransactionData = TransactionData {
         block_hash: transaction_receipt.block_hash,
-        block_number:block_number,
+        block_number: block_number,
         contract_slug: contract_slug,
         contract_address: contract_address,
         chain_id: chain_id.to_string(),
@@ -112,16 +109,11 @@ pub async fn save_txn_to_db(
         method_params: txn_params,
     };
 
-    let now = Utc::now();
-      let ts: String = now.timestamp().to_string();
-    println!("Current timestamp is: {}", ts);
-
-
     // let event_bson: mongodb::bson::Bson = to_bson(&txn).unwrap();
     let transaction_bson_receipt: mongodb::bson::Bson = to_bson(&transaction_struct).unwrap();
     let event_document = doc! {
         "transaction": transaction_bson_receipt,
-        "timestamp": ts,
+        "timestamp": timestamp,
     };
     println!("\n\nThe event document is {:?}\n\n", event_document);
     collection.insert_one(event_document, None).await?;
