@@ -10,7 +10,7 @@ use mongodb::{
     Client, 
 };
 use serde::{Serialize, Serializer};
-use serde_json::{json, Value};
+use serde_json::{json, Value, from_str};
 
 
 #[derive(Serialize)]
@@ -93,7 +93,10 @@ pub async fn save_txn_to_db(
     let db: mongodb::Database = client.database("macha_dev"); // writing transactions to db
     let collection: mongodb::Collection<Document> = db.collection::<Document>("transactions");
 
-    let block_number=transaction_receipt.block_number.unwrap().as_u64();
+    let s_block_no=transaction_receipt.block_number.unwrap().to_string();
+    let block_number:u64=from_str(&s_block_no).unwrap();
+
+    // let block_number=transaction_receipt.block_number.unwrap().as_u64();
     // let block_number=transaction_receipt.block_number.unwrap().to_string();
 
     let transaction_struct: TransactionData = TransactionData {

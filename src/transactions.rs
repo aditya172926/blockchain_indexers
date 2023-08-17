@@ -73,7 +73,15 @@ async fn get_transaction_method<'a>(
     transaction: Option<Transaction>,
     methods: &Document,
 ) -> (Vec<MethodParam<'a>>, String, String) {
-    let input_data: String = transaction.unwrap().input.to_string();
+
+    let mut byte_value:ethers::types::Bytes=ethers::types::Bytes::default();
+    match transaction.unwrap().input{
+        ethers::types::Bytes(i)=>{
+            byte_value=ethers::types::Bytes(i);
+        }
+    }
+    let input_data: String =byte_value.to_string();
+    
     let method_id: &str = &input_data[2..10];
     let input_data = &input_data[10..]; // extracting the transaction hash
 
