@@ -2,7 +2,7 @@ use mongodb::bson::document::ValueAccessError;
 use mongodb::bson::Document;
 
 use crate::db;
-use crate::structs::{ContractMetaData, MethodParam, NetworkMetaData};
+use crate::structs::{ContractMetaData, NetworkMetaData};
 use std::collections::HashSet;
 use std::fs;
 use std::string::String;
@@ -64,8 +64,7 @@ pub async fn get_contract_data(
         // println!("Printing abi from ")
     }
 
-
-    let contract_abi: web3::ethabi::Contract = serde_json::from_str(&contract_fetched_abi).unwrap();
+    let contract_abi = serde_json::from_str(&contract_fetched_abi).unwrap();
 
     return (contract_metadata, contract_fetched_abi, contract_abi);
 }

@@ -1,17 +1,10 @@
-use std::any::Any;
-use std::clone;
-use std::collections::HashMap;
-use std::str::FromStr;
-
-use crate::structs::{MethodParam, MethodParamDataType, MethodParamValue};
-use ethcontract::H256;
+use crate::structs::{MethodParam, MethodParamDataType};
 use ethers::abi::{Abi, Function, Token};
 use ethers::{
     providers::{Http, Middleware, Provider},
     types::{Transaction, TransactionReceipt, TxHash},
 };
 use mongodb::bson::Document;
-use serde_json::from_str;
 
 pub async fn get_transaction_data<'a>(
     abi: &str,
@@ -21,7 +14,7 @@ pub async fn get_transaction_data<'a>(
 ) -> (Vec<MethodParam<'a>>, String, String, TransactionReceipt) {
     println!("The transaction hash is {:?}", transaction_hash);
 
-    let provider =
+    let provider: Provider<Http> =
         Provider::<Http>::try_from(network_rpc_url).expect("Failed to connect with a Provider");
 
     // getting the transaction details
@@ -29,30 +22,39 @@ pub async fn get_transaction_data<'a>(
         .get_transaction(transaction_hash)
         .await
         .expect("Failed to get the transaction");
-    let transaction_receipt: Option<
-        ethers::core::types::transaction::response::TransactionReceipt,
-    > = provider
+    let transaction_receipt_result: Result<Option<TransactionReceipt>, ethers::providers::ProviderError> = provider
         .get_transaction_receipt(transaction_hash)
-        .await
-        .expect("Couldn't get the transaction receipt");
+        .await;
+        // .expect("Couldn't get the transaction receipt");
 
-    let transaction_receipt_formatted:ethers::core::types::transaction::response::TransactionReceipt;
-    match transaction_receipt {
-        (txn) => {
-            match txn {
-                Some(object) => {
-                    transaction_receipt_formatted = object;
-                },
-                None => {
-                    transaction_receipt_formatted = TransactionReceipt::default();
-                }
-            }
-            // transaction_receipt_formatted = txn;
-        }
-        _ => {
-            transaction_receipt_formatted = TransactionReceipt::default();
-        }
-    }
+    let transaction_receipt: TransactionReceipt = match transaction_receipt_result {
+        Ok(object) => match object {
+            Some(txn_receipt) => txn_receipt,
+            None => TransactionReceipt::default()
+        },
+        Err(err) => {
+            println!("Error in fetching transaction receipt {:?}", err);
+            TransactionReceipt::default()
+        } 
+    };
+
+    // let transaction_receipt_formatted:ethers::core::types::transaction::response::TransactionReceipt;
+    // match transaction_receipt {
+    //     txn => {
+    //         match txn {
+    //             Some(object) => {
+    //                 transaction_receipt_formatted = object;
+    //             },
+    //             None => {
+    //                 transaction_receipt_formatted = TransactionReceipt::default();
+    //             }
+    //         }
+    //         // transaction_receipt_formatted = txn;
+    //     }
+    //     _ => {
+    //         transaction_receipt_formatted = TransactionReceipt::default();
+    //     }
+    // }
 
     let contract_abi: &'static Abi = Box::leak(Box::new(
         serde_json::from_str(&abi).expect("Failed to parse abi"),
@@ -64,7 +66,7 @@ pub async fn get_transaction_data<'a>(
         decoded_transaction_data.0, // method_params
         decoded_transaction_data.1, // method name
         decoded_transaction_data.2, // method id
-        transaction_receipt_formatted,
+        transaction_receipt,
     );
 }
 
@@ -151,7 +153,6 @@ pub async fn get_transaction_method_params<'a>(
         if token_length > 0 {
             match name {
                 Ok(i) => {
-                    // let mut input_params: HashMap<String, String> = HashMap::new();
                     let mut input_params: Vec<MethodParam> = Vec::new();
                     while ind < token_length - 1 {
                         let final_tuple: Option<Vec<Token>> = cloned_token.clone().into_tuple();
