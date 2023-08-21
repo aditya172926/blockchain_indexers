@@ -13,6 +13,7 @@ use std::string::String;
 use std::{error::Error, str::FromStr};
 use tokio::time::{sleep, Duration};
 use web3::transports::Http;
+use web3::transports::WebSocket;
 use web3::Web3;
 
 // modules
@@ -34,12 +35,14 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let network_metadata: structs::NetworkMetaData =
         utils::get_network_data(&contract_metadata.chain_id).unwrap();
     println!("{}", network_metadata.network_api_key);
-    let transport: Http = Http::new(&network_metadata.network_rpc_url)?;
-    let web3: Web3<Http> = Web3::new(transport);
+    let transport: WebSocket = WebSocket::new(&network_metadata.network_rpc_url).await?;
+    let web3: Web3<WebSocket> = Web3::new(transport);
+    // let transport: Http = Http::new(&network_metadata.network_rpc_url)?;
+    // let web3: Web3<Http> = Web3::new(transport);
 
     // println!("The contract ABI is {:?}", contract_abi);
     let contract_address_h160 = contract_metadata.contract_address.parse().unwrap();
-    let contract_instance: Instance<Http> = Instance::at(web3, contract_abi, contract_address_h160);
+    let contract_instance: Instance<WebSocket> = Instance::at(web3, contract_abi, contract_address_h160);
 
     let contract_address_string = format!("{:020x}", contract_address_h160);
     let initial = String::from("0x");
@@ -53,9 +56,13 @@ async fn main() -> Result<(), Box<dyn Error>> {
     //start: 45608700
     //end: 45608720
 
+    //for base:
+    //start:2676412
+    //end:2773236
+
     //HISTORY FETCHING STARTS HERE
-    let start_block: u64 = 17394000;
-    let end_block: u64 = 17394604;
+    // let start_block: u64 = 2676412;
+    // let end_block: u64 = 2773236;
     // let _ = history::get_history(
     //     &s_contract_address,
     //     &contract_fetched_abi,
@@ -94,7 +101,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
 async fn get_txns(
     contract_abi: &str,
-    contract_instance: &Instance<Http>,
+    contract_instance: &Instance<WebSocket>,
     function_of_interest: String,
     contract_address: String,
     chain_id: String,
@@ -171,17 +178,17 @@ async fn get_txns(
                         println!("{:?}", decoded_txn_data);
                         println!("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                         if is_interesting_method(&method_of_interest, &decoded_txn_data.1) {
-                            let _ = db::save_txn_to_db(
-                                decoded_txn_data.0, //method_params
-                                decoded_txn_data.1, // function name
-                                decoded_txn_data.2, // function id
-                                decoded_txn_data.3, // transaction receipt
-                                contract_address.clone(),
-                                String::from(&contract_slug),
-                                &chain_id,
-                                timestamp,
-                            )
-                            .await;
+                            // let _ = db::save_txn_to_db(
+                            //     decoded_txn_data.0, //method_params
+                            //     decoded_txn_data.1, // function name
+                            //     decoded_txn_data.2, // function id
+                            //     decoded_txn_data.3, // transaction receipt
+                            //     contract_address.clone(),
+                            //     String::from(&contract_slug),
+                            //     &chain_id,
+                            //     timestamp,
+                            // )
+                            // .await;
                             println!("Added txn:{:?}", transaction_hash);
                         }
                         // println!("{:?}",decoded_txn_data);

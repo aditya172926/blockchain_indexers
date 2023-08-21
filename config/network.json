@@ -66,7 +66,7 @@
     },
     "8453": {
       "network_name": "base",
-      "network_rpc_url": "https://base-mainnet.unifra.io/v1/b1c589cf045242ab9393075ee56a70bb",
+      "network_rpc_url": "wss://base-mainnet.unifra.io/ws/b1c589cf045242ab9393075ee56a70bb",
       "network_api_key": "BNB4D32DID6SRTDUSBVJAAU12SP75WQHNT",
       "start_block_number": 2393029
     }
