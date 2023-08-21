@@ -48,7 +48,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
 
 //SHARDEUM STARTS
-    //  shardeum::get_shardeum_data().await;
+     shardeum::get_shardeum_data().await;
 //SHARDEUM STOPS
 
 
@@ -61,21 +61,21 @@ async fn main() -> Result<(), Box<dyn Error>> {
     //start: 45608700
     //end: 45608720
 
-    let start_block: u64 = 	17872344;
-    let end_block: u64 = 17892570;
-    let _ = history::get_history(
-        &s_contract_address,
-        &contract_fetched_abi,
-        start_block,
-        end_block,
-        contract_metadata.chain_id,
-        contract_metadata.contract_slug,
-        &network_metadata.network_rpc_url,
-        &network_metadata.network_api_key,
-        contract_metadata.methods,
-        contract_metadata.method_of_interest,
-    )
-    .await;
+    // let start_block: u64 = 	17872344;
+    // let end_block: u64 = 17892570;
+    // let _ = history::get_history(
+    //     &s_contract_address,
+    //     &contract_fetched_abi,
+    //     start_block,
+    //     end_block,
+    //     contract_metadata.chain_id,
+    //     contract_metadata.contract_slug,
+    //     &network_metadata.network_rpc_url,
+    //     &network_metadata.network_api_key,
+    //     contract_metadata.methods,
+    //     contract_metadata.method_of_interest,
+    // )
+    // .await;
 
 // HISTORY DATA ENDS
 
