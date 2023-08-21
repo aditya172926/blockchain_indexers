@@ -27,7 +27,7 @@ mod shardeum;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let contract_result: (structs::ContractMetaData, String, web3::ethabi::Contract) =
-        utils::get_contract_data("poap_ethereum").await;
+        utils::get_contract_data("random_shardeum").await;
 
     let contract_metadata: structs::ContractMetaData = contract_result.0;
     let contract_fetched_abi: String = contract_result.1;
@@ -48,7 +48,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
 
 //SHARDEUM STARTS
-     shardeum::get_shardeum_data().await;
+     shardeum::get_shardeum_data(contract_address_string).await;
 //SHARDEUM STOPS
 
 

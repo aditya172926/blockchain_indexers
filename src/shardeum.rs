@@ -3,7 +3,7 @@ use ethers_providers::Middleware;
 use tokio::time::{sleep, Duration};
 
 
-pub async fn get_shardeum_data(){
+pub async fn get_shardeum_data(contract_address:String){
     println!("here");
     let rpc_shardeum_https = "https://sphinx.shardeum.org/";
 
@@ -30,22 +30,22 @@ pub async fn get_shardeum_data(){
     //     sleep(Duration::from_millis(30000)).await; // Sleep for 30 seconds.
     // }
 
-    let transaction_count : u64 = get_transaction_count(cycle_number.clone(), base_url.clone()).await;    
+    let transaction_count : u64 = get_transaction_count(cycle_number.clone(), base_url.clone(),&contract_address).await;    
     println!("transaction_count: {:#?}", transaction_count);
      
-    read_json_loop(cycle_number.clone(), base_url.clone(), transaction_count).await;
+    read_json_loop(cycle_number.clone(), base_url.clone(), transaction_count,contract_address).await;
 
 
 }
 
-async fn get_transaction_count(cycle_number: u64, base_url: String) -> u64   {
+async fn get_transaction_count(cycle_number: u64, base_url: String,contract_address:&str) -> u64   {
 
     let get_request_url = 
         base_url +
         &cycle_number.to_string() +
         "&endCycle=" +
         &cycle_number.to_string()+
-        "&address=0x6ba9c942e41528250c089f26b06e462dc0290884";
+        "&address="+contract_address;
     println!("getRequestUrl: {:#?}", get_request_url);
 
     let new_todo: serde_json::Value = reqwest::Client::new()
@@ -63,7 +63,7 @@ async fn get_transaction_count(cycle_number: u64, base_url: String) -> u64   {
     return new_todo["totalTransactions"].as_u64().unwrap();
 
 }
-async fn read_json_loop(cycle_number: u64, base_url: String, total_transactions: u64) {
+async fn read_json_loop(cycle_number: u64, base_url: String, total_transactions: u64,contract_address:String) {
 
     println!("checking");
 
@@ -77,7 +77,7 @@ async fn read_json_loop(cycle_number: u64, base_url: String, total_transactions:
              &cycle_number.to_string() +
              "&endCycle=" +
              &cycle_number.to_string() + 
-             "&address=0x6ba9c942e41528250c089f26b06e462dc0290884"+
+             "&address="+&contract_address+
              "&page=" + 
              &page_index.to_string();
          println!("the second one: {:#?}", get_request_url);
