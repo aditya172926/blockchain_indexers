@@ -1,7 +1,7 @@
 use crate::structs::{MethodParam, MethodParamDataType};
 use ethers::abi::{Abi, Function, Token};
 use ethers::{
-    providers::{Http, Middleware, Provider},
+    providers::{Http, Middleware, Provider,Ws},
     types::{Transaction, TransactionReceipt, TxHash},
 };
 use mongodb::bson::Document;
@@ -14,15 +14,13 @@ pub async fn get_transaction_data<'a>(
 ) -> (Vec<MethodParam<'a>>, String, String, TransactionReceipt) {
     println!("The transaction hash is {:?}", transaction_hash);
 
-    let provider: Provider<Http> =
-        Provider::<Http>::try_from(network_rpc_url).expect("Failed to connect with a Provider");
-
+    let ws = Provider::<Ws>::connect(network_rpc_url).await.unwrap();
     // getting the transaction details
-    let transaction: Option<ethers::types::Transaction> = provider
+    let transaction: Option<ethers::types::Transaction> = ws
         .get_transaction(transaction_hash)
         .await
         .expect("Failed to get the transaction");
-    let transaction_receipt_result: Result<Option<TransactionReceipt>, ethers::providers::ProviderError> = provider
+    let transaction_receipt_result: Result<Option<TransactionReceipt>, ethers::providers::ProviderError> = ws
         .get_transaction_receipt(transaction_hash)
         .await;
         // .expect("Couldn't get the transaction receipt");
