@@ -11,7 +11,7 @@ use mongodb::bson::Document;
 use std::collections::HashSet;
 use std::string::String;
 use std::{error::Error, str::FromStr};
-use tokio::time::{sleep, Duration};
+use tokio::time::{sleep, Duration, self};
 use web3::transports::Http;
 use web3::transports::WebSocket;
 use web3::Web3;
@@ -133,8 +133,11 @@ async fn get_txns(
 
     println!("Trying...");
     loop {
+        println!("Trying in loop...");
+        sleep(Duration::from_secs(5)).await;
         match event_stream.next().await {
             Some(Ok(log)) => {
+                println!("here");
                 let txn_hash = log.meta.as_ref().unwrap().transaction_hash.to_fixed_bytes();
                 let transaction_hash: H256 = ethers::core::types::TxHash::from(txn_hash);
                 println!("{:?}", transaction_hash);
