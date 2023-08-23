@@ -206,6 +206,14 @@ async fn get_txns(
             }
             Some(Err(e)) => {
                 println!("Error: {}", e);
+                sleep(Duration::from_secs(5)).await;
+
+                event_stream = Box::pin(
+                    contract_instance
+                        .all_events()
+                        .from_block(ethcontract::BlockNumber::from(network_block_number))
+                        .stream(),
+                );
             }
             None => {
                 println!("Stream ended, reconnecting...");
