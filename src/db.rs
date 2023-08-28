@@ -10,7 +10,7 @@ use mongodb::{
 };
 use serde::{Serialize, Serializer};
 use serde_json::{json, Value};
-
+ 
 #[derive(Serialize)]
 struct BytesWrapper<'a> {
     #[serde(serialize_with = "serialize_bytes")]
@@ -121,7 +121,7 @@ pub async fn save_txn_to_db(
         "timestamp": timestamp,
     };
     println!("\n\nThe event document is {:?}\n\n", event_document);
-    collection.insert_one(event_document, None).await?;
+    // collection.insert_one(event_document, None).await?;
     println!("Event document inserted successfully!");
     Ok(())
 }

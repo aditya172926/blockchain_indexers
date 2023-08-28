@@ -14,6 +14,7 @@ use std::{error::Error, str::FromStr};
 use tokio::time::{sleep, Duration};
 use web3::transports::Http;
 use web3::Web3;
+use chrono::prelude::*;
 
 // modules
 mod db;
@@ -22,11 +23,12 @@ mod middleware;
 mod structs;
 mod transactions;
 mod utils;
+mod shardeum;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let contract_result: (structs::ContractMetaData, String, web3::ethabi::Contract) =
-        utils::get_contract_data("lens_polygon").await;
+        utils::get_contract_data("random_shardeum").await;
 
     let contract_metadata: structs::ContractMetaData = contract_result.0;
     let contract_fetched_abi: String = contract_result.1;
@@ -37,7 +39,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let transport: Http = Http::new(&network_metadata.network_rpc_url)?;
     let web3: Web3<Http> = Web3::new(transport);
 
-    // println!("The contract ABI is {:?}", contract_abi);
     let contract_address_h160 = contract_metadata.contract_address.parse().unwrap();
     let contract_instance: Instance<Http> = Instance::at(web3, contract_abi, contract_address_h160);
 
@@ -45,6 +46,13 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let initial = String::from("0x");
     let s_contract_address = format!("{}{}", initial, contract_address_string);
 
+
+//SHARDEUM STARTS
+     shardeum::get_shardeum_data(contract_address_string).await;
+//SHARDEUM STOPS
+
+
+// HISTORY DATA STARTS
     //for eth:
     //start: 17394000
     //end: 17394604
@@ -69,7 +77,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
     //     contract_metadata.method_of_interest,
     // )
     // .await;
-    //HISTORY FETCHING ENDS HERE
 
     get_txns(
         &contract_fetched_abi,
@@ -92,6 +99,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
+
 async fn get_txns(
     contract_abi: &str,
     contract_instance: &Instance<Http>,
@@ -112,8 +120,6 @@ async fn get_txns(
         ethcontract::BlockNumber::from(network_block_number)
     );
 
-    // eth block number:17691422
-    //polygon block number:45033964
     let event_stream = contract_instance
         .all_events()
         .from_block(ethcontract::BlockNumber::from(network_block_number))
