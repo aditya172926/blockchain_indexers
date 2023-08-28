@@ -223,7 +223,7 @@ pub trait TokenToValue {
 impl TokenToValue for Token {
     fn serialize_token_to_json(&self) -> Value {
         match self {
-            Token::Address(addr) => Value::from(format!("0x{}", addr)),
+            Token::Address(addr) => Value::from(format!("0x{:020x}", addr)),
             Token::FixedBytes(bytes) => Value::from(format!("{:?}", bytes)),
             Token::Bytes(bytes) => Value::from(format!("{:?}", bytes)),
             Token::Int(int) => Value::String(int.to_string()),
@@ -235,7 +235,7 @@ impl TokenToValue for Token {
                 Value::from(elements)
             }
             Token::Array(tokens) => {
-                let elements: Vec<String> = tokens.iter().map(|t| ToString::to_string(t)).collect();
+                let elements: Vec<Value> = tokens.iter().map(|t| TokenToValue::serialize_token_to_json(t)).collect();
                 Value::from(elements)
             }
             Token::Tuple(tokens) => {
