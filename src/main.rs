@@ -1,6 +1,7 @@
 use chrono::prelude::*;
 use ethcontract::contract::Instance;
 use ethcontract::prelude::*;
+use ethers::abi::Token;
 use ethers::providers::Provider;
 use ethers::types::{Filter, H256};
 use futures::join;
@@ -8,6 +9,7 @@ use futures::stream::StreamExt;
 use hex::ToHex;
 use mongodb::bson::document::ValueAccessError;
 use mongodb::bson::Document;
+use serde_json::Value;
 use std::collections::HashSet;
 use std::string::String;
 use std::{error::Error, str::FromStr};
@@ -151,9 +153,9 @@ async fn get_txns(
                             && decoded_txn_data.0[1].name == "owner"
                             && &decoded_txn_data.0[1].kind == "address"
                         {
-                            let onwer_value = &decoded_txn_data.0[1].value;
+                            let owner_value = &decoded_txn_data.0[1].value;
                             let initial = String::from("0x");
-                            decoded_txn_data.0[1].value = format!("{:?}{:?}", initial, onwer_value);
+                            decoded_txn_data.0[1].value = Value::String(format!("{:?}{:?}", initial, owner_value));
 
                             println!(
                                 "AFTER====================name:{:?},kind:{:?},value:{:?}=================",

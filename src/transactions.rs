@@ -5,6 +5,7 @@ use ethers::{
     types::{Transaction, TransactionReceipt, TxHash},
 };
 use mongodb::bson::Document;
+use serde_json::{Value, json};
 
 pub async fn get_transaction_data<'a>(
     abi: &str,
@@ -109,6 +110,12 @@ async fn get_transaction_method<'a>(
     }
 }
 
+// pub fn serialize_token_to_json (token: &Token) -> Option<Value> {
+//     let token_json = match token {
+//         Token::Address(value) => json!({"type": "address", "value": value})
+//     };
+// }
+
 pub async fn get_transaction_method_params<'a>(
     contract_abi: &'static Abi,
     method_name: &str,
@@ -167,7 +174,7 @@ pub async fn get_transaction_method_params<'a>(
                                     kind: "".to_string(),
                                     internal_type: &input.internal_type,
                                     data_type: MethodParamDataType::StringValue,
-                                    value: ToString::to_string(&value),
+                                    value: TokenToValue::serialize_token_to_json(&value),
                                 };
                                 method_params.push(input_struct);
                                 // input_params.insert(key, value.to_string());
@@ -194,7 +201,7 @@ pub async fn get_transaction_method_params<'a>(
                 kind: input.kind.to_string(),
                 internal_type: &input.internal_type,
                 data_type: crate::structs::MethodParamDataType::StringValue,
-                value: ToString::to_string(&cloned_token),
+                value: TokenToValue::serialize_token_to_json(&cloned_token),
             };
             method_params.push(method_param);
         }
@@ -209,31 +216,31 @@ pub async fn get_transaction_method_params<'a>(
 
 
 // Implement a trait for Token
-pub trait TokenToString {
-    fn to_string(&self) -> String;
+pub trait TokenToValue {
+    fn serialize_token_to_json(&self) -> Value;
 }
 
-impl TokenToString for Token {
-    fn to_string(&self) -> String {
+impl TokenToValue for Token {
+    fn serialize_token_to_json(&self) -> Value {
         match self {
-            Token::Address(addr) => addr.to_string(),
-            Token::FixedBytes(bytes) => format!("{:?}", bytes),
-            Token::Bytes(bytes) => format!("{:?}", bytes),
-            Token::Int(int) => int.to_string(),
-            Token::Uint(uint) => uint.to_string(),
-            Token::Bool(boolean) => boolean.to_string(),
-            Token::String(string) => string.clone(),
+            Token::Address(addr) => Value::from(format!("0x{}", addr)),
+            Token::FixedBytes(bytes) => Value::from(format!("{:?}", bytes)),
+            Token::Bytes(bytes) => Value::from(format!("{:?}", bytes)),
+            Token::Int(int) => Value::String(int.to_string()),
+            Token::Uint(uint) => Value::String(uint.to_string()),
+            Token::Bool(boolean) => Value::String(boolean.to_string()),
+            Token::String(string) => Value::String(string.clone()),
             Token::FixedArray(tokens) => {
                 let elements: Vec<String> = tokens.iter().map(|t| ToString::to_string(&t)).collect();
-                format!("[{}]", elements.join(", "))
+                Value::from(elements)
             }
             Token::Array(tokens) => {
-                let elements: Vec<String> = tokens.iter().map(|t| TokenToString::to_string(t)).collect();
-                format!("[{}]", elements.join(", "))
+                let elements: Vec<String> = tokens.iter().map(|t| ToString::to_string(t)).collect();
+                Value::from(elements)
             }
             Token::Tuple(tokens) => {
                 let elements: Vec<String> = tokens.iter().map(|t| ToString::to_string(&t)).collect();
-                format!("({})", elements.join(", "))
+                Value::from(elements)
             }
         }
     }
