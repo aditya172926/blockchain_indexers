@@ -28,7 +28,7 @@ mod utils;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let contract_result: (structs::ContractMetaData, String, web3::ethabi::Contract) =
-        utils::get_contract_data("sound_optimism").await;
+        utils::get_contract_data("lens_polygon").await;
 
     let contract_metadata: structs::ContractMetaData = contract_result.0;
     let contract_fetched_abi: String = contract_result.1;
@@ -56,38 +56,38 @@ async fn main() -> Result<(), Box<dyn Error>> {
     //end: 45608720
 
     //HISTORY FETCHING STARTS HERE
-    let start_block: u64 = 108547138;
-    let end_block: u64 = 108577493;
-    let _ = history::get_history(
-        &s_contract_address,
-        &contract_fetched_abi,
-        start_block,
-        end_block,
-        contract_metadata.chain_id,
-        contract_metadata.contract_slug,
-        &network_metadata.network_rpc_url,
-        &network_metadata.network_api_key,
-        contract_metadata.methods,
-        contract_metadata.method_of_interest,
-    )
-    .await;
-    //HISTORY FETCHING ENDS HERE
-
-    // get_txns(
+    // let start_block: u64 = 108547138;
+    // let end_block: u64 = 108577493;
+    // let _ = history::get_history(
+    //     &s_contract_address,
     //     &contract_fetched_abi,
-    //     &contract_instance,
-    //     contract_metadata.function_of_interest,
-    //     s_contract_address,
+    //     start_block,
+    //     end_block,
     //     contract_metadata.chain_id,
-    //     contract_metadata.contract_name,
-    //     contract_metadata.contract_description,
     //     contract_metadata.contract_slug,
-    //     network_metadata.network_rpc_url,
-    //     network_metadata.start_block_number,
-    //     contract_metadata.method_of_interest,
+    //     &network_metadata.network_rpc_url,
+    //     &network_metadata.network_api_key,
     //     contract_metadata.methods,
+    //     contract_metadata.method_of_interest,
     // )
     // .await;
+    //HISTORY FETCHING ENDS HERE
+
+    get_txns(
+        &contract_fetched_abi,
+        &contract_instance,
+        contract_metadata.function_of_interest,
+        s_contract_address,
+        contract_metadata.chain_id,
+        contract_metadata.contract_name,
+        contract_metadata.contract_description,
+        contract_metadata.contract_slug,
+        network_metadata.network_rpc_url,
+        network_metadata.start_block_number,
+        contract_metadata.method_of_interest,
+        contract_metadata.methods,
+    )
+    .await;
 
     // let _ = get_events(contract_instance, 17630615).await;
 
