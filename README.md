@@ -13,9 +13,10 @@ returns -> Result which can be
 
 **Initializing Data Environment** - Before calling the functions which actually indexes the transactions we need to set some data which are required for these functions to work properly.
 
-List of required data
+**List of required data -** 
 <details>
 <summary>1. contract_metadata</summary>
+
 The contract_metadata is a struct of type `ContractMetaData` which contains the basic data fetched from our Mongodb collection `contracts`.
 
 The `ContractMetaData` type:
@@ -32,6 +33,14 @@ pub struct ContractMetaData {
     pub methods:Document,
 }
 ```
+
+Key points
+
+- contract_address: Address of the contract that we will index
+- read_abi_from: Address of the contract from where we get the Application Binary Interface (ABI) of the project smart contract. This is usually required if the above `contract_address` is a proxy contract, then we cannot use that ABI, instead we get it from `read_abi_from`, which will be given by the user.
+- chain_id: Id of the chain where the contract is deployed
+- function_of_interest: A list of functions which will be indexed if a transaction happens on anyone of them
+
 </details>
 
 <details><summary>2. contract_abi</summary></details>
