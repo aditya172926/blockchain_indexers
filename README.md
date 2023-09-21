@@ -14,6 +14,7 @@ returns -> Result which can be
 **Initializing Data Environment** - Before calling the functions which actually indexes the transactions we need to set some data which are required for these functions to work properly.
 
 **List of required data -** 
+
 <details>
 <summary>1. contract_metadata</summary>
 
@@ -43,6 +44,27 @@ Key points
 
 </details>
 
-<details><summary>2. contract_abi</summary></details>
+<details>
+<summary>2. contract_result</summary>
+
+This is tuple of `contract_metadata`, `contract_fetched_abi`, and `contract_abi`.
+The function that returns the data for this comes from utils.rs -> `get_contract_data(contract_slug)`????. 
+</details>
+
+<details>
+<summary>3. contract_abi</summary>
+
+This contains the ABI of the contract that is on the second index position of `contract_result`.
+At first the smart contract ABI is a `String` type, stored in `contract_fetched_abi` variable.
+We convert the `String` type to
+
+</details>
+
+</details>
+
+<details>
+<summary>utils.rs</summary>
+
+
 
 </details>
