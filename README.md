@@ -14,9 +14,7 @@ returns -> Result which can be
 **Initializing Data Environment** - Before calling the functions which actually indexes the transactions we need to set some data which are required for these functions to work properly.
 
 List of required data
-<details>
     1. <details><summary>contract_metadata</summary></details>
     2. <details><summary>contract_abi</summary></details>
-</details>
 
-<details>
+</details>
