@@ -14,7 +14,25 @@ returns -> Result which can be
 **Initializing Data Environment** - Before calling the functions which actually indexes the transactions we need to set some data which are required for these functions to work properly.
 
 List of required data
-    1. <details><summary>contract_metadata</summary></details>
-    2. <details><summary>contract_abi</summary></details>
+    <details><summary>1. contract_metadata</summary>
+    The contract_metadata is a struct of type `ContractMetaData` which contains the basic data fetched from our Mongodb collection `contracts`.
+
+    The `ContractMetaData` type:
+    ```
+    pub struct ContractMetaData {
+        pub contract_address: String,
+        pub read_abi_from: String,
+        pub chain_id: String,
+        pub function_of_interest: String,
+        pub contract_name: String,
+        pub contract_description: String,
+        pub contract_slug: String,
+        pub method_of_interest:std::collections::HashSet<String>,
+        pub methods:Document,
+    }
+    ```
+
+    </details>
+    <details><summary>2. contract_abi</summary></details>
 
 </details>
