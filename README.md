@@ -34,6 +34,6 @@ pub struct ContractMetaData {
 ```
 </details>
 
-    <details><summary>2. contract_abi</summary></details>
+<details><summary>2. contract_abi</summary></details>
 
 </details>
