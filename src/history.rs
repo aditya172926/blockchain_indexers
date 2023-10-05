@@ -31,7 +31,7 @@ pub async fn get_history(
     //chain was to be generalized *IMPORTANT:CHANGE CHAIN NAME ACCORDING TO CONTRACT*
     let client = Client::builder()
         .with_api_key(api_key)
-        .chain(Chain::Optimism)
+        .chain(Chain::Polygon)
         .unwrap()
         .build()
         .unwrap();

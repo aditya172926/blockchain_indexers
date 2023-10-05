@@ -56,21 +56,21 @@ async fn main() -> Result<(), Box<dyn Error>> {
     //end: 45608720
 
     // //HISTORY FETCHING STARTS HERE
-    // let start_block: u64 = 108547138;
-    // let end_block: u64 = 108577493;
-    // let _ = history::get_history(
-    //     &s_contract_address,
-    //     &contract_fetched_abi,
-    //     start_block,
-    //     end_block,
-    //     contract_metadata.chain_id,
-    //     contract_metadata.contract_slug,
-    //     &network_metadata.network_rpc_url,
-    //     &network_metadata.network_api_key,
-    //     contract_metadata.methods,
-    //     contract_metadata.method_of_interest,
-    // )
-    // .await;
+    let start_block: u64 = 48347156;
+    let end_block: u64 = 48349133;
+    let _ = history::get_history(
+        &s_contract_address,
+        &contract_fetched_abi,
+        start_block,
+        end_block,
+        contract_metadata.chain_id,
+        contract_metadata.contract_slug,
+        &network_metadata.network_rpc_url,
+        &network_metadata.network_api_key,
+        contract_metadata.methods,
+        contract_metadata.method_of_interest,
+    )
+    .await;
     //HISTORY FETCHING ENDS HERE
 
     get_txns(
