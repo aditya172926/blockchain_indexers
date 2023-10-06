@@ -7,7 +7,7 @@ use mongodb::bson::{Document, document::ValueAccessError};
 use mongodb::bson::oid::ObjectId;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Debug, Clone)]
+#[derive(Serialize, Debug, Clone,Deserialize)]
 pub enum MethodParamDataType {
     StringValue,
     ComplexData
@@ -19,11 +19,11 @@ pub enum MethodParamValue {
     ComplexData(HashMap<String, String>)
 }
 
-#[derive(Serialize, Debug, Clone)]
-pub struct MethodParam<'a> {
+#[derive(Serialize, Debug, Clone,Deserialize)]
+pub struct MethodParam {
     pub name: String,
     pub kind: String,
-    pub internal_type: &'a std::option::Option<std::string::String>,
+    pub internal_type: std::option::Option<std::string::String>,
     pub data_type: MethodParamDataType,
     pub value: String,
 }
@@ -48,7 +48,7 @@ pub struct ContractData {
     pub interested_events: Vec<String>
 }
 
-#[derive(Serialize, Clone)]
+#[derive(Serialize, Clone,Debug,Deserialize)]
 pub struct TransactionData <'a>{
     pub block_hash: Option<H256>,
     pub block_number: u64,
@@ -62,7 +62,7 @@ pub struct TransactionData <'a>{
     pub txn_hash: H256,
     pub method_name: String,
     pub method_id: String,
-    pub method_params: Vec<MethodParam<'a>>,
+    pub method_params: Vec<MethodParam>,
     // pub status: Option<U64>
 }
 
@@ -149,9 +149,9 @@ pub struct MetaSource {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct IndexedTransaction {
+pub struct IndexedTransaction<'a>{
     pub timestamp: String,
-    pub transaction: TransactionSchema
+    pub transaction: TransactionData<'a>
 }
 
 #[derive(Serialize, Deserialize, Debug)]

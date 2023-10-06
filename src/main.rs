@@ -13,10 +13,10 @@ use std::{error::Error, str::FromStr};
 use tokio::time::{sleep, Duration};
 use web3::transports::Http;
 use web3::Web3;
-use crate::structs::{ContractData, MethodParam, TransactionData};
+use crate::structs::{ContractData, MethodParam, TransactionData, IndexedTransaction, TransactionSchema};
 use chrono::prelude::*;
 use mongodb::{
-    bson::{doc, to_bson, Bson, Document},
+    bson::{doc, to_bson, Bson},
     options::ClientOptions,
     Client, 
 };
@@ -188,7 +188,7 @@ async fn get_txns(
                             block_hash: decoded_txn_data.3.block_hash,
                             block_number:block_number,
                             contract_slug: contract_slug,
-                            contract_address: contract_address,
+                            contract_address: contract_address.clone(),
                             chain_id: chain_id.to_string(),
                             gas_used: decoded_txn_data.3.gas_used,
                             gas_price: decoded_txn_data.3.effective_gas_price,
@@ -199,6 +199,7 @@ async fn get_txns(
                             method_id: decoded_txn_data.2,
                             method_params: decoded_txn_data.0,
                         };    
+                      
 
                         let now = Utc::now();
                         let ts: String = now.timestamp().to_string();
@@ -207,9 +208,9 @@ async fn get_txns(
 
                         // let event_bson: mongodb::bson::Bson = to_bson(&txn).unwrap();
                         let transaction_bson_receipt: mongodb::bson::Bson = to_bson(&transaction_struct).unwrap();
-                        let event_document: Document = doc! {
-                            "transaction": transaction_bson_receipt,
-                            "timestamp": ts,
+                        let event_document: IndexedTransaction = IndexedTransaction {
+                            timestamp: ts,
+                            transaction: transaction_struct,
                         };
                         println!("\n\nThe event document is {:?}\n\n", event_document);
 

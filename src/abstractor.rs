@@ -1,7 +1,10 @@
+
+
 use crate::structs::{MetaSchemaAbstractor, IndexedTransaction};
 use crate::structs::{ Meta, MetaSchema, MetaSource};
-use crate::dbAbstractor::{get_meta_schema};
-use crate::utilsAbstractor::{fetch_contract_abi};
+use abstractorutils::fetch_contract_abi;
+use dbAbstractor;
+// use abstractorutils;
 use ethers::{
     abi::Abi,
     contract::Contract,
@@ -17,8 +20,7 @@ use std::u128;
 use std::{convert::TryFrom, sync::Arc};
 
 
-
-pub async fn create_meta(meta_slug: &str, event_doc:IndexedTransaction) {
+pub async fn create_meta(meta_slug: &str, event_doc:IndexedTransaction<'_>) {
     // should contain at least 100 txns from current_block_no before starting the code.
     let meta_schema_result: Option<Document> = dbAbstractor::get_meta_schema(meta_slug).await;
     let meta_schema = match meta_schema_result {
