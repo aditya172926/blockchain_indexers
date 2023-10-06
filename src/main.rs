@@ -25,19 +25,21 @@ mod utils;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let contract_result: (structs::ContractMetaData, String, web3::ethabi::Contract) =
-        utils::get_contract_data("omnia_optimism").await;
+        utils::get_contract_data("poap_ethereum").await;
 
     let contract_metadata: structs::ContractMetaData = contract_result.0;
     let contract_fetched_abi: String = contract_result.1;
     let contract_abi: web3::ethabi::Contract = contract_result.2;
+
     let network_metadata: structs::NetworkMetaData =
         utils::get_network_data(&contract_metadata.chain_id).unwrap();
         println!("{}",network_metadata.network_api_key);
+        
     let transport: Http = Http::new(&network_metadata.network_rpc_url)?;
     let web3: Web3<Http> = Web3::new(transport);
 
     // println!("The contract ABI is {:?}", contract_abi);
-    let contract_address_h160 = contract_metadata.contract_address.parse().unwrap();
+    let contract_address_h160: H160 = contract_metadata.contract_address.parse().unwrap();
     let contract_instance: Instance<Http> =
         Instance::at(web3, contract_abi, contract_address_h160);
         
@@ -164,7 +166,10 @@ async fn get_txns(
                         println!("{:?}", decoded_txn_data);
                         println!("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                         if is_interesting_method(&method_of_interest,&decoded_txn_data.1) {
-                        let _ = db::save_txn_to_db(
+                            // pivot point
+                            // start the abstractor
+                            
+                        let _ = db::save_txn_to_db( 
                             decoded_txn_data.0, //method_params
                             decoded_txn_data.1, // function name
                             decoded_txn_data.2, // function id

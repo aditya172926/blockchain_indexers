@@ -10,7 +10,7 @@ use std::string::String;
 pub fn get_network_data(chain_id: &str) -> Option<NetworkMetaData> {
     let network_details: String =
         fs::read_to_string(r"config/network.json").expect("Error in reading network.json file");
-    let network_details = serde_json::from_str::<serde_json::Value>(&network_details);
+    let network_details: Result<serde_json::Value, serde_json::Error> = serde_json::from_str::<serde_json::Value>(&network_details);
 
     let network_rpc = match network_details {
         Ok(object) => {
@@ -46,6 +46,7 @@ pub async fn get_contract_data(
     protocol_name: &str,
 ) -> (ContractMetaData, String, web3::ethabi::Contract) {
     let contract_metadata: ContractMetaData = get_contract_metadata(protocol_name).await.unwrap();
+
     println!("The conntract metadata is {:?}", contract_metadata);
     let mut contract_fetched_abi: String = String::new();
     if contract_metadata.read_abi_from.contains("0x") {

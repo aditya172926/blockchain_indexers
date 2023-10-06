@@ -119,12 +119,13 @@ pub async fn save_txn_to_db(
 
     // let event_bson: mongodb::bson::Bson = to_bson(&txn).unwrap();
     let transaction_bson_receipt: mongodb::bson::Bson = to_bson(&transaction_struct).unwrap();
-    let event_document = doc! {
+    let event_document: Document = doc! {
         "transaction": transaction_bson_receipt,
         "timestamp": ts,
     };
     println!("\n\nThe event document is {:?}\n\n", event_document);
-    collection.insert_one(event_document, None).await?;
+    // pass the event document to abstractor loaded_transaction
+    // collection.insert_one(event_document, None).await?;
     println!("Event document inserted successfully!");
     Ok(())
 }
