@@ -13,6 +13,14 @@ use std::{error::Error, str::FromStr};
 use tokio::time::{sleep, Duration};
 use web3::transports::Http;
 use web3::Web3;
+use crate::structs::{ContractData, MethodParam, TransactionData};
+use chrono::prelude::*;
+use mongodb::{
+    bson::{doc, to_bson, Bson, Document},
+    options::ClientOptions,
+    Client, 
+};
+
 
 // modules
 mod db;
@@ -21,6 +29,7 @@ mod middleware;
 mod structs;
 mod transactions;
 mod utils;
+mod abstractor;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -168,17 +177,54 @@ async fn get_txns(
                         if is_interesting_method(&method_of_interest,&decoded_txn_data.1) {
                             // pivot point
                             // start the abstractor
-                            
-                        let _ = db::save_txn_to_db( 
-                            decoded_txn_data.0, //method_params
-                            decoded_txn_data.1, // function name
-                            decoded_txn_data.2, // function id
-                            decoded_txn_data.3, // transaction receipt
-                            contract_address.clone(),
-                            String::from(&contract_slug),
-                            &chain_id,
-                        )
-                        .await;
+                        let block_number_option=decoded_txn_data.3.block_number;
+                        let block_number = match block_number_option {
+                            Some (object) => object.as_u64(),
+                            None => 0
+                        };
+                        // let block_number=transaction_receipt.block_number.unwrap().to_string();
+
+                        let transaction_struct: TransactionData = TransactionData {
+                            block_hash: decoded_txn_data.3.block_hash,
+                            block_number:block_number,
+                            contract_slug: contract_slug,
+                            contract_address: contract_address,
+                            chain_id: chain_id.to_string(),
+                            gas_used: decoded_txn_data.3.gas_used,
+                            gas_price: decoded_txn_data.3.effective_gas_price,
+                            from: decoded_txn_data.3.from,
+                            to: decoded_txn_data.3.to,
+                            txn_hash: decoded_txn_data.3.transaction_hash,
+                            method_name: decoded_txn_data.1,
+                            method_id: decoded_txn_data.2,
+                            method_params: decoded_txn_data.0,
+                        };    
+
+                        let now = Utc::now();
+                        let ts: String = now.timestamp().to_string();
+                        println!("Current timestamp is: {}", ts);
+
+
+                        // let event_bson: mongodb::bson::Bson = to_bson(&txn).unwrap();
+                        let transaction_bson_receipt: mongodb::bson::Bson = to_bson(&transaction_struct).unwrap();
+                        let event_document: Document = doc! {
+                            "transaction": transaction_bson_receipt,
+                            "timestamp": ts,
+                        };
+                        println!("\n\nThe event document is {:?}\n\n", event_document);
+
+                        abstractor::create_meta(&contract_slug,event_document);
+
+                        // let _ = db::save_txn_to_db( 
+                        //     decoded_txn_data.0, //method_params
+                        //     decoded_txn_data.1, // function name
+                        //     decoded_txn_data.2, // function id
+                        //     decoded_txn_data.3, // transaction receipt
+                        //     contract_address.clone(),
+                        //     String::from(&contract_slug),
+                        //     &chain_id,
+                        // )
+                        // .await;
                         println!("Added txn:{:?}", transaction_hash);
                     }
                         // println!("{:?}",decoded_txn_data);
