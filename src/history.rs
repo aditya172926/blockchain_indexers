@@ -29,6 +29,7 @@ pub async fn get_history(
     let _provider = Provider::try_from(rpc_url)?;
 
     //chain was to be generalized *IMPORTANT:CHANGE CHAIN NAME ACCORDING TO CONTRACT*
+    println!("The api key is {:?}", api_key);
     let client = Client::builder()
         .with_api_key(api_key)
         .chain(Chain::Mainnet)
