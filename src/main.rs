@@ -1,15 +1,12 @@
-use chrono::prelude::*;
 use ethcontract::contract::Instance;
 use ethcontract::prelude::*;
-use ethers::abi::Token;
 use ethers::providers::Provider;
-use ethers::types::{Filter, H256};
+use ethers::types::{H256, Filter};
 use futures::join;
 use futures::stream::StreamExt;
 use hex::ToHex;
 use mongodb::bson::document::ValueAccessError;
 use mongodb::bson::Document;
-use serde_json::Value;
 use std::collections::HashSet;
 use std::string::String;
 use std::{error::Error, str::FromStr};
@@ -28,21 +25,24 @@ mod utils;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let contract_result: (structs::ContractMetaData, String, web3::ethabi::Contract) =
-        utils::get_contract_data("lens_polygon").await;
+        utils::get_contract_data("lens_profile_polygon").await;
 
     let contract_metadata: structs::ContractMetaData = contract_result.0;
     let contract_fetched_abi: String = contract_result.1;
     let contract_abi: web3::ethabi::Contract = contract_result.2;
+
     let network_metadata: structs::NetworkMetaData =
         utils::get_network_data(&contract_metadata.chain_id).unwrap();
-    println!("{}", network_metadata.network_api_key);
+        println!("{}",network_metadata.network_api_key);
+        
     let transport: Http = Http::new(&network_metadata.network_rpc_url)?;
     let web3: Web3<Http> = Web3::new(transport);
 
     // println!("The contract ABI is {:?}", contract_abi);
-    let contract_address_h160 = contract_metadata.contract_address.parse().unwrap();
-    let contract_instance: Instance<Http> = Instance::at(web3, contract_abi, contract_address_h160);
-
+    let contract_address_h160: H160 = contract_metadata.contract_address.parse().unwrap();
+    let contract_instance: Instance<Http> =
+        Instance::at(web3, contract_abi, contract_address_h160);
+        
     let contract_address_string = format!("{:020x}", contract_address_h160);
     let initial = String::from("0x");
     let s_contract_address = format!("{}{}", initial, contract_address_string);
@@ -55,9 +55,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
     //start: 45608700
     //end: 45608720
 
-    //HISTORY FETCHING STARTS HERE
-    let start_block: u64 = 48347156;
-    let end_block: u64 = 48349133;
+    let start_block: u64 = 	48392937;
+    let end_block: u64 = 48395536;
     let _ = history::get_history(
         &s_contract_address,
         &contract_fetched_abi,
@@ -71,7 +70,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
         contract_metadata.method_of_interest,
     )
     .await;
-    //HISTORY FETCHING ENDS HERE
 
     // get_txns(
     //     &contract_fetched_abi,
@@ -109,10 +107,7 @@ async fn get_txns(
     methods: Document,
 ) {
     println!("The RPC is {}", network_rpc_url);
-    println!(
-        "The block number is {:?}",
-        ethcontract::BlockNumber::from(network_block_number)
-    );
+    println!("The block number is {:?}", ethcontract::BlockNumber::from(network_block_number));
 
     // eth block number:17691422
     //polygon block number:45033964
@@ -128,11 +123,13 @@ async fn get_txns(
 
     println!("Trying...");
     loop {
+
         match event_stream.next().await {
             Some(Ok(log)) => {
+
                 let txn_hash = log.meta.as_ref().unwrap().transaction_hash.to_fixed_bytes();
                 let transaction_hash: H256 = ethers::core::types::TxHash::from(txn_hash);
-                println!("{:?}", transaction_hash);
+                println!("{:?}",transaction_hash);
 
                 if transaction_hash != prev_txn_hash {
                     let mut decoded_txn_data: (
@@ -153,9 +150,9 @@ async fn get_txns(
                             && decoded_txn_data.0[1].name == "owner"
                             && &decoded_txn_data.0[1].kind == "address"
                         {
-                            let owner_value = &decoded_txn_data.0[1].value;
+                            let onwer_value = &decoded_txn_data.0[1].value;
                             let initial = String::from("0x");
-                            decoded_txn_data.0[1].value = Value::String(format!("{:?}{:?}", initial, owner_value));
+                            decoded_txn_data.0[1].value = format!("{:?}{:?}", initial, onwer_value);
 
                             println!(
                                 "AFTER====================name:{:?},kind:{:?},value:{:?}=================",
@@ -164,28 +161,26 @@ async fn get_txns(
                                 decoded_txn_data.0[1].value
                             );
                         }
-                        //fetching current time here
-                        let now: DateTime<Utc> = Utc::now();
-                        let timestamp: String = now.timestamp().to_string();
-                        println!("Current timestamp is: {}", timestamp);
 
                         println!("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                         println!("{:?}", decoded_txn_data);
                         println!("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-                        if is_interesting_method(&method_of_interest, &decoded_txn_data.1) {
-                            let _ = db::save_txn_to_db(
-                                decoded_txn_data.0, //method_params
-                                decoded_txn_data.1, // function name
-                                decoded_txn_data.2, // function id
-                                decoded_txn_data.3, // transaction receipt
-                                contract_address.clone(),
-                                String::from(&contract_slug),
-                                &chain_id,
-                                timestamp,
-                            )
-                            .await;
-                            println!("Added txn:{:?}", transaction_hash);
-                        }
+                        if is_interesting_method(&method_of_interest,&decoded_txn_data.1) {
+                            // pivot point
+                            // start the abstractor
+                            
+                        let _ = db::save_txn_to_db( 
+                            decoded_txn_data.0, //method_params
+                            decoded_txn_data.1, // function name
+                            decoded_txn_data.2, // function id
+                            decoded_txn_data.3, // transaction receipt
+                            contract_address.clone(),
+                            String::from(&contract_slug),
+                            &chain_id,
+                        )
+                        .await;
+                        println!("Added txn:{:?}", transaction_hash);
+                    }
                         // println!("{:?}",decoded_txn_data);
                         // println!("{:?}",decoded_txn_data);
                         println!("cont_add txn:{:?}", contract_address.clone());
@@ -237,12 +232,15 @@ async fn get_events(
     }
 }
 
-fn is_interesting_method(method_of_interest: &HashSet<String>, method_name: &String) -> bool {
-    if !method_of_interest.is_empty() {
+
+fn is_interesting_method(method_of_interest:&HashSet<String>,method_name:&String)-> bool{
+    if !method_of_interest.is_empty(){
         return method_of_interest.contains(method_name.as_str());
     }
     return true;
 }
+
+
 
 // #[derive(Debug, FromRow)]
 // pub struct MyEvent {

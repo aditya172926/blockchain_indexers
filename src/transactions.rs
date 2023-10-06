@@ -5,7 +5,6 @@ use ethers::{
     types::{Transaction, TransactionReceipt, TxHash},
 };
 use mongodb::bson::Document;
-use serde_json::{Value, json};
 
 pub async fn get_transaction_data<'a>(
     abi: &str,
@@ -15,7 +14,7 @@ pub async fn get_transaction_data<'a>(
 ) -> (Vec<MethodParam<'a>>, String, String, TransactionReceipt) {
     println!("The transaction hash is {:?}", transaction_hash);
 
-    let provider: Provider<Http> =
+    let provider =
         Provider::<Http>::try_from(network_rpc_url).expect("Failed to connect with a Provider");
 
     // getting the transaction details
@@ -23,12 +22,12 @@ pub async fn get_transaction_data<'a>(
         .get_transaction(transaction_hash)
         .await
         .expect("Failed to get the transaction");
-    let transaction_receipt_result: Result<Option<TransactionReceipt>, ethers::providers::ProviderError> = provider
+    let transaction_receipt_result = provider
         .get_transaction_receipt(transaction_hash)
         .await;
         // .expect("Couldn't get the transaction receipt");
 
-    let transaction_receipt: TransactionReceipt = match transaction_receipt_result {
+    let transaction_receipt = match transaction_receipt_result {
         Ok(object) => match object {
             Some(txn_receipt) => txn_receipt,
             None => TransactionReceipt::default()
@@ -76,15 +75,7 @@ async fn get_transaction_method<'a>(
     transaction: Option<Transaction>,
     methods: &Document,
 ) -> (Vec<MethodParam<'a>>, String, String) {
-
-    let mut byte_value:ethers::types::Bytes=ethers::types::Bytes::default();
-    match transaction.unwrap().input{
-        ethers::types::Bytes(i)=>{
-            byte_value=ethers::types::Bytes(i);
-        }
-    }
-    let input_data: String =byte_value.to_string();
-    
+    let input_data: String = transaction.unwrap().input.to_string();
     let method_id: &str = &input_data[2..10];
     let input_data = &input_data[10..]; // extracting the transaction hash
 
@@ -109,12 +100,6 @@ async fn get_transaction_method<'a>(
         return (Vec::new(), "".to_string(), "".to_string());
     }
 }
-
-// pub fn serialize_token_to_json (token: &Token) -> Option<Value> {
-//     let token_json = match token {
-//         Token::Address(value) => json!({"type": "address", "value": value})
-//     };
-// }
 
 pub async fn get_transaction_method_params<'a>(
     contract_abi: &'static Abi,
@@ -160,6 +145,7 @@ pub async fn get_transaction_method_params<'a>(
         if token_length > 0 {
             match name {
                 Ok(i) => {
+                    // let mut input_params: HashMap<String, String> = HashMap::new();
                     let mut input_params: Vec<MethodParam> = Vec::new();
                     while ind < token_length - 1 {
                         let final_tuple: Option<Vec<Token>> = cloned_token.clone().into_tuple();
@@ -174,7 +160,7 @@ pub async fn get_transaction_method_params<'a>(
                                     kind: "".to_string(),
                                     internal_type: &input.internal_type,
                                     data_type: MethodParamDataType::StringValue,
-                                    value: TokenToValue::serialize_token_to_json(&value),
+                                    value: ToString::to_string(&value),
                                 };
                                 method_params.push(input_struct);
                                 // input_params.insert(key, value.to_string());
@@ -201,7 +187,7 @@ pub async fn get_transaction_method_params<'a>(
                 kind: input.kind.to_string(),
                 internal_type: &input.internal_type,
                 data_type: crate::structs::MethodParamDataType::StringValue,
-                value: TokenToValue::serialize_token_to_json(&cloned_token),
+                value: ToString::to_string(&cloned_token),
             };
             method_params.push(method_param);
         }
@@ -216,31 +202,31 @@ pub async fn get_transaction_method_params<'a>(
 
 
 // Implement a trait for Token
-pub trait TokenToValue {
-    fn serialize_token_to_json(&self) -> Value;
+pub trait TokenToString {
+    fn to_string(&self) -> String;
 }
 
-impl TokenToValue for Token {
-    fn serialize_token_to_json(&self) -> Value {
+impl TokenToString for Token {
+    fn to_string(&self) -> String {
         match self {
-            Token::Address(addr) => Value::from(format!("0x{:020x}", addr)),
-            Token::FixedBytes(bytes) => Value::from(format!("{:?}", bytes)),
-            Token::Bytes(bytes) => Value::from(format!("{:?}", bytes)),
-            Token::Int(int) => Value::String(int.to_string()),
-            Token::Uint(uint) => Value::String(uint.to_string()),
-            Token::Bool(boolean) => Value::String(boolean.to_string()),
-            Token::String(string) => Value::String(string.clone()),
+            Token::Address(addr) => addr.to_string(),
+            Token::FixedBytes(bytes) => format!("{:?}", bytes),
+            Token::Bytes(bytes) => format!("{:?}", bytes),
+            Token::Int(int) => int.to_string(),
+            Token::Uint(uint) => uint.to_string(),
+            Token::Bool(boolean) => boolean.to_string(),
+            Token::String(string) => string.clone(),
             Token::FixedArray(tokens) => {
                 let elements: Vec<String> = tokens.iter().map(|t| ToString::to_string(&t)).collect();
-                Value::from(elements)
+                format!("[{}]", elements.join(", "))
             }
             Token::Array(tokens) => {
-                let elements: Vec<Value> = tokens.iter().map(|t| TokenToValue::serialize_token_to_json(t)).collect();
-                Value::from(elements)
+                let elements: Vec<String> = tokens.iter().map(|t| TokenToString::to_string(t)).collect();
+                format!("[{}]", elements.join(", "))
             }
             Token::Tuple(tokens) => {
                 let elements: Vec<String> = tokens.iter().map(|t| ToString::to_string(&t)).collect();
-                Value::from(elements)
+                format!("({})", elements.join(", "))
             }
         }
     }

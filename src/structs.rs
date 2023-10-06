@@ -2,7 +2,6 @@ use ethers::{
     abi::Token,
     types::{H160, H256, U256, U64},
 };
-use serde_json::Value;
 use std::{collections::HashMap, any::Any};
 use mongodb::bson::{Document, document::ValueAccessError};
 use serde::Serialize;
@@ -25,7 +24,7 @@ pub struct MethodParam<'a> {
     pub kind: String,
     pub internal_type: &'a std::option::Option<std::string::String>,
     pub data_type: MethodParamDataType,
-    pub value: Value,
+    pub value: String,
 }
 
 // #[derive(Serialize, Debug, Clone)]
