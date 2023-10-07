@@ -49,7 +49,7 @@ pub struct ContractData {
 }
 
 #[derive(Serialize, Clone,Debug,Deserialize)]
-pub struct TransactionData <'a>{
+pub struct TransactionData {
     pub block_hash: Option<H256>,
     pub block_number: u64,
     pub contract_slug: String,
@@ -148,10 +148,10 @@ pub struct MetaSource {
     pub value: String // this is the transaction hash
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-pub struct IndexedTransaction<'a>{
+#[derive(Serialize, Deserialize, Debug,Clone)]
+pub struct IndexedTransaction{
     pub timestamp: String,
-    pub transaction: TransactionData<'a>
+    pub transaction: TransactionData
 }
 
 #[derive(Serialize, Deserialize, Debug)]

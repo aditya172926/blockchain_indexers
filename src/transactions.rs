@@ -158,7 +158,7 @@ pub async fn get_transaction_method_params<'a>(
                                 let input_struct: MethodParam = MethodParam {
                                     name: input_key,
                                     kind: "".to_string(),
-                                    internal_type: &input.internal_type,
+                                    internal_type: input.internal_type.clone(),
                                     data_type: MethodParamDataType::StringValue,
                                     value: ToString::to_string(&value),
                                 };
@@ -185,7 +185,7 @@ pub async fn get_transaction_method_params<'a>(
             method_param = MethodParam {
                 name: String::from(&input.name),
                 kind: input.kind.to_string(),
-                internal_type: &input.internal_type,
+                internal_type: input.internal_type.clone(),
                 data_type: crate::structs::MethodParamDataType::StringValue,
                 value: ToString::to_string(&cloned_token),
             };

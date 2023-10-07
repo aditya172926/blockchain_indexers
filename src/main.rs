@@ -189,7 +189,7 @@ async fn get_txns(
                         let transaction_struct: TransactionData = TransactionData {
                             block_hash: decoded_txn_data.3.block_hash,
                             block_number:block_number,
-                            contract_slug: contract_slug,
+                            contract_slug:contract_slug.clone(),
                             contract_address: contract_address.clone(),
                             chain_id: chain_id.to_string(),
                             gas_used: decoded_txn_data.3.gas_used,

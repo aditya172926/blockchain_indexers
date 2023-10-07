@@ -56,7 +56,7 @@ pub async fn get_meta_schema(meta_slug: &str) -> Option<Document> {
 
 
 pub async fn update_block_number(
-    block_number: i64,
+    block_number: u64,
     meta_slug: &str,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let client_options: ClientOptions = ClientOptions::parse("mongodb+srv://metaworkdao:c106%40bh1@cluster0.h2imk.mongodb.net/metawork?retryWrites=true&w=majority").await?;
@@ -66,7 +66,7 @@ pub async fn update_block_number(
 
     // let block_number: Bson = to_bson(&meta).unwrap();
     let meta_schema_doc = doc! {"slug": meta_slug, "source.meta_slug": meta_slug};
-    let update_block_query = doc! {"$set": {"source.$.last_block_number": block_number}};
+    let update_block_query = doc! {"$set": {"source.$.last_block_number": block_number as i64}};
     let update_result = collection
         .update_one(meta_schema_doc, update_block_query, None)
         .await?;

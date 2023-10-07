@@ -20,7 +20,7 @@ use std::u128;
 use std::{convert::TryFrom, sync::Arc};
 
 
-pub async fn create_meta(meta_slug: &str, event_doc:IndexedTransaction<'_>) {
+pub async fn create_meta(meta_slug: &str, event_doc:IndexedTransaction) {
     // should contain at least 100 txns from current_block_no before starting the code.
     let meta_schema_result: Option<Document> = get_meta_schema(meta_slug).await;
     let meta_schema = match meta_schema_result {
@@ -123,8 +123,8 @@ pub async fn create_meta(meta_slug: &str, event_doc:IndexedTransaction<'_>) {
             let method: String = element.method;
             let action_type: String = element.action_type;
             // let block_number: i64 = element.last_block_number; // 45584682
-            let block_number: i64 = 17978560;
-            let stop_block_number: i64 = block_number + 50000; //close attention to this 45584707
+            let block_number: u64 = 17978560;
+            let stop_block_number: u64 = block_number + 50000; //close attention to this 45584707
             // let stop_block_number: i64 = 17808560; //close attention to this 45584707
             info!(
                 "block number before -> {} and stop_block_number -> {}\n\n",
@@ -159,7 +159,7 @@ pub async fn create_meta(meta_slug: &str, event_doc:IndexedTransaction<'_>) {
             //     }
             // };
 
-            let mut current_block_number: i64 = 0;
+            let mut current_block_number: u64 = 0;
 
             // let mut index = 0;
 
@@ -169,7 +169,7 @@ pub async fn create_meta(meta_slug: &str, event_doc:IndexedTransaction<'_>) {
                 exit(1);
             }
             println!("this is the txn while loop starting");
-                let loaded_transaction= event_doc;
+                let loaded_transaction= event_doc.clone();
                 
                 // IndexedTransaction = match doc { // pass the event_document from the indexer
                 //     Ok(object) => match mongodb::bson::from_bson(Bson::Document(object)) {
@@ -211,27 +211,28 @@ pub async fn create_meta(meta_slug: &str, event_doc:IndexedTransaction<'_>) {
                     contract: String::from(&contract),
                     method: String::from(&method),
                     action_type: String::from(&action_type),
-                    value: loaded_transaction.transaction.txn_hash,
+                    value: loaded_transaction.transaction.txn_hash.to_string(),
                 });
 
+                 current_block_number=loaded_transaction.transaction.block_number;
                 //get the current block number
-                current_block_number = match loaded_transaction.transaction.block_number.as_i64() {
-                    Some(txn_block_number) => txn_block_number,
-                    None => {
-                        error!("Could not get current_block_number, got None\n\n");
-                        if current_block_number > 0 {
-                            info!("Updating database...\n");
-                            let _ = update_block_number(current_block_number, meta_slug).await;
-                        } else {
-                            info!(
-                                "Requires manual intervention; current_block_number value -> {}\n",
-                                current_block_number
-                            );
-                        }
-                        println!("Process Exiting...\n");
-                        exit(1);
-                    }
-                };
+                // current_block_number = match loaded_transaction.transaction.block_number {
+                //     Some(txn_block_number) => txn_block_number,
+                //     None => {
+                //         error!("Could not get current_block_number, got None\n\n");
+                //         if current_block_number > 0 {
+                //             info!("Updating database...\n");
+                //             let _ = update_block_number(current_block_number, meta_slug).await;
+                //         } else {
+                //             info!(
+                //                 "Requires manual intervention; current_block_number value -> {}\n",
+                //                 current_block_number
+                //             );
+                //         }
+                //         println!("Process Exiting...\n");
+                //         exit(1);
+                //     }
+                // };
                 info!("current block Number: {:?}", current_block_number);
 
                 let mut metadata_list: HashMap<String, HashMap<String, serde_json::Value>> =
@@ -239,12 +240,12 @@ pub async fn create_meta(meta_slug: &str, event_doc:IndexedTransaction<'_>) {
                 let mut raw_hashmap: HashMap<String, serde_json::Value> = HashMap::new();
 
                 let mut meta_id: String = String::new();
-                let meta_owner = loaded_transaction.transaction.from;
+                let meta_owner = format!("{}", loaded_transaction.transaction.from);
 
                 // creating meta loop
                 for param in loaded_transaction.transaction.method_params {
                     if prop_list.contains(&param.name) {
-                        let param_value = param.value.as_str().unwrap();
+                        let param_value = param.value.as_str();
 
                         // ipfs module
                         if ipfs == param.name {
@@ -344,7 +345,7 @@ pub async fn create_meta(meta_slug: &str, event_doc:IndexedTransaction<'_>) {
                             info!("The token url is {:?}\n\n", token_url);
                         }
 
-                        raw_hashmap.insert(String::from(&param.name), param.value);
+                        raw_hashmap.insert(String::from(&param.name), serde_json::Value::String(param.value));
                     }
                 }
                 metadata_list.insert(String::from("raw"), raw_hashmap);
