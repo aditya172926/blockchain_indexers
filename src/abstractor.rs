@@ -2,8 +2,8 @@
 
 use crate::structs::{MetaSchemaAbstractor, IndexedTransaction};
 use crate::structs::{ Meta, MetaSchema, MetaSource};
-use abstractorutils::fetch_contract_abi;
-use dbAbstractor;
+use crate::utilsabstractor::{fetch_contract_abi, get_url_data};
+use crate::dbAbstractor::{get_meta_schema,update_block_number,upload_meta_to_db};
 // use abstractorutils;
 use ethers::{
     abi::Abi,
@@ -22,7 +22,7 @@ use std::{convert::TryFrom, sync::Arc};
 
 pub async fn create_meta(meta_slug: &str, event_doc:IndexedTransaction<'_>) {
     // should contain at least 100 txns from current_block_no before starting the code.
-    let meta_schema_result: Option<Document> = dbAbstractor::get_meta_schema(meta_slug).await;
+    let meta_schema_result: Option<Document> = get_meta_schema(meta_slug).await;
     let meta_schema = match meta_schema_result {
         Some(result) => result,
         None => {
@@ -221,7 +221,7 @@ pub async fn create_meta(meta_slug: &str, event_doc:IndexedTransaction<'_>) {
                         error!("Could not get current_block_number, got None\n\n");
                         if current_block_number > 0 {
                             info!("Updating database...\n");
-                            let _ = dbAbstractor::update_block_number(current_block_number, meta_slug).await;
+                            let _ = update_block_number(current_block_number, meta_slug).await;
                         } else {
                             info!(
                                 "Requires manual intervention; current_block_number value -> {}\n",
@@ -440,7 +440,7 @@ pub async fn create_meta(meta_slug: &str, event_doc:IndexedTransaction<'_>) {
                     };
 
                     info!("The meta is {:?}\n\n", meta);
-                    let _ = dbAbstractor::upload_meta_to_db(meta, meta_id, meta_owner).await;
+                    let _ = upload_meta_to_db(meta, meta_id, meta_owner).await;
                     println!("===============================================================================================\n");
                 }
 
@@ -449,9 +449,9 @@ pub async fn create_meta(meta_slug: &str, event_doc:IndexedTransaction<'_>) {
             info!("after: {}\n", current_block_number);
             info!("Updating database...");
             if current_block_number == 0 {
-                let _ = dbAbstractor::update_block_number(stop_block_number, meta_slug).await;
+                let _ = update_block_number(stop_block_number, meta_slug).await;
             } else {
-                let _ = dbAbstractor::update_block_number(current_block_number, meta_slug).await;
+                let _ = update_block_number(current_block_number, meta_slug).await;
             }
             info!("All the transaction logs between {} and {} are abstracted into metas.\nStart the node again to continue from the latest block number", block_number, stop_block_number);
         }

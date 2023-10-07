@@ -53,3 +53,46 @@ pub async fn get_meta_schema(meta_slug: &str) -> Option<Document> {
         }
     }
 }
+
+
+pub async fn update_block_number(
+    block_number: i64,
+    meta_slug: &str,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let client_options: ClientOptions = ClientOptions::parse("mongodb+srv://metaworkdao:c106%40bh1@cluster0.h2imk.mongodb.net/metawork?retryWrites=true&w=majority").await?;
+    let client: Client = Client::with_options(client_options)?;
+    let db: mongodb::Database = client.database("macha_sdk");
+    let collection: mongodb::Collection<Document> = db.collection::<Document>("metas_schemas");
+
+    // let block_number: Bson = to_bson(&meta).unwrap();
+    let meta_schema_doc = doc! {"slug": meta_slug, "source.meta_slug": meta_slug};
+    let update_block_query = doc! {"$set": {"source.$.last_block_number": block_number}};
+    let update_result = collection
+        .update_one(meta_schema_doc, update_block_query, None)
+        .await?;
+    println!("The update result is {:?}", update_result);
+
+    Ok(())
+}
+
+pub async fn upload_meta_to_db(
+    meta: Meta,
+    meta_id: String,
+    meta_owner: String,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let client_options: ClientOptions = ClientOptions::parse("mongodb+srv://metaworkdao:c106%40bh1@cluster0.h2imk.mongodb.net/metawork?retryWrites=true&w=majority").await?;
+    let client: Client = Client::with_options(client_options)?;
+    let db: mongodb::Database = client.database("macha_sdk");
+    let collection: mongodb::Collection<Document> = db.collection::<Document>("metas");
+
+    let meta_bson: Bson = to_bson(&meta).unwrap();
+    let now = Utc::now();
+    let ts: String = now.timestamp().to_string();
+    println!("Current timestamp is: {}", ts);
+    let meta_doc =
+        doc! {"metaId": meta_id, "metaOwner": meta_owner, "meta": meta_bson, "timestamp": ts};
+    collection.insert_one(meta_doc, None).await?;
+    println!("Inserted meta doc");
+
+    Ok(())
+}

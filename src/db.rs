@@ -76,7 +76,7 @@ pub async fn save_to_db(event: RawLog) -> Result<(), Box<dyn std::error::Error>>
 }
 
 pub async fn save_txn_to_db(
-    txn_params: Vec<MethodParam<'_>>,
+    txn_params: Vec<MethodParam>,
     method_name: String,
     method_id: String,
     transaction_receipt: TransactionReceipt,
