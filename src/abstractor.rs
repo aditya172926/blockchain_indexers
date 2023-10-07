@@ -21,6 +21,7 @@ use std::{convert::TryFrom, sync::Arc};
 
 
 pub async fn create_meta(meta_slug: &str, event_doc:IndexedTransaction) {
+    println!("Entered create_meta now");
     // should contain at least 100 txns from current_block_no before starting the code.
     let meta_schema_result: Option<Document> = get_meta_schema(meta_slug).await;
     let meta_schema = match meta_schema_result {
@@ -440,7 +441,7 @@ pub async fn create_meta(meta_slug: &str, event_doc:IndexedTransaction) {
                         indexable: true,
                     };
 
-                    info!("The meta is {:?}\n\n", meta);
+                    println!("The meta is {:?}\n\n", meta);
                     let _ = upload_meta_to_db(meta, meta_id, meta_owner).await;
                     println!("===============================================================================================\n");
                 }

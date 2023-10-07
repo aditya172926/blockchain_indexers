@@ -36,7 +36,7 @@ mod dbAbstractor;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let contract_result: (structs::ContractMetaData, String, web3::ethabi::Contract) =
-        utils::get_contract_data("poap_ethereum").await;
+        utils::get_contract_data("lens_polygon").await;
 
     let contract_metadata: structs::ContractMetaData = contract_result.0;
     let contract_fetched_abi: String = contract_result.1;
@@ -174,7 +174,7 @@ async fn get_txns(
                         }
 
                         println!("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-                        println!("{:?}", decoded_txn_data);
+                        // println!("{:?}", decoded_txn_data);
                         println!("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
                         if is_interesting_method(&method_of_interest,&decoded_txn_data.1) {
                             // pivot point
@@ -215,8 +215,9 @@ async fn get_txns(
                             transaction: transaction_struct,
                         };
                         println!("\n\nThe event document is {:?}\n\n", event_document);
+                        println!("Creating meta now");
 
-                        abstractor::create_meta(&contract_slug,event_document);
+                        abstractor::create_meta(&contract_slug,event_document).await;
 
                         // let _ = db::save_txn_to_db( 
                         //     decoded_txn_data.0, //method_params

@@ -17,7 +17,7 @@ pub async fn get_meta_schema(meta_slug: &str) -> Option<Document> {
 
     let meta_schema_pipeline = vec![
         doc! {"$match": {
-            "slug": meta_slug
+            "contract_slug": meta_slug
         }},
         doc! {"$lookup": {
             "from": "contracts",
@@ -61,7 +61,7 @@ pub async fn update_block_number(
 ) -> Result<(), Box<dyn std::error::Error>> {
     let client_options: ClientOptions = ClientOptions::parse("mongodb+srv://metaworkdao:c106%40bh1@cluster0.h2imk.mongodb.net/metawork?retryWrites=true&w=majority").await?;
     let client: Client = Client::with_options(client_options)?;
-    let db: mongodb::Database = client.database("macha_sdk");
+    let db: mongodb::Database = client.database("macha_dev");
     let collection: mongodb::Collection<Document> = db.collection::<Document>("metas_schemas");
 
     // let block_number: Bson = to_bson(&meta).unwrap();
@@ -82,7 +82,7 @@ pub async fn upload_meta_to_db(
 ) -> Result<(), Box<dyn std::error::Error>> {
     let client_options: ClientOptions = ClientOptions::parse("mongodb+srv://metaworkdao:c106%40bh1@cluster0.h2imk.mongodb.net/metawork?retryWrites=true&w=majority").await?;
     let client: Client = Client::with_options(client_options)?;
-    let db: mongodb::Database = client.database("macha_sdk");
+    let db: mongodb::Database = client.database("macha_dev");
     let collection: mongodb::Collection<Document> = db.collection::<Document>("metas");
 
     let meta_bson: Bson = to_bson(&meta).unwrap();
