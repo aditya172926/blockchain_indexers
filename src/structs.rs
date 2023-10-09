@@ -4,9 +4,10 @@ use ethers::{
 };
 use std::{collections::HashMap, any::Any};
 use mongodb::bson::{Document, document::ValueAccessError};
-use serde::Serialize;
+use mongodb::bson::oid::ObjectId;
+use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Debug, Clone)]
+#[derive(Serialize, Debug, Clone,Deserialize)]
 pub enum MethodParamDataType {
     StringValue,
     ComplexData
@@ -18,11 +19,11 @@ pub enum MethodParamValue {
     ComplexData(HashMap<String, String>)
 }
 
-#[derive(Serialize, Debug, Clone)]
-pub struct MethodParam<'a> {
+#[derive(Serialize, Debug, Clone,Deserialize)]
+pub struct MethodParam {
     pub name: String,
     pub kind: String,
-    pub internal_type: &'a std::option::Option<std::string::String>,
+    pub internal_type: std::option::Option<std::string::String>,
     pub data_type: MethodParamDataType,
     pub value: String,
 }
@@ -47,8 +48,8 @@ pub struct ContractData {
     pub interested_events: Vec<String>
 }
 
-#[derive(Serialize, Clone)]
-pub struct TransactionData <'a>{
+#[derive(Serialize, Clone,Debug,Deserialize)]
+pub struct TransactionData {
     pub block_hash: Option<H256>,
     pub block_number: u64,
     pub contract_slug: String,
@@ -61,7 +62,7 @@ pub struct TransactionData <'a>{
     pub txn_hash: H256,
     pub method_name: String,
     pub method_id: String,
-    pub method_params: Vec<MethodParam<'a>>,
+    pub method_params: Vec<MethodParam>,
     // pub status: Option<U64>
 }
 
@@ -90,4 +91,89 @@ pub struct MetaSchema {
     pub slug: String,
     pub contract_slug: String,
     pub data: Vec<String>
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct MetaSchemaAbstractor {
+    #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
+    pub id: Option<ObjectId>,
+    pub slug: String,
+    pub data: Vec<DataSchema>,
+    pub source: Vec<SourceSchema>,
+    pub reference: ReferenceSchema
+}
+#[derive(Serialize, Deserialize, Debug)]
+pub struct DataSchema {
+    pub prop: String,
+    pub prop_type: String,
+    #[serde(rename = "prop_field", skip_serializing_if = "Option::is_none")]
+    pub prop_field: Option<String>,
+    #[serde(rename = "prop_default", skip_serializing_if = "Option::is_none")]
+    pub prop_default: Option<serde_json::Value>
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct SourceSchema {
+    pub contract: String,
+    pub action_type: String,
+    pub method: String,
+    pub data: Vec<DataSchema>,
+    pub last_block_number: i64
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct ReferenceSchema {
+    #[serde(rename = "metaId", skip_serializing_if = "Option::is_none")]
+    pub metaId: Option<String>,
+    #[serde(rename = "ipfs", skip_serializing_if = "Option::is_none")]
+    pub ipfs: Option<String>,
+    #[serde(rename = "erc721_module", skip_serializing_if = "Option::is_none")]
+    pub erc721_module: Option<String>
+}
+
+
+#[derive(Serialize, Debug)]
+pub struct Meta {
+    pub slug: String,
+    pub data: HashMap<String, HashMap<String, serde_json::Value>>,
+    pub sources: Vec<MetaSource>,
+    pub indexable: bool
+}
+
+#[derive(Serialize, Debug)]
+pub struct MetaSource {
+    pub contract: String,
+    pub method: String,
+    pub action_type: String,
+    pub value: String // this is the transaction hash
+}
+
+#[derive(Serialize, Deserialize, Debug,Clone)]
+pub struct IndexedTransaction{
+    pub timestamp: String,
+    pub transaction: TransactionData
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct TransactionSchema {
+    pub block_hash: serde_json::Value,
+    pub block_number: serde_json::Value,
+    pub contract_slug: serde_json::Value,
+    pub contract_address: serde_json::Value,
+    pub gas_used: serde_json::Value,
+    pub gas_price: serde_json::Value,
+    pub from: String,
+    pub to: serde_json::Value,
+    pub txn_hash: String,
+    pub method_name: serde_json::Value,
+    pub method_id: serde_json::Value,
+    pub method_params: Vec<MethodParamAbstractor>
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct MethodParamAbstractor {
+    pub name: String,
+    pub kind: String,
+    pub internal_type: std::option::Option<String>,
+    pub value: serde_json::Value,
 }

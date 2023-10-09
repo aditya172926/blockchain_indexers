@@ -11,7 +11,7 @@ pub async fn get_transaction_data<'a>(
     transaction_hash: TxHash,
     network_rpc_url: &str,
     methods: &Document,
-) -> (Vec<MethodParam<'a>>, String, String, TransactionReceipt) {
+) -> (Vec<MethodParam>, String, String, TransactionReceipt) {
     println!("The transaction hash is {:?}", transaction_hash);
 
     let provider =
@@ -74,7 +74,7 @@ async fn get_transaction_method<'a>(
     contract_abi: &'static Abi,
     transaction: Option<Transaction>,
     methods: &Document,
-) -> (Vec<MethodParam<'a>>, String, String) {
+) -> (Vec<MethodParam>, String, String) {
     let input_data: String = transaction.unwrap().input.to_string();
     let method_id: &str = &input_data[2..10];
     let input_data = &input_data[10..]; // extracting the transaction hash
@@ -106,7 +106,7 @@ pub async fn get_transaction_method_params<'a>(
     method_name: &str,
     input_data: &str,
     methods: &Document,
-) -> (Vec<MethodParam<'a>>, String) {
+) -> (Vec<MethodParam>, String) {
     let function: &Function = contract_abi
         .function(&method_name)
         .expect("Function is not found in ABI");
@@ -158,7 +158,7 @@ pub async fn get_transaction_method_params<'a>(
                                 let input_struct: MethodParam = MethodParam {
                                     name: input_key,
                                     kind: "".to_string(),
-                                    internal_type: &input.internal_type,
+                                    internal_type: input.internal_type.clone(),
                                     data_type: MethodParamDataType::StringValue,
                                     value: ToString::to_string(&value),
                                 };
@@ -185,7 +185,7 @@ pub async fn get_transaction_method_params<'a>(
             method_param = MethodParam {
                 name: String::from(&input.name),
                 kind: input.kind.to_string(),
-                internal_type: &input.internal_type,
+                internal_type: input.internal_type.clone(),
                 data_type: crate::structs::MethodParamDataType::StringValue,
                 value: ToString::to_string(&cloned_token),
             };
