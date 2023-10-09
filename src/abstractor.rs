@@ -212,7 +212,7 @@ pub async fn create_meta(meta_slug: &str, event_doc:IndexedTransaction) {
                     contract: String::from(&contract),
                     method: String::from(&method),
                     action_type: String::from(&action_type),
-                    value: loaded_transaction.transaction.txn_hash.to_string(),
+                    value: format!("0x{:020x}", loaded_transaction.transaction.txn_hash),
                 });
 
                  current_block_number=loaded_transaction.transaction.block_number;
@@ -241,7 +241,7 @@ pub async fn create_meta(meta_slug: &str, event_doc:IndexedTransaction) {
                 let mut raw_hashmap: HashMap<String, serde_json::Value> = HashMap::new();
 
                 let mut meta_id: String = String::new();
-                let meta_owner = format!("{}", loaded_transaction.transaction.from);
+                let meta_owner = format!("0x{:020x}", loaded_transaction.transaction.from);
 
                 // creating meta loop
                 for param in loaded_transaction.transaction.method_params {
