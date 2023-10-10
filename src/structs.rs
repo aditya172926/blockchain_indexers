@@ -118,7 +118,7 @@ pub struct SourceSchema {
     pub action_type: String,
     pub method: String,
     pub data: Vec<DataSchema>,
-    pub last_block_number: i64
+    pub last_block_number: u64
 }
 
 #[derive(Serialize, Deserialize, Debug)]
