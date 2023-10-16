@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 use std::str::FromStr;
 
+use chrono::Utc;
 use ethers::core::types::Chain;
 use ethers::etherscan::account::TxListParams;
 use ethers::etherscan::Client;
@@ -9,9 +10,10 @@ use ethers::{
     prelude::account::Sort,
     providers::Provider
 };
-use mongodb::bson::Document;
+use mongodb::bson::{Document, to_bson};
 
-use crate::{structs, transactions,db};
+use crate::structs::{IndexedTransaction, TransactionData};
+use crate::{structs, transactions,db, abstractor};
 
 pub async fn get_history(
     contract_address: &str,
@@ -32,7 +34,7 @@ pub async fn get_history(
     println!("The api key is {:?}", api_key);
     let client = Client::builder()
         .with_api_key(api_key)
-        .chain(Chain::Mainnet)
+        .chain(Chain::Polygon)
         .unwrap()
         .build()
         .unwrap();
@@ -111,16 +113,61 @@ pub async fn get_history(
 
     if decoded_txn_data.1 != "".to_string() {
         if is_interesting_method(&method_of_interest,&decoded_txn_data.1) {
-    let _ = db::save_txn_to_db(
-            decoded_txn_data.0, //method_params
-            decoded_txn_data.1, // function name
-            decoded_txn_data.2, // function id
-            decoded_txn_data.3, // transaction receipt
-            contract_address.clone().to_owned(),
-            String::from(&contract_slug),
-            &chain_id,
-        )
-        .await;
+
+            let block_number_option=decoded_txn_data.3.block_number;
+            let block_number = match block_number_option {
+                Some (object) => object.as_u64(),
+                None => 0
+            };
+            // let block_number=transaction_receipt.block_number.unwrap().to_string();
+
+            let transaction_struct: TransactionData = TransactionData {
+                block_hash: decoded_txn_data.3.block_hash,
+                block_number:block_number,
+                contract_slug:contract_slug.clone(),
+                contract_address: contract_address.clone().to_owned(),
+                chain_id: chain_id.to_string(),
+                gas_used: decoded_txn_data.3.gas_used,
+                gas_price: decoded_txn_data.3.effective_gas_price,
+                from: decoded_txn_data.3.from,
+                to: decoded_txn_data.3.to,
+                txn_hash: decoded_txn_data.3.transaction_hash,
+                method_name: decoded_txn_data.1,
+                method_id: decoded_txn_data.2,
+                method_params: decoded_txn_data.0,
+            };    
+          
+
+            let now = Utc::now();
+            let ts: String = now.timestamp().to_string();
+            println!("Current timestamp is: {}", ts);
+
+
+            // let event_bson: mongodb::bson::Bson = to_bson(&txn).unwrap();
+            let transaction_bson_receipt: mongodb::bson::Bson = to_bson(&transaction_struct).unwrap();
+            let event_document: IndexedTransaction = IndexedTransaction {
+                timestamp: ts,
+                transaction: transaction_struct,
+            };
+            println!("\n\nThe event document is {:?}\n\n", event_document);
+            println!("Creating meta now");
+
+            abstractor::create_meta(&contract_slug,event_document).await;
+
+
+
+
+
+    // let _ = db::save_txn_to_db(
+    //         decoded_txn_data.0, //method_params
+    //         decoded_txn_data.1, // function name
+    //         decoded_txn_data.2, // function id
+    //         decoded_txn_data.3, // transaction receipt
+    //         contract_address.clone().to_owned(),
+    //         String::from(&contract_slug),
+    //         &chain_id,
+    //     )
+    //     .await;
 
     println!("Added txn:{:?}", txn_hash);
         }

@@ -20,6 +20,9 @@ use mongodb::{
     options::ClientOptions,
     Client, 
 };
+use log::{debug, error, info, warn};
+use env_logger::Env;
+
 
 
 // modules
@@ -35,6 +38,7 @@ mod dbAbstractor;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
+    env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
     let contract_result: (structs::ContractMetaData, String, web3::ethabi::Contract) =
         utils::get_contract_data("ens_ethereum").await;
 
@@ -66,8 +70,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
     //start: 45608700
     //end: 45608720
 
-    // let start_block: u64 = 	48391672;
-    // let end_block: u64 = 48393494;
+    // let start_block: u64 = 48315406;
+    // let end_block: u64 = 48320000;
     // let _ = history::get_history(
     //     &s_contract_address,
     //     &contract_fetched_abi,
