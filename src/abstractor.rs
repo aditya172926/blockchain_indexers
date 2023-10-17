@@ -2,7 +2,6 @@ use crate::dbAbstractor::{get_meta_schema, update_block_number, upload_meta_to_d
 use crate::structs::{IndexedTransaction, MetaSchemaAbstractor};
 use crate::structs::{Meta, MetaSchema, MetaSource};
 use crate::utilsabstractor::{fetch_contract_abi, get_url_data};
-use crate::dbAbstractor::{get_meta_schema,update_block_number,upload_meta_to_db};
 use ethcontract::U256;
 // use abstractorutils;
 use ethers::{
