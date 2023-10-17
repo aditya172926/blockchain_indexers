@@ -2,6 +2,8 @@ use crate::dbAbstractor::{get_meta_schema, update_block_number, upload_meta_to_d
 use crate::structs::{IndexedTransaction, MetaSchemaAbstractor};
 use crate::structs::{Meta, MetaSchema, MetaSource};
 use crate::utilsabstractor::{fetch_contract_abi, get_url_data};
+use crate::dbAbstractor::{get_meta_schema,update_block_number,upload_meta_to_db};
+use ethcontract::U256;
 // use abstractorutils;
 use ethers::{
     abi::Abi,
@@ -210,30 +212,34 @@ pub async fn create_meta(meta_slug: &str, event_doc: IndexedTransaction) {
                             param.name, param_value
                         );
 
-                        meta_id = param_value.to_string();
-                        // let token_id = u12param_value;
-                        let token_id = u128::from_str_radix(param_value, 10).unwrap();
-                        info!("The token id is {:?}\n\n", token_id);
+                            meta_id = param_value.to_string();
+                            // let token_id = u12param_value;
+                            let token_id = ethers::types::U256::from_str_radix(param_value, 16).unwrap();
+                            // let token_id=param_value.to_string();
+                            info!("The token id is {:?}\n\n", token_id);
 
-                        let get_token_url =
-                            contract_instance.method::<_, String>("tokenURI", token_id);
+                            let get_token_url =
+                                contract_instance.method::<_, String>("tokenURI", token_id);
+                                println!("get token url {:?}",get_token_url);
 
-                        let token_url = match get_token_url {
-                            Ok(method) => {
-                                let token_url_promise = method.call().await;
-                                match token_url_promise {
-                                    Ok(result) => result,
-                                    Err(e) => {
-                                        error!("Error in contract call -> {:?}\n\n", e);
-                                        String::new()
+                            let token_url = match get_token_url {
+                                Ok(method) => {
+                                    println!("the method is:{:?}",method);  
+                                    let token_url_promise = method.call().await;
+                                    println!("token url promise:{:?}",token_url_promise);
+                                    match token_url_promise {
+                                        Ok(result) => result,
+                                        Err(e) => {
+                                            error!("Error in contract call -> {:?}\n\n", e);
+                                            String::new()
+                                        }
                                     }
                                 }
-                            }
-                            Err(e) => {
-                                error!("Error in get_token_url method from the smart contract {:?}\n\n", e);
-                                String::new()
-                            }
-                        };
+                                Err(e) => {
+                                    error!("Error in get_token_url method from the smart contract {:?}\n\n", e);
+                                    String::new()
+                                }
+                            };
 
                         if !token_url.is_empty() {
                             let response = get_url_data(&token_url).await;

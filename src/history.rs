@@ -34,7 +34,7 @@ pub async fn get_history(
     println!("The api key is {:?}", api_key);
     let client = Client::builder()
         .with_api_key(api_key)
-        .chain(Chain::Polygon)
+        .chain(Chain::Mainnet)
         .unwrap()
         .build()
         .unwrap();

@@ -30,7 +30,7 @@ where
 pub async fn db_contract_data(contract_slug: &str) -> Option<Document> {
     let client_options: ClientOptions = ClientOptions::parse("mongodb+srv://metaworkdao:c106%40bh1@cluster0.h2imk.mongodb.net/metawork?retryWrites=true&w=majority").await.unwrap();
     let client: Client = Client::with_options(client_options).unwrap();
-    let db: mongodb::Database = client.database("macha_sdk"); // reading contract data
+    let db: mongodb::Database = client.database("macha_dev"); // reading contract data
     let collection: mongodb::Collection<Document> = db.collection::<Document>("contracts");
 
     let result: Option<Document> = collection
@@ -55,7 +55,7 @@ pub async fn save_to_db(event: RawLog) -> Result<(), Box<dyn std::error::Error>>
 
     let client_options = ClientOptions::parse("mongodb+srv://metaworkdao:c106%40bh1@cluster0.h2imk.mongodb.net/metawork?retryWrites=true&w=majority").await?;
     let client = Client::with_options(client_options)?;
-    let db = client.database("macha_sdk"); // writing events to db
+    let db = client.database("macha_dev"); // writing events to db
     let collection = db.collection::<Document>("events");
 
     let event_bson: mongodb::bson::Bson = to_bson(&json_object).unwrap();
@@ -85,7 +85,7 @@ pub async fn save_txn_to_db(
 ) -> Result<(), Box<dyn std::error::Error>> {
     let client_options: ClientOptions = ClientOptions::parse("mongodb+srv://metaworkdao:c106%40bh1@cluster0.h2imk.mongodb.net/metawork?retryWrites=true&w=majority").await?;
     let client: Client = Client::with_options(client_options)?;
-    let db: mongodb::Database = client.database("macha_sdk"); // writing transactions to db
+    let db: mongodb::Database = client.database("macha_dev"); // writing transactions to db
     let collection: mongodb::Collection<Document> = db.collection::<Document>("transactions");
 
     let block_number_option = transaction_receipt.block_number;
@@ -133,7 +133,7 @@ pub async fn save_contract_to_db(
 ) -> Result<(), Box<dyn std::error::Error>> {
     let client_options: ClientOptions = ClientOptions::parse("mongodb+srv://metaworkdao:c106%40bh1@cluster0.h2imk.mongodb.net/metawork?retryWrites=true&w=majority").await?;
     let client: Client = Client::with_options(client_options)?;
-    let db: mongodb::Database = client.database("macha_sdk"); // saving contracts to db
+    let db: mongodb::Database = client.database("macha_dev"); // saving contracts to db
     let collection: mongodb::Collection<Document> = db.collection::<Document>("contracts");
 
     let result = collection.find(doc! {"contract_name": &contract_data.name}, None);
