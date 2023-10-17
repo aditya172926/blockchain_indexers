@@ -152,24 +152,7 @@ pub async fn create_meta(meta_slug: &str, event_doc: IndexedTransaction) {
             });
 
             current_block_number = loaded_transaction.transaction.block_number;
-            //get the current block number
-            // current_block_number = match loaded_transaction.transaction.block_number {
-            //     Some(txn_block_number) => txn_block_number,
-            //     None => {
-            //         error!("Could not get current_block_number, got None\n\n");
-            //         if current_block_number > 0 {
-            //             info!("Updating database...\n");
-            //             let _ = update_block_number(current_block_number, meta_slug).await;
-            //         } else {
-            //             info!(
-            //                 "Requires manual intervention; current_block_number value -> {}\n",
-            //                 current_block_number
-            //             );
-            //         }
-            //         println!("Process Exiting...\n");
-            //         exit(1);
-            //     }
-            // };
+
             info!("current block Number: {:?}", current_block_number);
 
             let mut metadata_list: HashMap<String, HashMap<String, serde_json::Value>> =
@@ -177,7 +160,8 @@ pub async fn create_meta(meta_slug: &str, event_doc: IndexedTransaction) {
             let mut raw_hashmap: HashMap<String, serde_json::Value> = HashMap::new();
 
             let mut meta_id: String = String::new();
-            let meta_owner = format!("0x{:020x}", loaded_transaction.transaction.from);
+            let mut meta_owner: String = format!("0x{:020x}", loaded_transaction.transaction.from);
+            // let mut meta_owner: String = String::new();
 
             // creating meta loop
             for param in loaded_transaction.transaction.method_params {
@@ -369,6 +353,7 @@ pub async fn create_meta(meta_slug: &str, event_doc: IndexedTransaction) {
                         modified_list.insert(String::from(&obj.prop), json_value);
                     }
                 }
+                
             }
 
             if !modified_list.is_empty() {
@@ -380,7 +365,7 @@ pub async fn create_meta(meta_slug: &str, event_doc: IndexedTransaction) {
                     sources: meta_source,
                     indexable: true,
                 };
-
+                // creating metaOwner from the raw object
                 println!("The meta is {:?}\n\n", meta);
                 let _ = upload_meta_to_db(meta, meta_id, meta_owner).await;
                 println!("===============================================================================================\n");
