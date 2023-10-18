@@ -48,7 +48,7 @@ Key points
 <summary>2. contract_result</summary>
 
 This is tuple of `contract_metadata`, `contract_fetched_abi`, and `contract_abi`.
-The function that returns the data for this comes from utils.rs -> `get_contract_data(contract_slug)`????. 
+The function that returns the data for this comes from utils.rs -> `utils_contract_data(contract_slug)`????. 
 </details>
 
 <details>

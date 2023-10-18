@@ -2,62 +2,29 @@ use mongodb::bson::document::ValueAccessError;
 use mongodb::bson::Document;
 
 use crate::db;
-use crate::structs::{ContractMetaData, NetworkMetaData};
+use crate::structs::{ContractMetaData, NetworkStuct};
 use std::collections::HashSet;
 use std::fs;
 use std::string::String;
 
-pub fn get_network_data(chain_id: &str) -> Option<NetworkMetaData> {
-    let network_details: String =
-        fs::read_to_string(r"config/network.json").expect("Error in reading network.json file");
-    let network_details: Result<serde_json::Value, serde_json::Error> = serde_json::from_str::<serde_json::Value>(&network_details);
 
-    let network_rpc = match network_details {
-        Ok(object) => {
-            let mut network_name: String = object["production"][chain_id]["network_name"].to_string();
-            let mut network_rpc_url: String = object["production"][chain_id]["network_rpc_url"].to_string();
-            let mut network_api_key: String = object["production"][chain_id]["network_api_key"].to_string();
-            let start_block_number: i64 = object["production"][chain_id]["start_block_number"]
-                .to_string()
-                .parse()
-                .unwrap();
 
-            network_name = network_name[1..network_name.len() - 1].to_string();
-            network_rpc_url = network_rpc_url[1..network_rpc_url.len() - 1].to_string();
-            network_api_key = network_api_key[1..network_api_key.len() - 1].to_string();
-
-            let result: NetworkMetaData = NetworkMetaData {
-                network_name: network_name,
-                network_rpc_url: network_rpc_url,
-                start_block_number: start_block_number,
-                network_api_key: network_api_key
-            };
-            Some(result)
-        }
-        Err(e) => {
-            println!("Error in getting network data {:?}", e);
-            None
-        }
-    };
-    return network_rpc;
-}
-
-pub async fn get_contract_data(
+pub async fn utils_contract_data(
     protocol_name: &str,
 ) -> (ContractMetaData, String, web3::ethabi::Contract) {
-    let contract_metadata: ContractMetaData = get_contract_metadata(protocol_name).await.unwrap();
+    let contract_metadata: ContractMetaData = utils_contract_metadata(protocol_name).await.unwrap();
 
     println!("The conntract metadata is {:?}", contract_metadata);
     let mut contract_fetched_abi: String = String::new();
     if contract_metadata.read_abi_from.contains("0x") {
-        contract_fetched_abi = format_contract_abi(
+        contract_fetched_abi = utils_format_contract_abi(
             &contract_metadata.chain_id,
             &contract_metadata.read_abi_from,
         )
         .await;
     } else {
         println!("The contract address is {:?}", contract_metadata.contract_address.to_string());
-        contract_fetched_abi = format_contract_abi(
+        contract_fetched_abi = utils_format_contract_abi(
             &contract_metadata.chain_id,
             &contract_metadata.contract_address,
         )
@@ -70,7 +37,7 @@ pub async fn get_contract_data(
     return (contract_metadata, contract_fetched_abi, contract_abi);
 }
 
-pub async fn get_contract_metadata(protocol_name: &str) -> Option<ContractMetaData> {
+pub async fn utils_contract_metadata(protocol_name: &str) -> Option<ContractMetaData> {
     let contract_result: mongodb::bson::Document =
         db::db_contract_data(protocol_name).await.unwrap_or(mongodb::bson::Document::default()).clone();
     let contract_meta_data: Result<
@@ -159,7 +126,7 @@ pub async fn get_contract_metadata(protocol_name: &str) -> Option<ContractMetaDa
     return contract_metadata;
 }
 
-pub async fn fetch_contract_abi(
+pub async fn utils_contract_abi(
     contract_chain_id: String,
     contract_address: &str,
 ) -> reqwest::Result<reqwest::Response> {
@@ -187,9 +154,9 @@ pub async fn fetch_contract_abi(
     return response;
 }
 
-pub async fn format_contract_abi(contract_chain_id: &str, contract_address: &str) -> String {
+pub async fn utils_utils_format_contract_abi(contract_chain_id: &str, contract_address: &str) -> String {
     let response: Result<reqwest::Response, reqwest::Error> =
-        fetch_contract_abi(contract_chain_id.to_string(), contract_address).await;
+        utils_contract_abi(contract_chain_id.to_string(), contract_address).await;
     let mut fetched_abi: String = String::new();
 
     match response {

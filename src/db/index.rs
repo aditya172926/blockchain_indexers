@@ -1,11 +1,14 @@
-use crate::structs::{ContractData, MethodParam, TransactionData};
+use crate::structs::{ContractData, MethodParam, Transaction, Meta};
 use ethcontract::RawLog;
 use ethers::types::TransactionReceipt;
 use mongodb::{
     bson::{doc, to_bson, Bson, Document},
+    error::Error,
     options::ClientOptions,
-    Client, 
+    Client, Cursor,
 };
+use futures::{StreamExt, TryStreamExt};
+use chrono::Utc;
 use serde::{Serialize, Serializer};
 use serde_json::{json, Value};
 use chrono::prelude::*;
@@ -45,7 +48,7 @@ pub async fn db_contract_data(contract_slug: &str) -> Option<Document> {
     return result;
 }
 
-pub async fn save_to_db(event: RawLog) -> Result<(), Box<dyn std::error::Error>> {
+pub async fn db_event_store(event: RawLog) -> Result<(), Box<dyn std::error::Error>> {
     let mut json_object = json!({});
     json_object["topics"] = serde_json::to_value(&event.topics).unwrap();
     let data_wrapper = BytesWrapper { bytes: &event.data };
@@ -75,7 +78,7 @@ pub async fn save_to_db(event: RawLog) -> Result<(), Box<dyn std::error::Error>>
     Ok(())
 }
 
-pub async fn save_txn_to_db(
+pub async fn db_transaction_store(
     txn_params: Vec<MethodParam>,
     method_name: String,
     method_id: String,
@@ -96,7 +99,7 @@ pub async fn save_txn_to_db(
     };
     // let block_number=transaction_receipt.block_number.unwrap().to_string();
 
-    let transaction_struct: TransactionData = TransactionData {
+    let transaction_struct: Transaction = Transaction {
         block_hash: transaction_receipt.block_hash,
         block_number:block_number,
         contract_slug: contract_slug,
@@ -130,7 +133,7 @@ pub async fn save_txn_to_db(
     Ok(())
 }
 
-pub async fn save_contract_to_db(
+pub async fn db_contract_store(
     contract_data: ContractData,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let client_options: ClientOptions = ClientOptions::parse("mongodb+srv://metaworkdao:c106%40bh1@cluster0.h2imk.mongodb.net/metawork?retryWrites=true&w=majority").await?;
@@ -148,6 +151,93 @@ pub async fn save_contract_to_db(
 
     collection.insert_one(contract_document, None).await?;
     println!("The contract document is inserted");
+
+    Ok(())
+}
+
+pub async fn db_metaschema_data(meta_slug: &str) -> Option<Document> {
+    let client_options: ClientOptions = ClientOptions::parse("mongodb+srv://metaworkdao:c106%40bh1@cluster0.h2imk.mongodb.net/metawork?retryWrites=true&w=majority").await.unwrap();
+    let client = Client::with_options(client_options).unwrap();
+    let db: mongodb::Database = client.database("macha_sdk");
+    let collection: mongodb::Collection<Document> = db.collection::<Document>("metas_schemas");
+
+    let meta_schema_pipeline = vec![
+        doc! {"$match": {
+            "contract_slug": meta_slug
+        }},
+        doc! {"$lookup": {
+            "from": "contracts",
+            "localField": "contract_slug",
+            "foreignField": "contract.slug",
+            "as": "contracts"
+        }},
+        doc! {"$unwind": "$contracts"},
+        doc! {"$project": {
+            "contracts.contract.name": false,
+            "contracts.contract.description": false,
+            "contracts.contract.interested_methods": false,
+            "contracts.contract.interested_events": false,
+            "contracts.contract.is_approved": false
+        }},
+    ];
+    // println!("The meta schema pipeline {:?}", meta_schema_pipeline);
+    let meta_schama_result = collection.aggregate(meta_schema_pipeline, None).await;
+
+    match meta_schama_result {
+        Ok(mut result) => {
+            // println!("The meta schema fetched is {:?}", result);
+            let mut response = Some(Document::new());
+            while let Some(obj) = result.try_next().await.unwrap() {
+                // println!("The object from cursor {:?}", obj);
+                response = Some(obj);
+            }
+            response
+        }
+        Err(e) => {
+            println!("Error in fetching meta_schema {:?}", e);
+            None
+        }
+    }
+}
+
+pub async fn db_metaschema_update(
+    block_number: u64,
+    meta_slug: &str,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let client_options: ClientOptions = ClientOptions::parse("mongodb+srv://metaworkdao:c106%40bh1@cluster0.h2imk.mongodb.net/metawork?retryWrites=true&w=majority").await?;
+    let client: Client = Client::with_options(client_options)?;
+    let db: mongodb::Database = client.database("macha_sdk");
+    let collection: mongodb::Collection<Document> = db.collection::<Document>("metas_schemas");
+
+    // let block_number: Bson = to_bson(&meta).unwrap();
+    let meta_schema_doc = doc! {"slug": meta_slug, "source.meta_slug": meta_slug};
+    let update_block_query = doc! {"$set": {"source.$.last_block_number": block_number as i64}};
+    let update_result = collection
+        .update_one(meta_schema_doc, update_block_query, None)
+        .await?;
+    println!("The update result is {:?}", update_result);
+
+    Ok(())
+}
+
+pub async fn db_meta_store(
+    meta: Meta,
+    meta_id: String,
+    meta_owner: String,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let client_options: ClientOptions = ClientOptions::parse("mongodb+srv://metaworkdao:c106%40bh1@cluster0.h2imk.mongodb.net/metawork?retryWrites=true&w=majority").await?;
+    let client: Client = Client::with_options(client_options)?;
+    let db: mongodb::Database = client.database("macha_sdk");
+    let collection: mongodb::Collection<Document> = db.collection::<Document>("metas");
+
+    let meta_bson: Bson = to_bson(&meta).unwrap();
+    let now = Utc::now();
+    let ts: String = now.timestamp().to_string();
+    println!("Current timestamp is: {}", ts);
+    let meta_doc =
+        doc! {"metaId": meta_id, "metaOwner": meta_owner, "meta": meta_bson, "timestamp": ts};
+    collection.insert_one(meta_doc, None).await?;
+    println!("Inserted meta doc");
 
     Ok(())
 }

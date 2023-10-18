@@ -1,9 +1,9 @@
 
 
-use crate::structs::{MetaSchemaAbstractor, IndexedTransaction};
+use crate::structs::{MetaSchemaAbstractor, TransactionIndexed};
 use crate::structs::{ Meta, MetaSchema, MetaSource};
-use crate::utilsabstractor::{fetch_contract_abi, get_url_data};
-use crate::dbAbstractor::{get_meta_schema,update_block_number,upload_meta_to_db};
+use crate::utilsabstractor::{utils_contract_abi, utils_url_data};
+use crate::db::{db_metaschema_data,db_metaschema_update,db_meta_store};
 // use abstractorutils;
 use ethers::{
     abi::Abi,
@@ -20,10 +20,10 @@ use std::u128;
 use std::{convert::TryFrom, sync::Arc};
 
 
-pub async fn create_meta(meta_slug: &str, event_doc:IndexedTransaction) {
+pub async fn create_meta(meta_slug: &str, event_doc:TransactionIndexed) {
     println!("Entered create_meta now");
     // should contain at least 100 txns from current_block_no before starting the code.
-    let meta_schema_result: Option<Document> = get_meta_schema(meta_slug).await;
+    let meta_schema_result: Option<Document> = db_metaschema_data(meta_slug).await;
     let meta_schema = match meta_schema_result {
         Some(result) => result,
         None => {
@@ -81,7 +81,7 @@ pub async fn create_meta(meta_slug: &str, event_doc:IndexedTransaction) {
         ///////////////////////////////////// creating contract instance START ////////////////////////////////////
 
         let mut contract_abi: String;
-        contract_abi = fetch_contract_abi(&chain_id, &read_abi_from).await;
+        contract_abi = utils_contract_abi(&chain_id, &read_abi_from).await;
 
         let abi: Abi = serde_json::from_str(&contract_abi).expect("Error in reading abi json");
         // println!("\n\n The contract ABI is {:?}", abi);
@@ -172,7 +172,7 @@ pub async fn create_meta(meta_slug: &str, event_doc:IndexedTransaction) {
             println!("this is the txn while loop starting");
                 let loaded_transaction= event_doc.clone();
                 
-                // IndexedTransaction = match doc { // pass the event_document from the indexer
+                // TransactionIndexed = match doc { // pass the event_document from the indexer
                 //     Ok(object) => match mongodb::bson::from_bson(Bson::Document(object)) {
                 //         Ok(txn_document) => txn_document,
                 //         Err(error) => {
@@ -183,7 +183,7 @@ pub async fn create_meta(meta_slug: &str, event_doc:IndexedTransaction) {
                 //             if current_block_number > 0 {
                 //                 info!("Updating database...\n");
                 //                 let _ =
-                //                     db::update_block_number(current_block_number, meta_slug).await;
+                //                     db::db_metaschema_update(current_block_number, meta_slug).await;
                 //             } else {
                 //                 info!("Requires manual intervention; current_block_number value -> {}\n", current_block_number);
                 //             }
@@ -195,7 +195,7 @@ pub async fn create_meta(meta_slug: &str, event_doc:IndexedTransaction) {
                 //         error!("Could not decode transaction error -> {:?}\n\n", error);
                 //         if current_block_number > 0 {
                 //             info!("Updating database...\n");
-                //             let _ = db::update_block_number(current_block_number, meta_slug).await;
+                //             let _ = db::db_metaschema_update(current_block_number, meta_slug).await;
                 //         } else {
                 //             info!(
                 //                 "Requires manual intervention; current_block_number value -> {}\n",
@@ -223,7 +223,7 @@ pub async fn create_meta(meta_slug: &str, event_doc:IndexedTransaction) {
                 //         error!("Could not get current_block_number, got None\n\n");
                 //         if current_block_number > 0 {
                 //             info!("Updating database...\n");
-                //             let _ = update_block_number(current_block_number, meta_slug).await;
+                //             let _ = db_metaschema_update(current_block_number, meta_slug).await;
                 //         } else {
                 //             info!(
                 //                 "Requires manual intervention; current_block_number value -> {}\n",
@@ -252,7 +252,7 @@ pub async fn create_meta(meta_slug: &str, event_doc:IndexedTransaction) {
                         if ipfs == param.name {
                             info!("Found a match for {} with the value -> {:?}\n\n", ipfs, param_value);
                             // get data with https
-                            let response = get_url_data(param_value).await;
+                            let response = utils_url_data(param_value).await;
                             // let response = get(param_value).await.unwrap();
 
                             match response {
@@ -313,7 +313,7 @@ pub async fn create_meta(meta_slug: &str, event_doc:IndexedTransaction) {
                             };
 
                             if !token_url.is_empty() {
-                                let response = get_url_data(&token_url).await;
+                                let response = utils_url_data(&token_url).await;
                                 // let response: Result<reqwest::Response, reqwest::Error> = get(&token_url).await;
                                 match response {
                                     Ok(object) => {
@@ -386,7 +386,7 @@ pub async fn create_meta(meta_slug: &str, event_doc:IndexedTransaction) {
                                                 break;
                                                 // info!("Updating database...\n");
                                                 // // exit the program and update the last block number on meta_schema
-                                                // let _ = db::update_block_number(
+                                                // let _ = db::db_metaschema_update(
                                                 //     current_block_number,
                                                 //     meta_slug,
                                                 // )
@@ -412,7 +412,7 @@ pub async fn create_meta(meta_slug: &str, event_doc:IndexedTransaction) {
                                 // if current_block_number > 0 {
                                 //     info!("Updating database...\n");
                                 //     let _ =
-                                //         db::update_block_number(current_block_number, meta_slug)
+                                //         db::db_metaschema_update(current_block_number, meta_slug)
                                 //             .await;
                                 // } else {
                                 //     info!("Requires manual intervention; current_block_number value -> {}\n", current_block_number);
@@ -442,7 +442,7 @@ pub async fn create_meta(meta_slug: &str, event_doc:IndexedTransaction) {
                     };
 
                     println!("The meta is {:?}\n\n", meta);
-                    let _ = upload_meta_to_db(meta, meta_id, meta_owner).await;
+                    let _ = db_meta_store(meta, meta_id, meta_owner).await;
                     println!("===============================================================================================\n");
                 }
 
@@ -451,9 +451,9 @@ pub async fn create_meta(meta_slug: &str, event_doc:IndexedTransaction) {
             info!("after: {}\n", current_block_number);
             info!("Updating database...");
             if current_block_number == 0 {
-                let _ = update_block_number(stop_block_number, meta_slug).await;
+                let _ = db_metaschema_update(stop_block_number, meta_slug).await;
             } else {
-                let _ = update_block_number(current_block_number, meta_slug).await;
+                let _ = db_metaschema_update(current_block_number, meta_slug).await;
             }
             info!("All the transaction logs between {} and {} are abstracted into metas.\nStart the node again to continue from the latest block number", block_number, stop_block_number);
         }

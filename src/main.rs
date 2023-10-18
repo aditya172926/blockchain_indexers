@@ -13,7 +13,7 @@ use std::{error::Error, str::FromStr};
 use tokio::time::{sleep, Duration};
 use web3::transports::Http;
 use web3::Web3;
-use crate::structs::{ContractData, MethodParam, TransactionData, IndexedTransaction, TransactionSchema};
+use crate::structs::{ContractData, MethodParam, Transaction, TransactionIndexed};
 use chrono::prelude::*;
 use mongodb::{
     bson::{doc, to_bson, Bson},
@@ -26,28 +26,37 @@ use env_logger::Env;
 
 
 // modules
-mod db;
+mod db{
+    mod index;
+}
 mod history;
 mod middleware;
-mod structs;
-mod transactions;
-mod utils;
+mod structs{
+    mod index;
+    mod transactions;
+    mod networks;
+    mod contracts;
+}
+mod utils{
+    mod transactions;
+    mod contracts;
+    mod networks;
+    mod index;
+}
 mod abstractor;
-mod utilsabstractor;
-mod dbAbstractor;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
     let contract_result: (structs::ContractMetaData, String, web3::ethabi::Contract) =
-        utils::get_contract_data("lens_profile_polygon").await;
+        utils::utils_contract_data("lens_profile_polygon").await;
 
     let contract_metadata: structs::ContractMetaData = contract_result.0;
     let contract_fetched_abi: String = contract_result.1;
     let contract_abi: web3::ethabi::Contract = contract_result.2;
 
-    let network_metadata: structs::NetworkMetaData =
-        utils::get_network_data(&contract_metadata.chain_id).unwrap();
+    let network_metadata: structs::NetworkStuct =
+        utils::utils_network_data(&contract_metadata.chain_id).unwrap();
         println!("{}",network_metadata.network_api_key);
         
     let transport: Http = Http::new(&network_metadata.network_rpc_url)?;
@@ -152,7 +161,7 @@ async fn get_txns(
                         String,                            // function name
                         String,                            // transaction hash
                         ethers::types::TransactionReceipt, // transaction receipt
-                    ) = transactions::get_transaction_data(
+                    ) = transactions::utils_transaction_data(
                         contract_abi,
                         transaction_hash,
                         &network_rpc_url,
@@ -190,7 +199,7 @@ async fn get_txns(
                         };
                         // let block_number=transaction_receipt.block_number.unwrap().to_string();
 
-                        let transaction_struct: TransactionData = TransactionData {
+                        let transaction_struct: Transaction = Transaction {
                             block_hash: decoded_txn_data.3.block_hash,
                             block_number:block_number,
                             contract_slug:contract_slug.clone(),
@@ -214,7 +223,7 @@ async fn get_txns(
 
                         // let event_bson: mongodb::bson::Bson = to_bson(&txn).unwrap();
                         let transaction_bson_receipt: mongodb::bson::Bson = to_bson(&transaction_struct).unwrap();
-                        let event_document: IndexedTransaction = IndexedTransaction {
+                        let event_document: TransactionIndexed = TransactionIndexed {
                             timestamp: ts,
                             transaction: transaction_struct,
                         };
@@ -223,7 +232,7 @@ async fn get_txns(
 
                         abstractor::create_meta(&contract_slug,event_document).await;
 
-                        // let _ = db::save_txn_to_db( 
+                        // let _ = db::db_transaction_store( 
                         //     decoded_txn_data.0, //method_params
                         //     decoded_txn_data.1, // function name
                         //     decoded_txn_data.2, // function id
@@ -280,7 +289,7 @@ async fn get_events(
             async {
                 let log = event_streams.next().await.expect("No events").expect("Error querying event").added();
                 let unwrapped_log = log.unwrap();
-                // let _ = db::save_to_db(unwrapped_log).await;
+                // let _ = db::db_event_store(unwrapped_log).await;
             },
         };
     }

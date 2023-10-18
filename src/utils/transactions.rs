@@ -6,7 +6,7 @@ use ethers::{
 };
 use mongodb::bson::Document;
 
-pub async fn get_transaction_data<'a>(
+pub async fn utils_transaction_data<'a>(
     abi: &str,
     transaction_hash: TxHash,
     network_rpc_url: &str,
@@ -70,7 +70,7 @@ pub async fn get_transaction_data<'a>(
     );
 }
 
-async fn get_transaction_method<'a>(
+async fn utils_transaction_method<'a>(
     contract_abi: &'static Abi,
     transaction: Option<Transaction>,
     methods: &Document,
@@ -93,7 +93,7 @@ async fn get_transaction_method<'a>(
 
     if method_name != "" {
         let param_result =
-            get_transaction_method_params(contract_abi, method_name, input_data, methods).await;
+            utils_transaction_method_params(contract_abi, method_name, input_data, methods).await;
         return (param_result.0, param_result.1, method_id.to_string());
     } else {
         println!("Couldn't find the function name");
@@ -101,7 +101,7 @@ async fn get_transaction_method<'a>(
     }
 }
 
-pub async fn get_transaction_method_params<'a>(
+pub async fn utils_transaction_method_params<'a>(
     contract_abi: &'static Abi,
     method_name: &str,
     input_data: &str,
