@@ -12,8 +12,14 @@ use ethers::{
 };
 use mongodb::bson::{Document, to_bson};
 
-use crate::structs::{TransactionIndexed, Transaction};
-use crate::{structs, transactions,db, abstractor};
+
+use crate::abstractor;
+use crate::structs::{
+    index::{MethodParam},
+    transactions::TransactionIndexed
+};
+use crate::utils::transactions;
+// use crate::{structs, transactions,db, abstractor};
 
 pub async fn get_history(
     contract_address: &str,
@@ -98,7 +104,7 @@ pub async fn get_history(
         if txn_hash != prev_txn_hash {
 
             let mut decoded_txn_data: (
-                Vec<structs::MethodParam>,         // method params array
+                Vec<MethodParam>,         // method params array
                 String,                            // function name
                 String,                            // transaction hash
                 ethers::types::TransactionReceipt, // transaction receipt
@@ -121,7 +127,7 @@ pub async fn get_history(
             };
             // let block_number=transaction_receipt.block_number.unwrap().to_string();
 
-            let transaction_struct: Transaction = Transaction {
+            let transaction_struct:crate::structs::transactions::Transaction = crate::structs::transactions::Transaction {
                 block_hash: decoded_txn_data.3.block_hash,
                 block_number:block_number,
                 contract_slug:contract_slug.clone(),
@@ -145,7 +151,7 @@ pub async fn get_history(
 
             // let event_bson: mongodb::bson::Bson = to_bson(&txn).unwrap();
             let transaction_bson_receipt: mongodb::bson::Bson = to_bson(&transaction_struct).unwrap();
-            let event_document: TransactionIndexed = TransactionIndexed {
+            let event_document:TransactionIndexed = TransactionIndexed {
                 timestamp: ts,
                 transaction: transaction_struct,
             };

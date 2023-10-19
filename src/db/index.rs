@@ -11,7 +11,8 @@ use futures::{StreamExt, TryStreamExt};
 use chrono::Utc;
 use serde::{Serialize, Serializer};
 use serde_json::{json, Value};
-use chrono::prelude::*;
+use crate::structs::{index::{MethodParam}, self};
+use crate::structs::contracts::ContractData;
 
 #[derive(Serialize)]
 struct BytesWrapper<'a> {
@@ -33,7 +34,7 @@ where
 pub async fn db_contract_data(contract_slug: &str) -> Option<Document> {
     let client_options: ClientOptions = ClientOptions::parse("mongodb+srv://metaworkdao:c106%40bh1@cluster0.h2imk.mongodb.net/metawork?retryWrites=true&w=majority").await.unwrap();
     let client: Client = Client::with_options(client_options).unwrap();
-    let db: mongodb::Database = client.database("macha_sdk"); // reading contract data
+    let db: mongodb::Database = client.database("macha_dev"); // reading contract data
     let collection: mongodb::Collection<Document> = db.collection::<Document>("contracts");
 
     let result: Option<Document> = collection
@@ -58,7 +59,7 @@ pub async fn db_event_store(event: RawLog) -> Result<(), Box<dyn std::error::Err
 
     let client_options = ClientOptions::parse("mongodb+srv://metaworkdao:c106%40bh1@cluster0.h2imk.mongodb.net/metawork?retryWrites=true&w=majority").await?;
     let client = Client::with_options(client_options)?;
-    let db = client.database("macha_sdk"); // writing events to db
+    let db = client.database("macha_dev"); // writing events to db
     let collection = db.collection::<Document>("events");
 
     let event_bson: mongodb::bson::Bson = to_bson(&json_object).unwrap();
@@ -89,7 +90,7 @@ pub async fn db_transaction_store(
 ) -> Result<(), Box<dyn std::error::Error>> {
     let client_options: ClientOptions = ClientOptions::parse("mongodb+srv://metaworkdao:c106%40bh1@cluster0.h2imk.mongodb.net/metawork?retryWrites=true&w=majority").await?;
     let client: Client = Client::with_options(client_options)?;
-    let db: mongodb::Database = client.database("macha_sdk"); // writing transactions to db
+    let db: mongodb::Database = client.database("macha_dev"); // writing transactions to db
     let collection: mongodb::Collection<Document> = db.collection::<Document>("transactions");
 
     let block_number_option=transaction_receipt.block_number;
@@ -99,7 +100,7 @@ pub async fn db_transaction_store(
     };
     // let block_number=transaction_receipt.block_number.unwrap().to_string();
 
-    let transaction_struct: Transaction = Transaction {
+    let transaction_struct: structs::transactions::Transaction = structs::transactions::Transaction {
         block_hash: transaction_receipt.block_hash,
         block_number:block_number,
         contract_slug: contract_slug,
@@ -138,7 +139,7 @@ pub async fn db_contract_store(
 ) -> Result<(), Box<dyn std::error::Error>> {
     let client_options: ClientOptions = ClientOptions::parse("mongodb+srv://metaworkdao:c106%40bh1@cluster0.h2imk.mongodb.net/metawork?retryWrites=true&w=majority").await?;
     let client: Client = Client::with_options(client_options)?;
-    let db: mongodb::Database = client.database("macha_sdk"); // saving contracts to db
+    let db: mongodb::Database = client.database("macha_dev"); // saving contracts to db
     let collection: mongodb::Collection<Document> = db.collection::<Document>("contracts");
 
     let result = collection.find(doc! {"contract_name": &contract_data.name}, None);
@@ -158,7 +159,7 @@ pub async fn db_contract_store(
 pub async fn db_metaschema_data(meta_slug: &str) -> Option<Document> {
     let client_options: ClientOptions = ClientOptions::parse("mongodb+srv://metaworkdao:c106%40bh1@cluster0.h2imk.mongodb.net/metawork?retryWrites=true&w=majority").await.unwrap();
     let client = Client::with_options(client_options).unwrap();
-    let db: mongodb::Database = client.database("macha_sdk");
+    let db: mongodb::Database = client.database("macha_dev");
     let collection: mongodb::Collection<Document> = db.collection::<Document>("metas_schemas");
 
     let meta_schema_pipeline = vec![
@@ -206,7 +207,7 @@ pub async fn db_metaschema_update(
 ) -> Result<(), Box<dyn std::error::Error>> {
     let client_options: ClientOptions = ClientOptions::parse("mongodb+srv://metaworkdao:c106%40bh1@cluster0.h2imk.mongodb.net/metawork?retryWrites=true&w=majority").await?;
     let client: Client = Client::with_options(client_options)?;
-    let db: mongodb::Database = client.database("macha_sdk");
+    let db: mongodb::Database = client.database("macha_dev");
     let collection: mongodb::Collection<Document> = db.collection::<Document>("metas_schemas");
 
     // let block_number: Bson = to_bson(&meta).unwrap();
@@ -221,13 +222,13 @@ pub async fn db_metaschema_update(
 }
 
 pub async fn db_meta_store(
-    meta: Meta,
+    meta: structs::index::Meta,
     meta_id: String,
     meta_owner: String,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let client_options: ClientOptions = ClientOptions::parse("mongodb+srv://metaworkdao:c106%40bh1@cluster0.h2imk.mongodb.net/metawork?retryWrites=true&w=majority").await?;
     let client: Client = Client::with_options(client_options)?;
-    let db: mongodb::Database = client.database("macha_sdk");
+    let db: mongodb::Database = client.database("macha_dev");
     let collection: mongodb::Collection<Document> = db.collection::<Document>("metas");
 
     let meta_bson: Bson = to_bson(&meta).unwrap();

@@ -1,8 +1,10 @@
 use mongodb::bson::document::ValueAccessError;
 use mongodb::bson::Document;
 
-use crate::db;
-use crate::structs::{ContractMetaData, NetworkStuct};
+use crate::db::{index, self};
+use crate::structs::{
+    contracts::ContractMetaData,
+    networks:: NetworkStuct};
 use std::collections::HashSet;
 use std::fs;
 use std::string::String;
@@ -39,7 +41,7 @@ pub async fn utils_contract_data(
 
 pub async fn utils_contract_metadata(protocol_name: &str) -> Option<ContractMetaData> {
     let contract_result: mongodb::bson::Document =
-        db::db_contract_data(protocol_name).await.unwrap_or(mongodb::bson::Document::default()).clone();
+        db::index::db_contract_data(protocol_name).await.unwrap_or(mongodb::bson::Document::default()).clone();
     let contract_meta_data: Result<
         &mongodb::bson::Document,
         mongodb::bson::document::ValueAccessError,
@@ -154,7 +156,7 @@ pub async fn utils_contract_abi(
     return response;
 }
 
-pub async fn utils_utils_format_contract_abi(contract_chain_id: &str, contract_address: &str) -> String {
+pub async fn utils_format_contract_abi(contract_chain_id: &str, contract_address: &str) -> String {
     let response: Result<reqwest::Response, reqwest::Error> =
         utils_contract_abi(contract_chain_id.to_string(), contract_address).await;
     let mut fetched_abi: String = String::new();

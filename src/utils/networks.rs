@@ -1,8 +1,12 @@
+
+
+// pub mod networks{
 use std::fs;
 use std::string::String;
-use crate::structs::NetworkStuct;
+use crate::structs::networks::NetworkStuct;
 
-pub fn utils_network_data(chain_id: &str) -> Option<NetworkStuct> {
+
+pub fn utils_network_data(chain_id: &str) -> Option<crate::structs::networks::NetworkStuct> {
     let network_details: String =
         fs::read_to_string(r"config/network.json").expect("Error in reading network.json file");
     let network_details: Result<serde_json::Value, serde_json::Error> = serde_json::from_str::<serde_json::Value>(&network_details);
@@ -36,3 +40,4 @@ pub fn utils_network_data(chain_id: &str) -> Option<NetworkStuct> {
     };
     return network_rpc;
 }
+// }

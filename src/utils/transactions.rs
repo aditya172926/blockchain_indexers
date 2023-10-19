@@ -1,4 +1,4 @@
-use crate::structs::{MethodParam, MethodParamDataType};
+use crate::structs::index::{MethodParam, MethodParamDataType};
 use ethers::abi::{Abi, Function, Token};
 use ethers::{
     providers::{Http, Middleware, Provider},
@@ -60,7 +60,7 @@ pub async fn utils_transaction_data<'a>(
         serde_json::from_str(&abi).expect("Failed to parse abi"),
     ));
     let decoded_transaction_data: (Vec<MethodParam>, String, String) =
-        get_transaction_method(contract_abi, transaction, methods).await;
+    utils_transaction_method(contract_abi, transaction, methods).await;
 
     return (
         decoded_transaction_data.0, // method_params
@@ -186,7 +186,7 @@ pub async fn utils_transaction_method_params<'a>(
                 name: String::from(&input.name),
                 kind: input.kind.to_string(),
                 internal_type: input.internal_type.clone(),
-                data_type: crate::structs::MethodParamDataType::StringValue,
+                data_type: crate::structs::index::MethodParamDataType::StringValue,
                 value: ToString::to_string(&cloned_token),
             };
             method_params.push(method_param);

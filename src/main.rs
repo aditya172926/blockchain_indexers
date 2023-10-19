@@ -13,7 +13,7 @@ use std::{error::Error, str::FromStr};
 use tokio::time::{sleep, Duration};
 use web3::transports::Http;
 use web3::Web3;
-use crate::structs::{ContractData, MethodParam, Transaction, TransactionIndexed};
+// use crate::structs::{ContractData, MethodParam, Transaction, TransactionIndexed};
 use chrono::prelude::*;
 use mongodb::{
     bson::{doc, to_bson, Bson},
@@ -23,40 +23,39 @@ use mongodb::{
 use log::{debug, error, info, warn};
 use env_logger::Env;
 
-
-
 // modules
 mod db{
-    mod index;
+    pub(crate) mod index;
+}
+mod utils{
+    pub(crate) mod index;
+    pub(crate) mod transactions;
+    pub(crate) mod networks;
+    pub(crate) mod contracts;
 }
 mod history;
 mod middleware;
 mod structs{
-    mod index;
-    mod transactions;
-    mod networks;
-    mod contracts;
+    pub(crate) mod index;
+    pub(crate) mod transactions;
+    pub(crate) mod networks;
+    pub(crate) mod contracts;
 }
-mod utils{
-    mod transactions;
-    mod contracts;
-    mod networks;
-    mod index;
-}
+
 mod abstractor;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
-    let contract_result: (structs::ContractMetaData, String, web3::ethabi::Contract) =
-        utils::utils_contract_data("lens_profile_polygon").await;
+    let contract_result: (structs::contracts::ContractMetaData, String, web3::ethabi::Contract) =
+        utils::contracts::utils_contract_data("lens_polygon").await;
 
-    let contract_metadata: structs::ContractMetaData = contract_result.0;
+    let contract_metadata: structs::contracts::ContractMetaData = contract_result.0;
     let contract_fetched_abi: String = contract_result.1;
     let contract_abi: web3::ethabi::Contract = contract_result.2;
 
-    let network_metadata: structs::NetworkStuct =
-        utils::utils_network_data(&contract_metadata.chain_id).unwrap();
+    let network_metadata: structs::networks::NetworkStuct =
+       utils::networks::utils_network_data(&contract_metadata.chain_id).unwrap();
         println!("{}",network_metadata.network_api_key);
         
     let transport: Http = Http::new(&network_metadata.network_rpc_url)?;
@@ -79,37 +78,37 @@ async fn main() -> Result<(), Box<dyn Error>> {
     //start: 45608700
     //end: 45608720
 
-    // let start_block: u64 = 48315406;
-    // let end_block: u64 = 48320000;
-    // let _ = history::get_history(
-    //     &s_contract_address,
-    //     &contract_fetched_abi,
-    //     start_block,
-    //     end_block,
-    //     contract_metadata.chain_id,
-    //     contract_metadata.contract_slug,
-    //     &network_metadata.network_rpc_url,
-    //     &network_metadata.network_api_key,
-    //     contract_metadata.methods,
-    //     contract_metadata.method_of_interest,
-    // )
-    // .await;
-
-    get_txns(
+    let start_block: u64 = 45608700;
+    let end_block: u64 = 45608720;
+    let _ = history::get_history(
+        &s_contract_address,
         &contract_fetched_abi,
-        &contract_instance,
-        contract_metadata.function_of_interest,
-        s_contract_address,
+        start_block,
+        end_block,
         contract_metadata.chain_id,
-        contract_metadata.contract_name,
-        contract_metadata.contract_description,
         contract_metadata.contract_slug,
-        network_metadata.network_rpc_url,
-        network_metadata.start_block_number,
-        contract_metadata.method_of_interest,
+        &network_metadata.network_rpc_url,
+        &network_metadata.network_api_key,
         contract_metadata.methods,
+        contract_metadata.method_of_interest,
     )
     .await;
+
+    // get_txns(
+    //     &contract_fetched_abi,
+    //     &contract_instance,
+    //     contract_metadata.function_of_interest,
+    //     s_contract_address,
+    //     contract_metadata.chain_id,
+    //     contract_metadata.contract_name,
+    //     contract_metadata.contract_description,
+    //     contract_metadata.contract_slug,
+    //     network_metadata.network_rpc_url,
+    //     network_metadata.start_block_number,
+    //     contract_metadata.method_of_interest,
+    //     contract_metadata.methods,
+    // )
+    // .await;
 
     // let _ = get_events(contract_instance, 17630615).await;
 
@@ -157,11 +156,11 @@ async fn get_txns(
 
                 if transaction_hash != prev_txn_hash {
                     let mut decoded_txn_data: (
-                        Vec<structs::MethodParam>,         // method params array
+                        Vec<structs::index::MethodParam>,         // method params array
                         String,                            // function name
                         String,                            // transaction hash
                         ethers::types::TransactionReceipt, // transaction receipt
-                    ) = transactions::utils_transaction_data(
+                    ) = utils::transactions::utils_transaction_data(
                         contract_abi,
                         transaction_hash,
                         &network_rpc_url,
@@ -199,7 +198,7 @@ async fn get_txns(
                         };
                         // let block_number=transaction_receipt.block_number.unwrap().to_string();
 
-                        let transaction_struct: Transaction = Transaction {
+                        let transaction_struct: structs::transactions::Transaction = structs::transactions::Transaction {
                             block_hash: decoded_txn_data.3.block_hash,
                             block_number:block_number,
                             contract_slug:contract_slug.clone(),
@@ -223,7 +222,7 @@ async fn get_txns(
 
                         // let event_bson: mongodb::bson::Bson = to_bson(&txn).unwrap();
                         let transaction_bson_receipt: mongodb::bson::Bson = to_bson(&transaction_struct).unwrap();
-                        let event_document: TransactionIndexed = TransactionIndexed {
+                        let event_document: structs::transactions::TransactionIndexed = structs::transactions::TransactionIndexed {
                             timestamp: ts,
                             transaction: transaction_struct,
                         };
