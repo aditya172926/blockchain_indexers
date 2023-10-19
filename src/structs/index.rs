@@ -110,7 +110,6 @@ pub struct MetaData {
     pub media: String,
     pub content: String,
     pub context: String,
-    pub context: String,
     pub created_at: String,
     pub updated_at: String,
 }

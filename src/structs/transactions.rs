@@ -1,3 +1,9 @@
+
+use ethers::types::{U256, H256, H160};
+use serde::{Serialize, Deserialize};
+
+use super::index::MethodParam;
+
 #[derive(Serialize, Clone,Debug,Deserialize)]
 pub struct Transaction {
     pub block_hash: Option<H256>,

@@ -1,3 +1,5 @@
+use serde::Serialize;
+
 #[derive(Serialize, Clone)]
 pub struct NetworkStuct {
     pub network_name: String,
