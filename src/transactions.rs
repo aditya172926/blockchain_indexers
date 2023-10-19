@@ -38,24 +38,6 @@ pub async fn get_transaction_data<'a>(
         } 
     };
 
-    // let transaction_receipt_formatted:ethers::core::types::transaction::response::TransactionReceipt;
-    // match transaction_receipt {
-    //     txn => {
-    //         match txn {
-    //             Some(object) => {
-    //                 transaction_receipt_formatted = object;
-    //             },
-    //             None => {
-    //                 transaction_receipt_formatted = TransactionReceipt::default();
-    //             }
-    //         }
-    //         // transaction_receipt_formatted = txn;
-    //     }
-    //     _ => {
-    //         transaction_receipt_formatted = TransactionReceipt::default();
-    //     }
-    // }
-
     let contract_abi: &'static Abi = Box::leak(Box::new(
         serde_json::from_str(&abi).expect("Failed to parse abi"),
     ));
