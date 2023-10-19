@@ -1,7 +1,7 @@
 use std::fs;
 use reqwest::get;
 
-pub async fn fetch_contract_abi(
+pub async fn utils_contract_abi(
     contract_chain_id: &str,
     contract_address: &str,
 ) -> String {
@@ -50,7 +50,7 @@ pub async fn fetch_contract_abi(
     // return response;
 }
 
-pub async fn get_url_data(param: &str) -> Result<reqwest::Response, reqwest::Error> {
+pub async fn utils_url_data(param: &str) -> Result<reqwest::Response, reqwest::Error> {
     let mut query = String::new();
     if param.starts_with("ar://") {
         let arweave_id = &param[5..param.len()];

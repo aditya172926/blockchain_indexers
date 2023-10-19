@@ -1,7 +1,13 @@
-use crate::dbAbstractor::{get_meta_schema, update_block_number, upload_meta_to_db};
-use crate::structs::{IndexedTransaction, MetaSchemaAbstractor};
-use crate::structs::{Meta, MetaSchema, MetaSource};
-use crate::utilsabstractor::{fetch_contract_abi, get_url_data};
+
+
+use crate::structs::index::{MetaSchemaAbstractor,Meta, MetaSchema, MetaSource};
+use crate::structs::transactions::TransactionIndexed;
+use crate::utils::contracts::utils_format_contract_abi;
+use crate::utils::{
+    contracts::utils_contract_abi,
+    index::utils_url_data
+};
+use crate::db::index::{db_metaschema_data,db_metaschema_update,db_meta_store};
 // use abstractorutils;
 use ethers::{
     abi::Abi,
@@ -17,10 +23,11 @@ use std::process::exit;
 use std::u128;
 use std::{convert::TryFrom, sync::Arc};
 
-pub async fn create_meta(meta_slug: &str, event_doc: IndexedTransaction) {
+
+pub async fn create_meta(meta_slug: &str, event_doc:TransactionIndexed) {
     println!("Entered create_meta now");
     // should contain at least 100 txns from current_block_no before starting the code.
-    let meta_schema_result: Option<Document> = get_meta_schema(meta_slug).await;
+    let meta_schema_result: Option<Document> = db_metaschema_data(meta_slug).await;
     let meta_schema = match meta_schema_result {
         Some(result) => result,
         None => {
@@ -78,7 +85,7 @@ pub async fn create_meta(meta_slug: &str, event_doc: IndexedTransaction) {
         ///////////////////////////////////// creating contract instance START ////////////////////////////////////
 
         let mut contract_abi: String;
-        contract_abi = fetch_contract_abi(&chain_id, &read_abi_from).await;
+        contract_abi = utils_format_contract_abi(&chain_id, &read_abi_from).await;
 
         let abi: Abi = serde_json::from_str(&contract_abi).expect("Error in reading abi json");
         // println!("\n\n The contract ABI is {:?}", abi);
@@ -141,7 +148,42 @@ pub async fn create_meta(meta_slug: &str, event_doc: IndexedTransaction) {
                 exit(1);
             }
             println!("this is the txn while loop starting");
-            let loaded_transaction: IndexedTransaction = event_doc.clone();
+                let loaded_transaction= event_doc.clone();
+                
+                // TransactionIndexed = match doc { // pass the event_document from the indexer
+                //     Ok(object) => match mongodb::bson::from_bson(Bson::Document(object)) {
+                //         Ok(txn_document) => txn_document,
+                //         Err(error) => {
+                //             error!(
+                //                 "Could not convert to Bson documen, error -> {:?}\n\n",
+                //                 error
+                //             );
+                //             if current_block_number > 0 {
+                //                 info!("Updating database...\n");
+                //                 let _ =
+                //                     db::db_metaschema_update(current_block_number, meta_slug).await;
+                //             } else {
+                //                 info!("Requires manual intervention; current_block_number value -> {}\n", current_block_number);
+                //             }
+                //             println!("Process Exiting...\n");
+                //             exit(1);
+                //         }
+                //     },
+                //     Err(error) => {
+                //         error!("Could not decode transaction error -> {:?}\n\n", error);
+                //         if current_block_number > 0 {
+                //             info!("Updating database...\n");
+                //             let _ = db::db_metaschema_update(current_block_number, meta_slug).await;
+                //         } else {
+                //             info!(
+                //                 "Requires manual intervention; current_block_number value -> {}\n",
+                //                 current_block_number
+                //             );
+                //         }
+                //         println!("Process Exiting...\n");
+                //         exit(1);
+                //     }
+                // };
 
             let mut meta_source: Vec<MetaSource> = Vec::new();
             meta_source.push(MetaSource {
@@ -151,9 +193,26 @@ pub async fn create_meta(meta_slug: &str, event_doc: IndexedTransaction) {
                 value: format!("0x{:020x}", loaded_transaction.transaction.txn_hash),
             });
 
-            current_block_number = loaded_transaction.transaction.block_number;
-
-            info!("current block Number: {:?}", current_block_number);
+                 current_block_number=loaded_transaction.transaction.block_number;
+                //get the current block number
+                // current_block_number = match loaded_transaction.transaction.block_number {
+                //     Some(txn_block_number) => txn_block_number,
+                //     None => {
+                //         error!("Could not get current_block_number, got None\n\n");
+                //         if current_block_number > 0 {
+                //             info!("Updating database...\n");
+                //             let _ = db_metaschema_update(current_block_number, meta_slug).await;
+                //         } else {
+                //             info!(
+                //                 "Requires manual intervention; current_block_number value -> {}\n",
+                //                 current_block_number
+                //             );
+                //         }
+                //         println!("Process Exiting...\n");
+                //         exit(1);
+                //     }
+                // };
+                info!("current block Number: {:?}", current_block_number);
 
             let mut metadata_list: HashMap<String, HashMap<String, serde_json::Value>> =
                 HashMap::new();
@@ -168,15 +227,12 @@ pub async fn create_meta(meta_slug: &str, event_doc: IndexedTransaction) {
                 if prop_list.contains(&param.name) {
                     let param_value = param.value.as_str();
 
-                    // ipfs module
-                    if ipfs == param.name {
-                        info!(
-                            "Found a match for {} with the value -> {:?}\n\n",
-                            ipfs, param_value
-                        );
-                        // get data with https
-                        let response = get_url_data(param_value).await;
-                        // let response = get(param_value).await.unwrap();
+                        // ipfs module
+                        if ipfs == param.name {
+                            info!("Found a match for {} with the value -> {:?}\n\n", ipfs, param_value);
+                            // get data with https
+                            let response = utils_url_data(param_value).await;
+                            // let response = get(param_value).await.unwrap();
 
                         match response {
                             Ok(object) => {
@@ -235,34 +291,39 @@ pub async fn create_meta(meta_slug: &str, event_doc: IndexedTransaction) {
                             }
                         };
 
-                        if !token_url.is_empty() {
-                            let response = get_url_data(&token_url).await;
-                            // let response: Result<reqwest::Response, reqwest::Error> = get(&token_url).await;
-                            match response {
-                                Ok(object) => {
-                                    let nft_data = object
-                                        .text()
-                                        .await
-                                        .expect("Error in parsing nft data to string\n");
-                                    info!("The nft data is {:?}\n\n", nft_data);
-                                    let nft_data_content = serde_json::from_str(&nft_data)
-                                        .expect("error in reading json format");
-                                    let mut erc721_data_hashmap: HashMap<
-                                        String,
-                                        serde_json::Value,
-                                    > = HashMap::new();
-                                    erc721_data_hashmap
-                                        .insert(String::from(&param.name), nft_data_content);
-                                    metadata_list
-                                        .insert("erc721_module".to_string(), erc721_data_hashmap);
-                                }
-                                Err(error) => {
-                                    error!("Error in fetching nft data from url {:?}\n\n", error);
+                            if !token_url.is_empty() {
+                                let response = utils_url_data(&token_url).await;
+                                // let response: Result<reqwest::Response, reqwest::Error> = get(&token_url).await;
+                                match response {
+                                    Ok(object) => {
+                                        let nft_data = object
+                                            .text()
+                                            .await
+                                            .expect("Error in parsing nft data to string\n");
+                                        info!("The nft data is {:?}\n\n", nft_data);
+                                        let nft_data_content = serde_json::from_str(&nft_data)
+                                            .expect("error in reading json format");
+                                        let mut erc721_data_hashmap: HashMap<
+                                            String,
+                                            serde_json::Value,
+                                        > = HashMap::new();
+                                        erc721_data_hashmap
+                                            .insert(String::from(&param.name), nft_data_content);
+                                        metadata_list.insert(
+                                            "erc721_module".to_string(),
+                                            erc721_data_hashmap,
+                                        );
+                                    }
+                                    Err(error) => {
+                                        error!(
+                                            "Error in fetching nft data from url {:?}\n\n",
+                                            error
+                                        );
+                                    }
                                 }
                             }
+                            info!("The token url is {:?}\n\n", token_url);
                         }
-                        info!("The token url is {:?}\n\n", token_url);
-                    }
 
                     raw_hashmap.insert(
                         String::from(&param.name),
@@ -298,87 +359,86 @@ pub async fn create_meta(meta_slug: &str, event_doc: IndexedTransaction) {
                                 serde_json::json!(current_value.get(tree[1]).unwrap().clone());
                             let mut tree_index = 2;
 
-                            while tree_index < tree.len() {
-                                json_value = json_value[tree[tree_index]].clone();
-                                if json_value.is_null() {
-                                    // json_value = obj.prop_default.as_ref().unwrap().clone();
-                                    json_value = match obj.prop_default.as_ref() {
-                                        Some(object) => object.clone(),
-                                        None => {
-                                            warn!("Json_value of metadata_list returned None, json_value -> {:?}\n", json_value);
-                                            info!("Breaking the loop...\n");
-                                            break;
-                                            // info!("Updating database...\n");
-                                            // // exit the program and update the last block number on meta_schema
-                                            // let _ = db::update_block_number(
-                                            //     current_block_number,
-                                            //     meta_slug,
-                                            // )
-                                            // .await;
-                                            // info!("Process exiting...\n");
-                                            // exit(1); // exiting the code
-                                        }
-                                    };
+                                while tree_index < tree.len() {
+                                    json_value = json_value[tree[tree_index]].clone();
+                                    if json_value.is_null() {
+                                        // json_value = obj.prop_default.as_ref().unwrap().clone();
+                                        json_value = match obj.prop_default.as_ref() {
+                                            Some(object) => object.clone(),
+                                            None => {
+                                                warn!("Json_value of metadata_list returned None, json_value -> {:?}\n", json_value);
+                                                info!("Breaking the loop...\n");
+                                                break;
+                                                // info!("Updating database...\n");
+                                                // // exit the program and update the last block number on meta_schema
+                                                // let _ = db::db_metaschema_update(
+                                                //     current_block_number,
+                                                //     meta_slug,
+                                                // )
+                                                // .await;
+                                                // info!("Process exiting...\n");
+                                                // exit(1); // exiting the code
+                                            }
+                                        };
+                                    }
+                                    tree_index += 1;
                                 }
-                                tree_index += 1;
+                                info!("Json value %%%%% {:?}\n", json_value);
+                                if !json_value.is_null() {
+                                    modified_list.insert(String::from(&obj.prop), json_value);
+                                }
                             }
-                            info!("Json value %%%%% {:?}\n", json_value);
-                            if !json_value.is_null() {
-                                modified_list.insert(String::from(&obj.prop), json_value);
+                            None => {
+                                error!(
+                                    "Error in finding key {:?} Or the url returned None",
+                                    tree[0]
+                                );
+                                continue;
+                                // if current_block_number > 0 {
+                                //     info!("Updating database...\n");
+                                //     let _ =
+                                //         db::db_metaschema_update(current_block_number, meta_slug)
+                                //             .await;
+                                // } else {
+                                //     info!("Requires manual intervention; current_block_number value -> {}\n", current_block_number);
+                                // }
+                                // info!("Process Exiting...\n");
+                                // exit(1);
                             }
+                        }; // possible area of crash
+                    } else {
+                        let option_json_value = &obj.prop_default;
+                        if option_json_value.is_some() {
+                            json_value = option_json_value.as_ref().unwrap().clone();
+                            println!("Json value %%%%% {:?}\n", json_value);
+                            modified_list.insert(String::from(&obj.prop), json_value);
                         }
-                        None => {
-                            error!(
-                                "Error in finding key {:?} Or the url returned None",
-                                tree[0]
-                            );
-                            continue;
-                            // if current_block_number > 0 {
-                            //     info!("Updating database...\n");
-                            //     let _ =
-                            //         db::update_block_number(current_block_number, meta_slug)
-                            //             .await;
-                            // } else {
-                            //     info!("Requires manual intervention; current_block_number value -> {}\n", current_block_number);
-                            // }
-                            // info!("Process Exiting...\n");
-                            // exit(1);
-                        }
-                    }; // possible area of crash
-                } else {
-                    let option_json_value = &obj.prop_default;
-                    if option_json_value.is_some() {
-                        json_value = option_json_value.as_ref().unwrap().clone();
-                        println!("Json value %%%%% {:?}\n", json_value);
-                        modified_list.insert(String::from(&obj.prop), json_value);
                     }
                 }
-                
-            }
 
             if !modified_list.is_empty() {
                 metadata_list.insert(String::from("modified"), modified_list);
 
-                let meta: Meta = Meta {
-                    slug: meta_slug.to_string(),
-                    data: metadata_list,
-                    sources: meta_source,
-                    indexable: true,
-                };
-                // creating metaOwner from the raw object
-                println!("The meta is {:?}\n\n", meta);
-                let _ = upload_meta_to_db(meta, meta_id, meta_owner).await;
-                println!("===============================================================================================\n");
-            }
+                    let meta: Meta = Meta {
+                        slug: meta_slug.to_string(),
+                        data: metadata_list,
+                        sources: meta_source,
+                        indexable: true,
+                    };
+
+                    println!("The meta is {:?}\n\n", meta);
+                    let _ = db_meta_store(meta, meta_id, meta_owner).await;
+                    println!("===============================================================================================\n");
+                }
 
             // index += 1;
             // }
             info!("after: {}\n", current_block_number);
             info!("Updating database...");
             if current_block_number == 0 {
-                let _ = update_block_number(stop_block_number, meta_slug).await;
+                let _ = db_metaschema_update(stop_block_number, meta_slug).await;
             } else {
-                let _ = update_block_number(current_block_number, meta_slug).await;
+                let _ = db_metaschema_update(current_block_number, meta_slug).await;
             }
             info!("All the transaction logs between {} and {} are abstracted into metas.\nStart the node again to continue from the latest block number", block_number, stop_block_number);
         }
