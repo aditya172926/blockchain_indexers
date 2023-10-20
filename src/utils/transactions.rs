@@ -1,10 +1,49 @@
 use crate::structs::index::{MethodParam, MethodParamDataType};
+use crate::structs::transactions::TransactionIndexed;
+use chrono::Utc;
 use ethers::abi::{Abi, Function, Token};
 use ethers::{
     providers::{Http, Middleware, Provider},
     types::{Transaction, TransactionReceipt, TxHash},
 };
-use mongodb::bson::Document;
+use mongodb::bson::{Document, to_bson};
+
+pub async fn utils_transaction_indexed(decoded_txn_data: &(
+                Vec<MethodParam>,         // method params array
+                String,                            // function name
+                String,                            // transaction hash
+                ethers::types::TransactionReceipt, // transaction receipt
+            ),contract_slug:String,contract_address:&str,chain_id:String)->TransactionIndexed{
+    let block_number_option=decoded_txn_data.3.block_number;
+    let block_number = match block_number_option {
+        Some (object) => object.as_u64(),
+        None => 0
+    };
+     let now = Utc::now();
+    let ts: String = now.timestamp().to_string();
+
+    let transaction_struct:crate::structs::transactions::Transaction = crate::structs::transactions::Transaction {
+        block_hash: decoded_txn_data.3.block_hash,
+        block_number:block_number,
+        contract_slug:contract_slug.clone(),
+        contract_address: contract_address.clone().to_owned(),
+        chain_id: chain_id.to_string(),
+        gas_used: decoded_txn_data.3.gas_used,
+        gas_price: decoded_txn_data.3.effective_gas_price,
+        from: decoded_txn_data.3.from,
+        to: decoded_txn_data.3.to,
+        txn_hash: decoded_txn_data.3.transaction_hash,
+        method_name: decoded_txn_data.1.clone(),
+        method_id: decoded_txn_data.2.clone(),
+        method_params: decoded_txn_data.0.clone(),
+    };    
+
+    let transaction_indexed:TransactionIndexed = TransactionIndexed {
+        timestamp: ts,
+        transaction: transaction_struct,
+    };
+    return transaction_indexed;
+}
 
 pub async fn utils_transaction_data<'a>(
     abi: &str,
@@ -92,7 +131,7 @@ async fn utils_transaction_method<'a>(
     }
 
     if method_name != "" {
-        let param_result =
+        let param_result: (Vec<MethodParam>, String) =
             utils_transaction_method_params(contract_abi, method_name, input_data, methods).await;
         return (param_result.0, param_result.1, method_id.to_string());
     } else {

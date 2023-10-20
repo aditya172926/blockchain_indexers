@@ -5,6 +5,13 @@ use serde::{Serialize, Deserialize};
 use super::index::MethodParam;
 
 #[derive(Serialize, Clone,Debug,Deserialize)]
+
+pub struct TransactionMethod {
+    pub name: String,
+    pub id: String,
+    pub params: Vec<MethodParam>,
+}
+#[derive(Clone,Serialize)]
 pub struct Transaction {
     pub block_hash: Option<H256>,
     pub block_number: u64,
@@ -24,7 +31,7 @@ pub struct Transaction {
 
 
 
-#[derive(Serialize, Deserialize, Debug,Clone)]
+#[derive(Clone)]
 pub struct TransactionIndexed{
     pub timestamp: String,
     pub transaction: Transaction

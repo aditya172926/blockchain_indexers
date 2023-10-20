@@ -1,0 +1,13 @@
+specVersion: 0.0.4
+description: LENS PROFILE
+source:
+  address: "0xee1494a937590662f278403ae7424f51b3a14d265069f0bf0915ab60cc78b199"
+  network_id: ""
+  abi: ""
+indexer: 
+  start_block: 
+  end_block:
+default_metas:
+  title: "",
+  owner: "",
+  content: "",

@@ -1,42 +1,43 @@
+use ethers::types::H160;
 use mongodb::bson::document::ValueAccessError;
 use mongodb::bson::Document;
 
 use crate::db::{index, self};
+use crate::structs::contracts::ContractAbi;
 use crate::structs::{
     contracts::ContractMetaData,
-    networks:: NetworkStuct};
+    networks:: NetworkStruct};
 use std::collections::HashSet;
 use std::fs;
 use std::string::String;
 
-
-
 pub async fn utils_contract_data(
     protocol_name: &str,
-) -> (ContractMetaData, String, web3::ethabi::Contract) {
+) -> (ContractMetaData,ContractAbi) {
     let contract_metadata: ContractMetaData = utils_contract_metadata(protocol_name).await.unwrap();
 
     println!("The conntract metadata is {:?}", contract_metadata);
-    let mut contract_fetched_abi: String = String::new();
+    let mut contract_abi_string: String = String::new();
     if contract_metadata.read_abi_from.contains("0x") {
-        contract_fetched_abi = utils_format_contract_abi(
+        contract_abi_string = utils_contract_abi(
             &contract_metadata.chain_id,
             &contract_metadata.read_abi_from,
         )
         .await;
+
+        
     } else {
-        println!("The contract address is {:?}", contract_metadata.contract_address.to_string());
-        contract_fetched_abi = utils_format_contract_abi(
+        contract_abi_string = utils_contract_abi(
             &contract_metadata.chain_id,
             &contract_metadata.contract_address,
         )
         .await;
-        // println!("Printing abi from ")
     }
 
-    let contract_abi = serde_json::from_str(&contract_fetched_abi).unwrap();
-
-    return (contract_metadata, contract_fetched_abi, contract_abi);
+    let abi_json = serde_json::from_str(&contract_abi_string).unwrap();
+    let contract_abi:ContractAbi = ContractAbi { string: contract_abi_string, raw: abi_json }; 
+    println!("\n\n\n contract meta data {:?} \n\n contract abi {:?} \n\n\n",contract_metadata, contract_abi);
+    return (contract_metadata, contract_abi);
 }
 
 pub async fn utils_contract_metadata(protocol_name: &str) -> Option<ContractMetaData> {
@@ -71,9 +72,9 @@ pub async fn utils_contract_metadata(protocol_name: &str) -> Option<ContractMeta
                 Err(e) => {
                     println!("ValueNotFound, there is no field of read_abi_from {:?}", e);
                     String::new()
-                }
-            };
-
+                }};
+            //   wrap();
+            // let read_abi_from_h160:H160 = contract_metadata.read_abi_from.parse().unwrap();
             // logic for extracting methods
             methods = match object.get_document("methods") {
                 Ok(method_object) => method_object,
@@ -105,10 +106,11 @@ pub async fn utils_contract_metadata(protocol_name: &str) -> Option<ContractMeta
                     }
                 }
             }
-
+            
             // logic to return result
             let result: ContractMetaData = ContractMetaData {
                 contract_address: contract_address_string,
+                
                 read_abi_from: read_abi_from,
                 chain_id: contract_chain_id,
                 function_of_interest: function_of_interest,
@@ -127,12 +129,12 @@ pub async fn utils_contract_metadata(protocol_name: &str) -> Option<ContractMeta
     };
     return contract_metadata;
 }
+       
+    
 
-pub async fn utils_contract_abi(
-    contract_chain_id: String,
-    contract_address: &str,
-) -> reqwest::Result<reqwest::Response> {
-    // println!("The Chain id is {}", contract_chain_id);
+
+
+pub async fn utils_contract_abi(contract_chain_id: &str, contract_address: &str) -> String {
     let file: String = fs::read_to_string(r"config/constants.json")
         .expect("Error in reading the constants.json file");
     let file_data = serde_json::from_str::<serde_json::Value>(&file);
@@ -152,13 +154,6 @@ pub async fn utils_contract_abi(
     // println!("The api_url is {}", api_url);
 
     let response: Result<reqwest::Response, reqwest::Error> = reqwest::get(&api_url).await;
-    // let mut fetched_abi: reqwest::Response = Default::default();
-    return response;
-}
-
-pub async fn utils_format_contract_abi(contract_chain_id: &str, contract_address: &str) -> String {
-    let response: Result<reqwest::Response, reqwest::Error> =
-        utils_contract_abi(contract_chain_id.to_string(), contract_address).await;
     let mut fetched_abi: String = String::new();
 
     match response {
@@ -174,11 +169,12 @@ pub async fn utils_format_contract_abi(contract_chain_id: &str, contract_address
             } else {
                 println!("Request failed with status code: {}", object.status());
             }
+            
             return fetched_abi;
         }
         Err(e) => {
             println!("Error in fetching contract abi {:?}", e);
-            return "Error in response".to_string();
+            return String::from("Error ")
         }
     }
 }

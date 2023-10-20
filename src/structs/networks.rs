@@ -1,7 +1,8 @@
 use serde::Serialize;
 
 #[derive(Serialize, Clone)]
-pub struct NetworkStuct {
+pub struct NetworkStruct {
+    pub network_id: String,
     pub network_name: String,
     pub network_rpc_url: String,
     pub start_block_number: i64,

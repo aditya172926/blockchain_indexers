@@ -1,11 +1,12 @@
-use ethers::{
-    abi::Token,
-    types::{H160, H256, U256, U64},
-};
+
 use std::{collections::HashMap, any::Any};
+use ethers::abi::JsonAbi;
+use ethers::types::H160;
 use mongodb::bson::{Document, document::ValueAccessError};
 use mongodb::bson::oid::ObjectId;
 use serde::{Deserialize, Serialize};
+
+
 
 
 #[derive(Serialize)]
@@ -24,6 +25,7 @@ pub struct ContractData {
 #[derive( Clone, Debug)]
 pub struct ContractMetaData {
     pub contract_address: String,
+    
     pub read_abi_from: String,
     pub chain_id: String,
     pub function_of_interest: String,
@@ -32,4 +34,10 @@ pub struct ContractMetaData {
     pub contract_slug: String,
     pub method_of_interest:std::collections::HashSet<String>,
     pub methods:Document,
+}
+
+#[derive(Debug)]
+pub struct ContractAbi {
+    pub string: String,
+    pub raw: web3::ethabi::Contract
 }
