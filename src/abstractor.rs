@@ -2,9 +2,8 @@
 
 use crate::structs::index::{MetaSchemaAbstractor,Meta, MetaSchema, MetaSource};
 use crate::structs::transactions::TransactionIndexed;
-use crate::utils::contracts::utils_format_contract_abi;
+use crate::utils::contracts::utils_contract_abi;
 use crate::utils::{
-    contracts::utils_contract_abi,
     index::utils_url_data
 };
 use crate::db::index::{db_metaschema_data,db_metaschema_update,db_meta_store};
@@ -85,7 +84,7 @@ pub async fn create_meta(meta_slug: &str, event_doc:TransactionIndexed) {
         ///////////////////////////////////// creating contract instance START ////////////////////////////////////
 
         let mut contract_abi: String;
-        contract_abi = utils_format_contract_abi(&chain_id, &read_abi_from).await;
+        contract_abi = utils_contract_abi(&chain_id, &read_abi_from).await;
 
         let abi: Abi = serde_json::from_str(&contract_abi).expect("Error in reading abi json");
         // println!("\n\n The contract ABI is {:?}", abi);

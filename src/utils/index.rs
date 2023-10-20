@@ -1,4 +1,4 @@
-use std::fs;
+use std::{fs, collections::HashSet};
 use reqwest::get;
 
 pub async fn utils_contract_abi(
@@ -65,4 +65,11 @@ pub async fn utils_url_data(param: &str) -> Result<reqwest::Response, reqwest::E
 
     let response = get(query).await;
         response
+}
+
+pub fn utils_interesting_method(method_of_interest:&HashSet<String>,method_name:&String)-> bool{
+    if !method_of_interest.is_empty(){
+        return method_of_interest.contains(method_name.as_str());
+    }
+    return true;
 }
