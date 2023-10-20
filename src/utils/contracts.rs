@@ -1,6 +1,7 @@
 use ethers::types::H160;
 use mongodb::bson::document::ValueAccessError;
 use mongodb::bson::Document;
+use ethers::abi::{Abi, Function, Token};
 
 use crate::db::{index, self};
 use crate::structs::contracts::ContractAbi;
@@ -35,7 +36,10 @@ pub async fn utils_contract_data(
     }
 
     let abi_json = serde_json::from_str(&contract_abi_string).unwrap();
-    let contract_abi:ContractAbi = ContractAbi { string: contract_abi_string, raw: abi_json }; 
+    let abi_static: &'static Abi = Box::leak(Box::new(
+        serde_json::from_str(&contract_abi_string).expect("Failed to parse abi"),
+    ));
+    let contract_abi:ContractAbi = ContractAbi { string: contract_abi_string, raw: abi_json, stat:abi_static }; 
     println!("\n\n\n contract meta data {:?} \n\n contract abi {:?} \n\n\n",contract_metadata, contract_abi);
     return (contract_metadata, contract_abi);
 }

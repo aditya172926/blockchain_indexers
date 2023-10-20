@@ -18,12 +18,14 @@ use ethers::{
 use ethers::etherscan::account::TxListParams;
 
 use crate::handlers::ens_ethereum::handler;
+use crate::structs::contracts::{ContractMetaData, ContractAbi};
+use crate::structs::networks::NetworkStruct;
 use crate::{structs, utils};
 use crate::utils::index::utils_interesting_method;
 use crate::utils::transactions::utils_transaction_indexed;
 use tokio::time::{sleep, Duration};
 
-async fn load_txns(contract_abi:&str,transaction_hash:H256, network_rpc_url:String, methods:Document, method_of_interest:HashSet<String>,contract_slug:String,chain_id:String, contract_address: &str) {
+async fn load_txns(contract_abi:&ContractAbi,transaction_hash:H256, network_metadata:NetworkStruct,contract_metadata:ContractMetaData) {
     let mut decoded_txn_data: (
         Vec<structs::index::MethodParam>,  // method params array
         String,                            // method name
@@ -32,16 +34,16 @@ async fn load_txns(contract_abi:&str,transaction_hash:H256, network_rpc_url:Stri
     ) = utils::transactions::utils_transaction_data(
         contract_abi,
         transaction_hash,
-        &network_rpc_url,
-        &methods,
+        &network_metadata.network_rpc_url,
+        &contract_metadata.methods,
     )
     .await;
   
-    if decoded_txn_data.1 != "".to_string()&&utils_interesting_method(&method_of_interest,&decoded_txn_data.1) {
+    if decoded_txn_data.1 != "".to_string()&&utils_interesting_method(&contract_metadata.method_of_interest,&decoded_txn_data.1) {
         
         println!("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     
-        let transaction_indexed = utils_transaction_indexed(&decoded_txn_data,contract_slug,contract_address,chain_id);
+        let transaction_indexed = utils_transaction_indexed(&decoded_txn_data,contract_metadata.contract_slug,&contract_metadata.contract_address,network_metadata.network_id);
         let meta_indexed = handler(&decoded_txn_data.0);   
         // abstractor::create_meta(&contract_slug,transaction_indexed).await;
 
@@ -63,25 +65,18 @@ async fn load_txns(contract_abi:&str,transaction_hash:H256, network_rpc_url:Stri
 
 
 pub async fn get_txns(
-    contract_abi: &str,
+    contract_abi: &ContractAbi,
     contract_instance: &Instance<Http>,
-    function_of_interest: String,
-    contract_address: String,
-    chain_id: String,
-    contract_slug: String,
-    network_rpc_url: String,
-    network_block_number: i64,
-    method_of_interest: HashSet<String>,
-    methods: Document,
+    contract_metadata:ContractMetaData,
+    network_metadata:NetworkStruct,
 ) {
-    println!("The RPC is {}", network_rpc_url);
-    println!("The block number is {:?}", ethcontract::BlockNumber::from(network_block_number));
+    
 
     // eth block number:17691422
     //polygon block number:45033964
     let event_stream = contract_instance
         .all_events()
-        .from_block(ethcontract::BlockNumber::from(network_block_number))
+        .from_block(ethcontract::BlockNumber::from(network_metadata.start_block_number))
         .stream();
     println!("fetching...");
     let mut event_stream = Box::pin(event_stream);
@@ -99,7 +94,7 @@ pub async fn get_txns(
                 let transaction_hash: H256 = ethers::core::types::TxHash::from(txn_hash);
                 println!("//////// TransactionHash /////// \n{:?}",transaction_hash);
                 if transaction_hash != prev_txn_hash {
-                    load_txns(contract_abi,transaction_hash, network_rpc_url.clone(), methods.clone(), method_of_interest.clone(),contract_slug.clone(),chain_id.clone(),&contract_address);
+                    load_txns(contract_abi,transaction_hash, network_metadata.clone(),contract_metadata.clone() ).await;
                     prev_txn_hash = transaction_hash;
                 }
                 
@@ -114,7 +109,7 @@ pub async fn get_txns(
                 event_stream = Box::pin(
                     contract_instance
                         .all_events()
-                        .from_block(ethcontract::BlockNumber::from(network_block_number))
+                        .from_block(ethcontract::BlockNumber::from(network_metadata.start_block_number))
                         .stream(),
                 );
             }
@@ -205,7 +200,7 @@ pub async fn get_history(
         println!("\n\n\ntrnasaction hash {}\n\n\n", txn_hash);
 
         if txn_hash != prev_txn_hash {
-          load_txns(contract_abi,txn_hash, network_rpc_url.clone(), methods.clone(), method_of_interest.clone(),contract_slug.clone(),chain_id.clone(),&contract_address);
+        //   load_txns(contract_abi,txn_hash, network_metadata.clone(),contract_metadata.clone() );
           prev_txn_hash = txn_hash;
         }
     }

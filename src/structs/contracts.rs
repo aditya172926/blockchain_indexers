@@ -5,6 +5,7 @@ use ethers::types::H160;
 use mongodb::bson::{Document, document::ValueAccessError};
 use mongodb::bson::oid::ObjectId;
 use serde::{Deserialize, Serialize};
+use ethers::abi::Abi;
 
 
 
@@ -39,5 +40,6 @@ pub struct ContractMetaData {
 #[derive(Debug)]
 pub struct ContractAbi {
     pub string: String,
-    pub raw: web3::ethabi::Contract
+    pub raw: web3::ethabi::Contract,
+    pub stat:&'static Abi,
 }

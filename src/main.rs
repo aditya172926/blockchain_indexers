@@ -56,7 +56,7 @@ mod handlers{
 async fn main() -> Result<(), Box<dyn Error>> {
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
     let contract_result: (structs::contracts::ContractMetaData,ContractAbi ) =
-        utils::contracts::utils_contract_data("lens_profile_polygon").await;
+        utils::contracts::utils_contract_data("ens_ethereum").await;
 
     let contract_metadata: structs::contracts::ContractMetaData = contract_result.0;
     let contract_abi: structs::contracts::ContractAbi = contract_result.1;
@@ -71,45 +71,36 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let read_abi_from_h160:H160 = contract_metadata.read_abi_from.parse().unwrap();
     // println!("\n\n\n\n\n read_abi_from {} \n\n\n\n\n", read_abi_from.to_string());
     let contract_instance: Instance<Http> =
-        Instance::at(web3, contract_abi.raw, contract_address_h160);
+        Instance::at(web3, contract_abi.raw.clone(), contract_address_h160);
         
-    // let contract_address_string = format!("{:020x}", contract_address_h160);
-    // let read_abi_from_string = format!("{:020x}",read_abi_from_h160);
-    // let initial = String::from("0x");
-    // let s_contract_address = format!("{}{}", initial, contract_address_string);
-    // let s_read_abi_from = format!("{}{}",initial,read_abi_from_string);
+    
 
     let start_block: u64 = 48888559;
     let end_block: u64 = 48894632;
     
-    let _ = transactions::get_history(
-        &contract_metadata.read_abi_from,
-        &contract_abi.string,
-        start_block,
-        end_block,
-        contract_metadata.chain_id,
-        contract_metadata.contract_slug,
-        &network_metadata.network_rpc_url,
-        &network_metadata.network_api_key,
-        contract_metadata.methods,
-        contract_metadata.method_of_interest,
-        network_metadata.network_rpc_url.clone()
-    )
-    .await;
-
-    // let_ = transactions::get_txns(
+    // let _ = transactions::get_history(
+    //     &contract_metadata.read_abi_from,
     //     &contract_abi.string,
-    //     &contract_instance,
-    //     contract_metadata.function_of_interest,
-    //     s_contract_address,
+    //     start_block,
+    //     end_block,
     //     contract_metadata.chain_id,
     //     contract_metadata.contract_slug,
-    //     network_metadata.network_rpc_url,
-    //     network_metadata.start_block_number,
-    //     contract_metadata.method_of_interest,
+    //     &network_metadata.network_rpc_url,
+    //     &network_metadata.network_api_key,
     //     contract_metadata.methods,
+    //     contract_metadata.method_of_interest,
+    //     network_metadata.network_rpc_url.clone()
     // )
     // .await;
+
+    let _ = transactions::get_txns(
+        &contract_abi,
+        &contract_instance,
+        contract_metadata,
+        network_metadata
+        
+    )
+    .await;
 
     // let _ = get_events(contract_instance, 17630615).await;
 

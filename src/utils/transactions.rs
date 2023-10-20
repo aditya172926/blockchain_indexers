@@ -1,3 +1,4 @@
+use crate::structs::contracts::ContractAbi;
 use crate::structs::index::{MethodParam, MethodParamDataType};
 use crate::structs::transactions::TransactionIndexed;
 use chrono::Utc;
@@ -46,7 +47,7 @@ pub async fn utils_transaction_indexed(decoded_txn_data: &(
 }
 
 pub async fn utils_transaction_data<'a>(
-    abi: &str,
+    abi: &ContractAbi,
     transaction_hash: TxHash,
     network_rpc_url: &str,
     methods: &Document,
@@ -95,11 +96,9 @@ pub async fn utils_transaction_data<'a>(
     //     }
     // }
 
-    let contract_abi: &'static Abi = Box::leak(Box::new(
-        serde_json::from_str(&abi).expect("Failed to parse abi"),
-    ));
+    
     let decoded_transaction_data: (Vec<MethodParam>, String, String) =
-    utils_transaction_method(contract_abi, transaction, methods).await;
+    utils_transaction_method(abi, transaction, methods).await;
 
     return (
         decoded_transaction_data.0, // method_params
@@ -110,7 +109,7 @@ pub async fn utils_transaction_data<'a>(
 }
 
 async fn utils_transaction_method<'a>(
-    contract_abi: &'static Abi,
+    contract_abi: &ContractAbi,
     transaction: Option<Transaction>,
     methods: &Document,
 ) -> (Vec<MethodParam>, String, String) {
@@ -119,7 +118,7 @@ async fn utils_transaction_method<'a>(
     let input_data = &input_data[10..]; // extracting the transaction hash
 
     let mut method_name: &str = "";
-    if let Some(method) = contract_abi
+    if let Some(method) = contract_abi.stat
         .functions()
         .into_iter()
         .find(|&f| ethers::utils::hex::encode(f.short_signature()) == method_id)
@@ -141,12 +140,12 @@ async fn utils_transaction_method<'a>(
 }
 
 pub async fn utils_transaction_method_params<'a>(
-    contract_abi: &'static Abi,
+    contract_abi: &ContractAbi,
     method_name: &str,
     input_data: &str,
     methods: &Document,
 ) -> (Vec<MethodParam>, String) {
-    let function: &Function = contract_abi
+    let function: &Function = contract_abi.stat
         .function(&method_name)
         .expect("Function is not found in ABI");
 
