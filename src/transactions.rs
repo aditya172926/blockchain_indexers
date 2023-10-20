@@ -20,6 +20,7 @@ use ethers::etherscan::account::TxListParams;
 use crate::handlers::ens_ethereum::handler;
 use crate::structs::contracts::{ContractMetaData, ContractAbi};
 use crate::structs::networks::NetworkStruct;
+use crate::structs::transactions::TransactionMethod;
 use crate::{structs, utils};
 use crate::utils::index::utils_interesting_method;
 use crate::utils::transactions::utils_transaction_indexed;
@@ -27,9 +28,7 @@ use tokio::time::{sleep, Duration};
 
 async fn load_txns(contract_abi:&ContractAbi,transaction_hash:H256, network_metadata:NetworkStruct,contract_metadata:ContractMetaData) {
     let mut decoded_txn_data: (
-        Vec<structs::index::MethodParam>,  // method params array
-        String,                            // method name
-        String,                            // method id
+        TransactionMethod,                       
         ethers::types::TransactionReceipt, // transaction receipt
     ) = utils::transactions::utils_transaction_data(
         contract_abi,
@@ -39,12 +38,15 @@ async fn load_txns(contract_abi:&ContractAbi,transaction_hash:H256, network_meta
     )
     .await;
   
-    if decoded_txn_data.1 != "".to_string()&&utils_interesting_method(&contract_metadata.method_of_interest,&decoded_txn_data.1) {
+  println!("\n\n\n\n\n\nmethod of interest {:?} \n\n decoded txn name {}\n\n condition1 {} \n\ncondition2 {}  \n\n", contract_metadata.method_of_interest, decoded_txn_data.0.name,decoded_txn_data.0.name != "".to_string(),utils_interesting_method(&contract_metadata.method_of_interest,&decoded_txn_data.0.name));
+    if decoded_txn_data.0.name != "".to_string()&&utils_interesting_method(&contract_metadata.method_of_interest,&decoded_txn_data.0.name) {
+
         
-        println!("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-    
+        println!("\n\n\ninside if statement before of transaction indexed\n{:?}\n{}\n{}\n{}\n\n",decoded_txn_data,contract_metadata.contract_slug,contract_metadata.contract_address,network_metadata.network_id);
+        
         let transaction_indexed = utils_transaction_indexed(&decoded_txn_data,contract_metadata.contract_slug,&contract_metadata.contract_address,network_metadata.network_id);
-        let meta_indexed = handler(&decoded_txn_data.0);   
+        let meta_indexed = handler(&decoded_txn_data.0.params);   
+        println!("\n\n\ninside if statement after of transaction indexed\n\n\n");
         // abstractor::create_meta(&contract_slug,transaction_indexed).await;
 
         // let _ = db::db_transaction_store( 
@@ -58,9 +60,8 @@ async fn load_txns(contract_abi:&ContractAbi,transaction_hash:H256, network_meta
         // )
         // .await;
         
-        
-        println!("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     }
+    println!("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 }
 
 
@@ -78,13 +79,10 @@ pub async fn get_txns(
         .all_events()
         .from_block(ethcontract::BlockNumber::from(network_metadata.start_block_number))
         .stream();
-    println!("fetching...");
     let mut event_stream = Box::pin(event_stream);
     let mut prev_txn_hash: H256 =
         H256::from_str("0x0000000000000000000000000000000000000000000000000000000000000000")
             .unwrap();
-
-    println!("Trying...");
     loop {
 
         match event_stream.next().await {
@@ -92,7 +90,7 @@ pub async fn get_txns(
 
                 let txn_hash = log.meta.as_ref().unwrap().transaction_hash.to_fixed_bytes();
                 let transaction_hash: H256 = ethers::core::types::TxHash::from(txn_hash);
-                println!("//////// TransactionHash /////// \n{:?}",transaction_hash);
+                println!("//////// TransactionHash /////// \n txn = {:?}",transaction_hash);
                 if transaction_hash != prev_txn_hash {
                     load_txns(contract_abi,transaction_hash, network_metadata.clone(),contract_metadata.clone() ).await;
                     prev_txn_hash = transaction_hash;

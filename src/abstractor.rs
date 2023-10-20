@@ -247,7 +247,7 @@ pub async fn create_meta(meta_slug: &str, event_doc:TransactionIndexed) {
                 let meta_owner = format!("0x{:020x}", loaded_transaction.transaction.from);
 
                 // creating meta loop
-                for param in loaded_transaction.transaction.method_params {
+                for param in loaded_transaction.method.params {
                     if prop_list.contains(&param.name) {
                         let param_value = param.value.as_str();
 

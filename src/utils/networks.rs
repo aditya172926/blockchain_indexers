@@ -39,6 +39,7 @@ pub fn utils_network_data(chain_id: &str) -> Option<crate::structs::networks::Ne
             None
         }
     };
+    println!("network metadata \n network = {:?}", network_rpc);
     return network_rpc;
 }
 // }
