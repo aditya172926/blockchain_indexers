@@ -50,7 +50,9 @@ mod abstractor;
 
 mod handlers {
     pub(crate) mod ens_ethereum;
+    pub(crate) mod lens_post;
     pub(crate) mod lens_profile_polygon;
+    pub(crate) mod poap_ethereum;
 }
 
 mod helpers {
@@ -61,7 +63,7 @@ mod helpers {
 async fn main() -> Result<(), Box<dyn Error>> {
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
     let contract_result: (structs::contracts::ContractMetaData, ContractAbi) =
-        utils::contracts::utils_contract_data("poap_ethereum").await;
+        utils::contracts::utils_contract_data("lens_post").await;
 
     let contract_metadata: structs::contracts::ContractMetaData = contract_result.0;
     let contract_abi: structs::contracts::ContractAbi = contract_result.1;
@@ -81,22 +83,22 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let start_block: u64 = 18381829;
     let end_block: u64 = 18395946;
 
-    let _ = transactions::get_history(
-        contract_metadata,
-        network_metadata,
-        &contract_abi,
-        start_block,
-        end_block,
-    )
-    .await;
-
-    // let _ = transactions::get_txns(
-    //     &contract_abi,
-    //     &contract_instance,
+    // let _ = transactions::get_history(
     //     contract_metadata,
     //     network_metadata,
+    //     &contract_abi,
+    //     start_block,
+    //     end_block,
     // )
     // .await;
+
+    let _ = transactions::get_txns(
+        &contract_abi,
+        &contract_instance,
+        contract_metadata,
+        network_metadata,
+    )
+    .await;
 
     // let _ = get_events(contract_instance, 17630615).await;
 

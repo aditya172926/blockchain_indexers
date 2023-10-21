@@ -22,12 +22,14 @@ pub fn handler_lens_post(transaction_indexed: &TransactionIndexed) -> Option<Met
             referenceModule: transaction_indexed.method.params[4].value.clone(),
         };
 
+        println!("\n\n\n meta raw {:?} \n\n\n", meta_raw);
+
         let mut image = String::from("https://i.seadn.io/gae/S67RadRtlIbTNk0UojZM-TEl4pybcblKyg3HxQHl0-JmxYZ2deLX-pK2Z89khCWHGeaXeYfE8Vxqj06YCUcqk0q1KWD9T997lGnGHw?auto=format&dpr=1&w=3840");
 
         let meta_indexed: MetaIndexedStruct = MetaIndexedStruct {
             id: Some(meta_raw.profileId.clone()),
-            owner: Some(format!(meta_raw.profileId.clone())),
-            title: Some(format!(meta_raw.contentURI.clone())),
+            owner: Some(meta_raw.profileId.clone()),
+            title: Some(meta_raw.contentURI.clone()),
             image: Some(image),
         };
         println!("\n\n\nMeta indexed {:?} \n\n\n", meta_indexed);
