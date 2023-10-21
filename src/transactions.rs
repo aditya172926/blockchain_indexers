@@ -68,28 +68,28 @@ async fn load_txns(
             )
             .await;
 
-        let meta_block = match handler_lens_post(&transaction_indexed).await {
-            Some(object) => {
-                let meta_sub_struct: MetaSubStruct = MetaSubStruct {
-                    data: object.clone(),
-                };
-                let meta: MetaStruct = MetaStruct {
-                    metaOwner: object.modified.owner.unwrap(),
-                    metaId: object.modified.id.unwrap(),
-                    slug: contract_metadata.contract_slug,
-                    meta: meta_sub_struct,
-                    createdAt: String::from(""),
-                    updatedAt: String::from(""),
-                    sources: vec![transaction_indexed],
-                };
-                meta
-            }
-            None => {
-                println!("handler returned null");
-                exit(1)
-            }
-        };
-        println!("\n\n\n\n\n meta block {:?} \n\n\n\n\n", meta_block);
+        // let meta_block = match handler_lens_post(&transaction_indexed).await {
+        //     Some(object) => {
+        //         let meta_sub_struct: MetaSubStruct = MetaSubStruct {
+        //             data: object.clone(),
+        //         };
+        //         let meta: MetaStruct = MetaStruct {
+        //             metaOwner: object.modified.owner.unwrap(),
+        //             metaId: object.modified.id.unwrap(),
+        //             slug: contract_metadata.contract_slug,
+        //             meta: meta_sub_struct,
+        //             createdAt: String::from(""),
+        //             updatedAt: String::from(""),
+        //             sources: vec![transaction_indexed],
+        //         };
+        //         meta
+        //     }
+        //     None => {
+        //         println!("handler returned null");
+        //         exit(1)
+        //     }
+        // };
+        // println!("\n\n\n\n\n meta block {:?} \n\n\n\n\n", meta_block);
 
         // abstractor::create_meta(&contract_slug,transaction_indexed).await;
 
@@ -175,7 +175,7 @@ pub async fn get_history(
     let _provider = Provider::try_from(network_metadata.network_rpc_url.clone())?;
     let client = Client::builder()
         .with_api_key(network_metadata.network_api_key.clone())
-        .chain(Chain::Mainnet)
+        .chain(Chain::Optimism)
         .unwrap()
         .build()
         .unwrap();
@@ -190,6 +190,10 @@ pub async fn get_history(
         H256::from_str("0x0000000000000000000000000000000000000000000000000000000000000000")
             .unwrap();
     //Fetching all transactions
+    println!(
+        "\n\n\n {} \n\n\n",
+        contract_metadata.contract_address_historical
+    );
     let txns = client
         .get_transactions(
             &contract_metadata
