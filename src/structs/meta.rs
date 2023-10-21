@@ -10,8 +10,8 @@ pub struct MetaIndexedStruct {
     pub owner: Option<String>,
     #[serde(rename = "title", skip_serializing_if = "Option::is_none")]
     pub title: Option<String>,
-    // #[serde(rename = "media", skip_serializing_if = "Option::is_none")]
-    // pub media: Option<String>,
+    #[serde(rename = "image", skip_serializing_if = "Option::is_none")]
+    pub image: Option<String>,
     // #[serde(rename = "content", skip_serializing_if = "Option::is_none")]
     // pub content: Option<String>,
     // #[serde(rename = "context", skip_serializing_if = "Option::is_none")]

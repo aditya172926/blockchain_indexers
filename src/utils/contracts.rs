@@ -1,20 +1,16 @@
+use ethers::abi::{Abi, Function, Token};
 use ethers::types::H160;
 use mongodb::bson::document::ValueAccessError;
 use mongodb::bson::Document;
-use ethers::abi::{Abi, Function, Token};
 
-use crate::db::{index, self};
+use crate::db::{self, index};
 use crate::structs::contracts::ContractAbi;
-use crate::structs::{
-    contracts::ContractMetaData,
-    networks:: NetworkStruct};
+use crate::structs::{contracts::ContractMetaData, networks::NetworkStruct};
 use std::collections::HashSet;
 use std::fs;
 use std::string::String;
 
-pub async fn utils_contract_data(
-    protocol_name: &str,
-) -> (ContractMetaData,ContractAbi) {
+pub async fn utils_contract_data(protocol_name: &str) -> (ContractMetaData, ContractAbi) {
     let contract_metadata: ContractMetaData = utils_contract_metadata(protocol_name).await.unwrap();
 
     println!("The conntract metadata is {:?}", contract_metadata);
@@ -25,8 +21,6 @@ pub async fn utils_contract_data(
             &contract_metadata.read_abi_from,
         )
         .await;
-
-        
     } else {
         contract_abi_string = utils_contract_abi(
             &contract_metadata.chain_id,
@@ -39,19 +33,28 @@ pub async fn utils_contract_data(
     let abi_static: &'static Abi = Box::leak(Box::new(
         serde_json::from_str(&contract_abi_string).expect("Failed to parse abi"),
     ));
-    let contract_abi:ContractAbi = ContractAbi { string: contract_abi_string, raw: abi_json, stat:abi_static }; 
-    println!("\n\n\n contract meta data {:?} \n\n contract abi {:?} \n\n\n",contract_metadata, contract_abi);
+    let contract_abi: ContractAbi = ContractAbi {
+        string: contract_abi_string,
+        raw: abi_json,
+        stat: abi_static,
+    };
+    println!(
+        "\n\n\n contract meta data {:?} \n\n contract abi {:?} \n\n\n",
+        contract_metadata, contract_abi
+    );
     return (contract_metadata, contract_abi);
 }
 
 pub async fn utils_contract_metadata(protocol_name: &str) -> Option<ContractMetaData> {
-    let contract_result: mongodb::bson::Document =
-        db::index::db_contract_data(protocol_name).await.unwrap_or(mongodb::bson::Document::default()).clone();
+    let contract_result: mongodb::bson::Document = db::index::db_contract_data(protocol_name)
+        .await
+        .unwrap_or(mongodb::bson::Document::default())
+        .clone();
     let contract_meta_data: Result<
         &mongodb::bson::Document,
         mongodb::bson::document::ValueAccessError,
     > = contract_result.get_document("contract");
- 
+
     let mut methods: &Document = &Document::new();
 
     let contract_metadata: Option<ContractMetaData> = match contract_meta_data {
@@ -76,7 +79,8 @@ pub async fn utils_contract_metadata(protocol_name: &str) -> Option<ContractMeta
                 Err(e) => {
                     println!("ValueNotFound, there is no field of read_abi_from {:?}", e);
                     String::new()
-                }};
+                }
+            };
             //   wrap();
             // let read_abi_from_h160:H160 = contract_metadata.read_abi_from.parse().unwrap();
             // logic for extracting methods
@@ -110,11 +114,11 @@ pub async fn utils_contract_metadata(protocol_name: &str) -> Option<ContractMeta
                     }
                 }
             }
-            
+
             // logic to return result
             let result: ContractMetaData = ContractMetaData {
-                contract_address: contract_address_string,
-                
+                contract_address: contract_address_string.clone(),
+                contract_address_historical: contract_address_string,
                 read_abi_from: read_abi_from,
                 chain_id: contract_chain_id,
                 function_of_interest: function_of_interest,
@@ -133,10 +137,6 @@ pub async fn utils_contract_metadata(protocol_name: &str) -> Option<ContractMeta
     };
     return contract_metadata;
 }
-       
-    
-
-
 
 pub async fn utils_contract_abi(contract_chain_id: &str, contract_address: &str) -> String {
     let file: String = fs::read_to_string(r"config/constants.json")
@@ -173,12 +173,12 @@ pub async fn utils_contract_abi(contract_chain_id: &str, contract_address: &str)
             } else {
                 println!("Request failed with status code: {}", object.status());
             }
-            
+
             return fetched_abi;
         }
         Err(e) => {
             println!("Error in fetching contract abi {:?}", e);
-            return String::from("Error ")
+            return String::from("Error ");
         }
     }
 }

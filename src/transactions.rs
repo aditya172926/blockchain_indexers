@@ -14,7 +14,7 @@ use ethers::{prelude::account::Sort, providers::Provider};
 
 use ethers::etherscan::account::TxListParams;
 
-use crate::handlers::ens_ethereum::handler;
+use crate::handlers::lens_profile_polygon::handler_lens_profile;
 use crate::structs::contracts::{ContractAbi, ContractMetaData};
 use crate::structs::meta::{self, MetaStruct, MetaSubStruct};
 use crate::structs::networks::NetworkStruct;
@@ -22,8 +22,8 @@ use crate::structs::transactions::TransactionMethod;
 use crate::utils::index::utils_interesting_method;
 use crate::utils::transactions::utils_transaction_indexed;
 use crate::{structs, utils};
-use tokio::time::{sleep, Duration};
 use std::process::exit;
+use tokio::time::{sleep, Duration};
 
 async fn load_txns(
     contract_abi: &ContractAbi,
@@ -57,30 +57,37 @@ async fn load_txns(
             network_metadata.network_id
         );
 
-        let transaction_indexed: structs::transactions::TransactionIndexed = utils_transaction_indexed(
-            &decoded_txn_data,
-            contract_metadata.contract_slug,
-            &contract_metadata.contract_address,
-            network_metadata.network_id,
-        ).await;
-
-        // let meta_block = match handler(&transaction_indexed){
-        //     Some(object)=>{
-        //         let meta_sub_struct:MetaSubStruct= MetaSubStruct{
-        //             data:object.clone()
+        let transaction_indexed: structs::transactions::TransactionIndexed =
+            utils_transaction_indexed(
+                &decoded_txn_data,
+                contract_metadata.contract_slug,
+                &contract_metadata.contract_address,
+                network_metadata.network_id,
+            )
+            .await;
+        // let handler = handler_select(String::from("lens_profile_polygon"), transaction_indexed);
+        // let meta_block = match handler_lens_profile(&transaction_indexed) {
+        //     Some(object) => {
+        //         let meta_sub_struct: MetaSubStruct = MetaSubStruct {
+        //             data: object.clone(),
         //         };
-        //         let meta:MetaStruct = MetaStruct { metaOwner: object.modified.owner.unwrap() , metaId: object.modified.id.unwrap(), meta: meta_sub_struct
-        //             , createdAt: String::from(""), updatedAt: String::from(""), sources: vec![transaction_indexed] };
+        //         let meta: MetaStruct = MetaStruct {
+        //             metaOwner: object.modified.owner.unwrap(),
+        //             metaId: object.modified.id.unwrap(),
+        //             meta: meta_sub_struct,
+        //             createdAt: String::from(""),
+        //             updatedAt: String::from(""),
+        //             sources: vec![transaction_indexed],
+        //         };
         //         meta
-                
-        //     },
-        //     None=>{
+        //     }
+        //     None => {
         //         println!("handler returned null");
-        //         exit(1)}
-        // } ;
+        //         exit(1)
+        //     }
+        // };
         // println!("\n\n\n\n\n meta block {:?} \n\n\n\n\n", meta_block);
-        
-        
+
         // abstractor::create_meta(&contract_slug,transaction_indexed).await;
 
         // let _ = db::db_transaction_store(
@@ -162,7 +169,6 @@ pub async fn get_history(
     start_block: u64,
     end_block: u64,
 ) -> eyre::Result<()> {
-   
     let _provider = Provider::try_from(network_metadata.network_rpc_url.clone())?;
     let client = Client::builder()
         .with_api_key(network_metadata.network_api_key.clone())
@@ -182,15 +188,19 @@ pub async fn get_history(
             .unwrap();
     //Fetching all transactions
     let txns = client
-        .get_transactions(&contract_metadata.contract_address.parse().unwrap(), Some(paras))
+        .get_transactions(
+            &contract_metadata
+                .contract_address_historical
+                .parse()
+                .unwrap(),
+            Some(paras),
+        )
         .await
         .unwrap();
     // println!("{:?}",&txns);
 
     //Creating loop to iterate over all transactions
     for txn in txns {
-        
-
         // println!("Txn hash {:?}", );
         // let txn_hash = log.meta.as_ref().unwrap().transaction_hash.to_fixed_bytes();
         let txn_hash = txn.hash.value().unwrap().to_fixed_bytes();
@@ -198,7 +208,13 @@ pub async fn get_history(
         println!("\n\n\ntrnasaction hash {:?}\n\n\n", transaction_hash);
 
         if transaction_hash != prev_txn_hash {
-              load_txns(contract_abi,transaction_hash, network_metadata.clone(),contract_metadata.clone() ).await;
+            load_txns(
+                contract_abi,
+                transaction_hash,
+                network_metadata.clone(),
+                contract_metadata.clone(),
+            )
+            .await;
             prev_txn_hash = transaction_hash;
         }
     }
