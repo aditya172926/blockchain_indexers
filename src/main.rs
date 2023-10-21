@@ -75,8 +75,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
         
     
 
-    let start_block: u64 = 18397170;
-    let end_block: u64 = 18397204;
+    let start_block: u64 = 18397395;
+    let end_block: u64 = 18397416;
     
     let _ = transactions::get_history(
         contract_metadata,

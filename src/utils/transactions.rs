@@ -64,6 +64,7 @@ pub async fn utils_transaction_data<'a>(
         .get_transaction(transaction_hash)
         .await
         .expect("Failed to get the transaction");
+    println!("\n\ntransaction {:?}\n\n", transaction);
     let transaction_receipt_result = provider.get_transaction_receipt(transaction_hash).await;
     // .expect("Couldn't get the transaction receipt");
 
