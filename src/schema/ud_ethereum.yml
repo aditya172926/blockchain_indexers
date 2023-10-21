@@ -1,0 +1,20 @@
+slug: ud_ethereum
+name: Unstoppable Domains
+image: https://gateway.lighthouse.storage/ipfs/QmZj2x4f2KQS62fGZRX4mdTUQDFxA4RBgLvm9ziE5jp5dC
+description: Unstoppable domains contract deployed on network Ethereum
+source:
+  - kind: evm/contract
+    networkId: 1
+    from: 0xD1E5b0FF1287aA9f9A268759062E4Ab08b9Dacbe
+    fromHistorical: __CONTRACT_ADRESS_HISTORICAL__
+    readAbiFrom:
+    startBlock: __BLOCK_NUMBER_TO_START_FROM__
+    endBlock: __BLOCK_NUMBER_TO_END_ON__
+    interestedEvents: []
+    interestedMethods: [setOwner, transferFrom, safeTransferFrom]
+    handlersEvents: []
+    handlersMethods: []
+features:
+  - vectorize: true
+    searchable: true
+    querable: true

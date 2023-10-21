@@ -14,7 +14,6 @@ pub async fn utils_transaction_indexed(
         TransactionMethod,                 // transaction hash
         ethers::types::TransactionReceipt, // transaction receipt
     ),
-    contract_slug: String,
     contract_address: &str,
     chain_id: String,
 ) -> TransactionIndexed {
@@ -31,7 +30,6 @@ pub async fn utils_transaction_indexed(
         crate::structs::transactions::Transaction { 
             block_hash: decoded_txn_data.1.block_hash,
             block_number: block_number,
-            contract_slug: contract_slug.clone(),
             contract_address: contract_address.clone().to_owned(),
             chain_id: chain_id.to_string(),
             gas_used: decoded_txn_data.1.gas_used,
@@ -54,7 +52,6 @@ pub async fn utils_transaction_data<'a>(
     abi: &ContractAbi,
     transaction_hash: TxHash,
     network_rpc_url: &str,
-    methods: &Document,
 ) -> (TransactionMethod, TransactionReceipt) {
     let provider =
         Provider::<Http>::try_from(network_rpc_url).expect("Failed to connect with a Provider");
@@ -98,7 +95,7 @@ pub async fn utils_transaction_data<'a>(
     // }
 
     let transaction_method: TransactionMethod =
-        utils_transaction_method(abi, transaction, methods).await;
+        utils_transaction_method(abi, transaction).await;
     println!(
         "trnsaction Method = {:?}, \n trxn receipt = {:?}",
         transaction_method, transaction_receipt
@@ -109,7 +106,6 @@ pub async fn utils_transaction_data<'a>(
 async fn utils_transaction_method<'a>(
     contract_abi: &ContractAbi,
     transaction: Option<Transaction>,
-    methods: &Document,
 ) -> (TransactionMethod) {
     let input_data: String = transaction.unwrap().input.to_string();
     let method_id: &str = &input_data[2..10];
@@ -130,7 +126,7 @@ async fn utils_transaction_method<'a>(
 
     if method_name != "" {
         let param_result: (Vec<MethodParam>, String) =
-            utils_transaction_method_params(contract_abi, method_name, input_data, methods).await;
+            utils_transaction_method_params(contract_abi, method_name, input_data).await;
         let result: TransactionMethod = TransactionMethod {
             name: param_result.1,
             id: method_id.to_string(),
@@ -151,7 +147,6 @@ pub async fn utils_transaction_method_params<'a>(
     contract_abi: &ContractAbi,
     method_name: &str,
     input_data: &str,
-    methods: &Document,
 ) -> (Vec<MethodParam>, String) {
     let function: &Function = contract_abi
         .stat
@@ -166,78 +161,78 @@ pub async fn utils_transaction_method_params<'a>(
         .expect("failed to decode inputs");
 
     for (index, input) in function.inputs.iter().enumerate() {
-        let cloned_token: Token = decoded_inputs[index].clone();
-        println!("The cloned token is {:?}", cloned_token);
+        // let cloned_token: Token = decoded_inputs[index].clone();
+        // println!("The cloned token is {:?}", cloned_token);
         println!(
             "The method_param before formatting ************************ {:?}",
             input
         );
 
-        let mut ind = 0;
-        let name: Result<&Document, mongodb::bson::document::ValueAccessError> =
-            methods.get_document(method_name);
+        // let mut ind = 0;
+        // let name: Result<&Document, mongodb::bson::document::ValueAccessError> =
+        //     methods.get_document(method_name);
 
-        let token_length = match cloned_token.clone().into_tuple() {
-            Some(i) => i.len(),
-            None => {
-                println!("NO COPY TOKEN");
-                0
-            }
-        };
+        // let token_length = match cloned_token.clone().into_tuple() {
+        //     Some(i) => i.len(),
+        //     None => {
+        //         println!("NO COPY TOKEN");
+        //         0
+        //     }
+        // };
 
-        println!("Total Length:{}", token_length);
+        // println!("Total Length:{}", token_length);
 
         // complex DT
         // let mut input_hashmap: Vec<MethodParam> = Vec::new();
-        if token_length > 0 {
-            match name {
-                Ok(i) => {
-                    // let mut input_params: HashMap<String, String> = HashMap::new();
-                    let mut input_params: Vec<MethodParam> = Vec::new();
-                    while ind < token_length - 1 {
-                        let final_tuple: Option<Vec<Token>> = cloned_token.clone().into_tuple();
-                        let test = match final_tuple {
-                            Some(data) => {
-                                println!("=====DATA====={:?}", data.get(ind));
-                                let value = data.get(ind).unwrap().to_owned();
-                                let mut key = i.get_array("params").unwrap()[ind].to_string();
-                                let input_key = key[1..key.len() - 1].to_string();
-                                let input_struct: MethodParam = MethodParam {
-                                    name: input_key,
-                                    kind: "".to_string(),
-                                    internal_type: input.internal_type.clone(),
-                                    data_type: MethodParamDataType::StringValue,
-                                    value: ToString::to_string(&value),
-                                };
-                                method_params.push(input_struct);
-                                // input_params.insert(key, value.to_string());
-                            }
-                            None => {
-                                continue;
-                            }
-                        };
-                        ind += 1;
-                    }
-                }
-                Err(e) => {
-                    println!("Error {:?}", e);
-                }
-            };
-        }
+        // if token_length > 0 {
+        //     match name {
+        //         Ok(i) => {
+        //             // let mut input_params: HashMap<String, String> = HashMap::new();
+        //             let mut input_params: Vec<MethodParam> = Vec::new();
+        //             while ind < token_length - 1 {
+        //                 let final_tuple: Option<Vec<Token>> = cloned_token.clone().into_tuple();
+        //                 let test = match final_tuple {
+        //                     Some(data) => {
+        //                         println!("=====DATA====={:?}", data.get(ind));
+        //                         let value = data.get(ind).unwrap().to_owned();
+        //                         let mut key = i.get_array("params").unwrap()[ind].to_string();
+        //                         let input_key = key[1..key.len() - 1].to_string();
+        //                         let input_struct: MethodParam = MethodParam {
+        //                             name: input_key,
+        //                             kind: "".to_string(),
+        //                             internal_type: input.internal_type.clone(),
+        //                             data_type: MethodParamDataType::StringValue,
+        //                             value: ToString::to_string(&value),
+        //                         };
+        //                         method_params.push(input_struct);
+        //                         // input_params.insert(key, value.to_string());
+        //                     }
+        //                     None => {
+        //                         continue;
+        //                     }
+        //                 };
+        //                 ind += 1;
+        //             }
+        //         }
+        //         Err(e) => {
+        //             println!("Error {:?}", e);
+        //         }
+        //     };
+        // }
 
         // println!("INPUT PARAMS=========================={:?}", method_params);
 
-        let mut method_param: MethodParam;
-        if token_length == 0 {
-            method_param = MethodParam {
-                name: String::from(&input.name),
-                kind: input.kind.to_string(),
-                internal_type: input.internal_type.clone(),
-                data_type: crate::structs::index::MethodParamDataType::StringValue,
-                value: ToString::to_string(&cloned_token),
-            };
-            method_params.push(method_param);
-        }
+        // let mut method_param: MethodParam;
+        // if token_length == 0 {
+        //     method_param = MethodParam {
+        //         name: String::from(&input.name),
+        //         kind: input.kind.to_string(),
+        //         internal_type: input.internal_type.clone(),
+        //         data_type: crate::structs::index::MethodParamDataType::StringValue,
+        //         value: ToString::to_string(&cloned_token),
+        //     };
+        //     method_params.push(method_param);
+        // }
     }
     println!(
         "The method params are@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ {:?}",

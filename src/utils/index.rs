@@ -67,9 +67,9 @@ pub async fn utils_url_data(param: &str) -> Result<reqwest::Response, reqwest::E
         response
 }
 
-pub fn utils_interesting_method(method_of_interest:&HashSet<String>,method_name:&String)-> bool{
+pub fn utils_interesting_method(method_of_interest:&Vec<std::string::String>,method_name:&String)-> bool{
     if !method_of_interest.is_empty(){
-        return method_of_interest.contains(method_name.as_str());
+        return method_of_interest.contains(&method_name.as_str().to_string());
     }
     return true;
 }

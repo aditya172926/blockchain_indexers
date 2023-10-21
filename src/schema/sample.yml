@@ -1,0 +1,55 @@
+slug: lens_post
+name: Lens Protocol
+image: __URL_FOR_IMAGE__
+description: Search and interact with your Lens frens content on Lens Protocol.
+source:
+  - kind: evm/contract
+    networkId: __NETWORK_ID__
+    from: __CONTRACT_ADDRESS__
+    fromHistorical: __CONTRACT_ADRESS_HISTORICAL__
+    readAbiFrom: __READ_ABI_FROM__
+    startBlock: __BLOCK_NUMBER_TO_START_FROM__
+    endBlock: __BLOCK_NUMBER_TO_END_ON__
+    interestedEvents: [__ARRAY_OF_EVENTS_NAME__]
+    interestedMethods: [__ARRAY_OF_METHODS_NAME__]
+    handlersEvents: [__ARRAY_OF_HANDLER_EVENTS_NAME__]
+    handlersMethods: [__ARRAY_OF_HANDLER_METHODS_NAME__]
+features:
+  - vectorize: true
+    searchable: true
+    querable: true
+data:
+  - raw:
+      - owner:
+          - prop_type: String
+    meta:
+      - meta_title:
+        meta_owner:
+        meta_description:
+          - prop_type: String
+            prop_field: raw|
+            prop_default: String
+        meta_image:
+          - prop_type: image
+            prop_field: raw|
+            prop_default: https://i.seadn.io/gae/S67RadRtlIbTNk0UojZM-TEl4pybcblKyg3HxQHl0-JmxYZ2deLX-pK2Z89khCWHGeaXeYfE8Vxqj06YCUcqk0q1KWD9T997lGnGHw?auto=format&dpr=1&w=3840
+txn_source:
+  - method: post
+    action_type: txn
+    meta_slug: lens_post
+    param_types:
+      - param_name: contentURI
+        param_type: String
+      - param_name: collectModule
+        param_type: String
+      - param_name: collectModuleData
+        param_type: String
+      - param_name: referenceModule
+        param_type: String
+reference:
+  - meta_id: metadata_id
+    ipfs: contentUri
+    meta_ownership:
+      - kind: txn
+        field: from
+is_approved: true

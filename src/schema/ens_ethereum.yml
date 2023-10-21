@@ -1,0 +1,20 @@
+slug: ens_ethereum
+name: ENS
+image: https://ik.imagekit.io/macha1/studio/ENS.svg?updatedAt=1691498512298
+description: Ethereum Name Service on ethereum chain
+source:
+  - kind: evm/contract
+    networkId: 1
+    from: 0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85
+    fromHistorical: __CONTRACT_ADRESS_HISTORICAL__
+    readAbiFrom: 0x253553366Da8546fC250F225fe3d25d0C782303b
+    startBlock: __BLOCK_NUMBER_TO_START_FROM__
+    endBlock: __BLOCK_NUMBER_TO_END_ON__
+    interestedEvents: []
+    interestedMethods: [register]
+    handlersEvents: [__ARRAY_OF_HANDLER_EVENTS_NAME__]
+    handlersMethods: [__ARRAY_OF_HANDLER_METHODS_NAME__]
+features:
+  - vectorize: true
+    searchable: true
+    querable: true

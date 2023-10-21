@@ -15,7 +15,6 @@ pub struct TransactionMethod {
 pub struct Transaction {
     pub block_hash: Option<H256>,
     pub block_number: u64,
-    pub contract_slug: String,
     pub contract_address: String,
     pub chain_id: String,
     pub gas_used: Option<U256>,

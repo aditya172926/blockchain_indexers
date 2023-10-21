@@ -18,6 +18,7 @@ use crate::handlers::lens_post::handler_lens_post;
 use crate::handlers::lens_profile_polygon::handler_lens_profile;
 use crate::handlers::poap_ethereum::handler_poap_ethereum;
 use crate::structs::contracts::{ContractAbi, ContractMetaData};
+use crate::structs::extract::Config;
 use crate::structs::meta::{self, MetaStruct, MetaSubStruct};
 use crate::structs::networks::NetworkStruct;
 use crate::structs::transactions::TransactionMethod;
@@ -28,6 +29,7 @@ use std::process::exit;
 use tokio::time::{sleep, Duration};
 
 async fn load_txns(
+    config:Config,
     contract_abi: &ContractAbi,
     transaction_hash: H256,
     network_metadata: NetworkStruct,
@@ -40,29 +42,19 @@ async fn load_txns(
         contract_abi,
         transaction_hash,
         &network_metadata.network_rpc_url,
-        &contract_metadata.methods,
     )
     .await;
 
-    println!("\n\n\n\n\n\nmethod of interest {:?} \n\n decoded txn name {}\n\n condition1 {} \n\ncondition2 {}  \n\n", contract_metadata.method_of_interest, decoded_txn_data.0.name,decoded_txn_data.0.name != "".to_string(),utils_interesting_method(&contract_metadata.method_of_interest,&decoded_txn_data.0.name));
     if decoded_txn_data.0.name != "".to_string()
         && utils_interesting_method(
             &contract_metadata.method_of_interest,
             &decoded_txn_data.0.name,
         )
     {
-        println!(
-            "\n\n\ninside if statement before of transaction indexed\n{:?}\n{}\n{}\n{}\n\n",
-            decoded_txn_data,
-            contract_metadata.contract_slug.clone(),
-            contract_metadata.contract_address,
-            network_metadata.network_id
-        );
 
         let transaction_indexed: structs::transactions::TransactionIndexed =
             utils_transaction_indexed(
                 &decoded_txn_data,
-                contract_metadata.contract_slug.clone(),
                 &contract_metadata.contract_address,
                 network_metadata.network_id,
             )
@@ -76,7 +68,7 @@ async fn load_txns(
                 let meta: MetaStruct = MetaStruct {
                     metaOwner: object.modified.owner.unwrap(),
                     metaId: object.modified.id.unwrap(),
-                    slug: contract_metadata.contract_slug,
+                    slug: config.slug,
                     meta: meta_sub_struct,
                     createdAt: String::from(""),
                     updatedAt: String::from(""),
@@ -108,10 +100,11 @@ async fn load_txns(
 }
 
 pub async fn get_txns(
+    config:Config,
     contract_abi: &ContractAbi,
     contract_instance: &Instance<Http>,
     contract_metadata: ContractMetaData,
-    network_metadata: NetworkStruct,
+    network_metadata: &NetworkStruct,
 ) {
     // eth block number:17691422
     //polygon block number:45033964
@@ -136,6 +129,7 @@ pub async fn get_txns(
                 );
                 if transaction_hash != prev_txn_hash {
                     load_txns(
+                        config.to_owned(),
                         contract_abi,
                         transaction_hash,
                         network_metadata.clone(),
@@ -166,11 +160,10 @@ pub async fn get_txns(
 }
 
 pub async fn get_history(
+    config:Config,
     contract_metadata: ContractMetaData,
     network_metadata: NetworkStruct,
     contract_abi: &ContractAbi,
-    start_block: u64,
-    end_block: u64,
 ) -> eyre::Result<()> {
     let _provider = Provider::try_from(network_metadata.network_rpc_url.clone())?;
     let client = Client::builder()
@@ -180,8 +173,8 @@ pub async fn get_history(
         .build()
         .unwrap();
     let paras = TxListParams {
-        start_block: start_block,
-        end_block: end_block,
+        start_block: contract_metadata.start_block,
+        end_block: contract_metadata.end_block,
         page: 0,
         offset: 0,
         sort: Sort::Asc,
@@ -212,6 +205,7 @@ pub async fn get_history(
 
         if transaction_hash != prev_txn_hash {
             load_txns(
+                config.to_owned(),
                 contract_abi,
                 transaction_hash,
                 network_metadata.clone(),

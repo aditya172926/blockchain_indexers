@@ -24,12 +24,9 @@ pub struct ContractMetaData {
     pub contract_address_historical: String,
     pub read_abi_from: String,
     pub chain_id: String,
-    pub function_of_interest: String,
-    pub contract_name: String,
-    pub contract_description: String,
-    pub contract_slug: String,
-    pub method_of_interest: std::collections::HashSet<String>,
-    pub methods: Document,
+    pub start_block:u64,
+    pub end_block:u64,
+    pub method_of_interest: Vec<std::string::String>,
 }
 
 #[derive(Debug)]
