@@ -70,7 +70,7 @@ async fn load_txns(
                     data:object
                 };
                 let meta:MetaStruct = MetaStruct { metaOwner: object.modified.owner.unwrap() , metaId: object.modified.id.unwrap(), meta: meta_sub_struct
-                    , createdAt: (), updatedAt: (), sources: Vec::from(transaction_indexed) } 
+                    , createdAt: String::from(""), updatedAt: String::from(""), sources: vec![transaction_indexed] };
                 object
                 
             },
