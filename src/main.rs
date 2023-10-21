@@ -57,6 +57,7 @@ mod handlers {
 
 mod helpers {
     pub(crate) mod erc721;
+    pub(crate) mod url;
 }
 
 #[tokio::main]

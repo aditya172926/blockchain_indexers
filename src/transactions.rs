@@ -68,7 +68,7 @@ async fn load_txns(
             )
             .await;
 
-        let meta_block = match handler_lens_post(&transaction_indexed) {
+        let meta_block = match handler_lens_post(&transaction_indexed).await {
             Some(object) => {
                 let meta_sub_struct: MetaSubStruct = MetaSubStruct {
                     data: object.clone(),
