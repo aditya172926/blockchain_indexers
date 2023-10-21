@@ -30,9 +30,11 @@ pub struct MetaDataStruct {
     // raw:Option<>,
     pub modified: MetaIndexedStruct,
 }
+#[derive(Debug)]
 pub struct MetaSubStruct {
     pub data: MetaDataStruct,
 }
+#[derive(Debug)]
 pub struct MetaStruct {
     pub metaOwner: String,
     pub metaId: String,

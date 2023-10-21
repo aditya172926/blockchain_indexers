@@ -75,32 +75,27 @@ async fn main() -> Result<(), Box<dyn Error>> {
         
     
 
-    let start_block: u64 = 48888559;
-    let end_block: u64 = 48894632;
+    let start_block: u64 = 18397170;
+    let end_block: u64 = 18397204;
     
-    // let _ = transactions::get_history(
-    //     &contract_metadata.read_abi_from,
-    //     &contract_abi.string,
-    //     start_block,
-    //     end_block,
-    //     contract_metadata.chain_id,
-    //     contract_metadata.contract_slug,
-    //     &network_metadata.network_rpc_url,
-    //     &network_metadata.network_api_key,
-    //     contract_metadata.methods,
-    //     contract_metadata.method_of_interest,
-    //     network_metadata.network_rpc_url.clone()
-    // )
-    // .await;
-
-    let _ = transactions::get_txns(
-        &contract_abi,
-        &contract_instance,
+    let _ = transactions::get_history(
         contract_metadata,
-        network_metadata
+        network_metadata,
+        &contract_abi,
+        start_block,
+        end_block,
         
     )
     .await;
+
+    // let _ = transactions::get_txns(
+    //     &contract_abi,
+    //     &contract_instance,
+    //     contract_metadata,
+    //     network_metadata
+        
+    // )
+    // .await;
 
     // let _ = get_events(contract_instance, 17630615).await;
 

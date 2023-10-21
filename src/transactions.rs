@@ -64,20 +64,22 @@ async fn load_txns(
             network_metadata.network_id,
         ).await;
 
-        let meta_data = match handler(&transaction_indexed){
-            Some(object)=>{
-                let meta_sub_struct:MetaSubStruct= MetaSubStruct{
-                    data:object
-                };
-                let meta:MetaStruct = MetaStruct { metaOwner: object.modified.owner.unwrap() , metaId: object.modified.id.unwrap(), meta: meta_sub_struct
-                    , createdAt: String::from(""), updatedAt: String::from(""), sources: vec![transaction_indexed] };
-                object
+        // let meta_block = match handler(&transaction_indexed){
+        //     Some(object)=>{
+        //         let meta_sub_struct:MetaSubStruct= MetaSubStruct{
+        //             data:object.clone()
+        //         };
+        //         let meta:MetaStruct = MetaStruct { metaOwner: object.modified.owner.unwrap() , metaId: object.modified.id.unwrap(), meta: meta_sub_struct
+        //             , createdAt: String::from(""), updatedAt: String::from(""), sources: vec![transaction_indexed] };
+        //         meta
                 
-            },
-            None=>exit(1)
-        } ;
+        //     },
+        //     None=>{
+        //         println!("handler returned null");
+        //         exit(1)}
+        // } ;
+        // println!("\n\n\n\n\n meta block {:?} \n\n\n\n\n", meta_block);
         
-
         
         // abstractor::create_meta(&contract_slug,transaction_indexed).await;
 
@@ -154,30 +156,20 @@ pub async fn get_txns(
 }
 
 pub async fn get_history(
-    contract_address: &str,
-    contract_abi: &str,
+    contract_metadata: ContractMetaData,
+    network_metadata: NetworkStruct,
+    contract_abi: &ContractAbi,
     start_block: u64,
     end_block: u64,
-    chain_id: String,
-    contract_slug: String,
-    rpc_url: &str,
-    api_key: &str,
-    methods: Document,
-    method_of_interest: HashSet<String>,
-    network_rpc_url: String,
 ) -> eyre::Result<()> {
-    println!("CHECKING HISTORY...");
-    let _provider = Provider::try_from(rpc_url)?;
-
-    //chain was to be generalized *IMPORTANT:CHANGE CHAIN NAME ACCORDING TO CONTRACT*
-    println!("The api key is {:?}", api_key);
+   
+    let _provider = Provider::try_from(network_metadata.network_rpc_url.clone())?;
     let client = Client::builder()
-        .with_api_key(api_key)
-        .chain(Chain::Polygon)
+        .with_api_key(network_metadata.network_api_key.clone())
+        .chain(Chain::Mainnet)
         .unwrap()
         .build()
         .unwrap();
-    println!("for account: {} ", contract_address);
     let paras = TxListParams {
         start_block: start_block,
         end_block: end_block,
@@ -190,53 +182,24 @@ pub async fn get_history(
             .unwrap();
     //Fetching all transactions
     let txns = client
-        .get_transactions(&contract_address.parse().unwrap(), Some(paras))
+        .get_transactions(&contract_metadata.contract_address.parse().unwrap(), Some(paras))
         .await
         .unwrap();
     // println!("{:?}",&txns);
 
     //Creating loop to iterate over all transactions
     for txn in txns {
-        // println!("*************{:?}",txn);
-        let from = txn.from;
-        let mut s_from: String = String::from("s");
-        let mut s_to: String = String::from("s");
-        let mut s_contract_used: String = String::from("s");
+        
 
-        //Formatting everything to String
-        if let account::GenesisOption::Some(i) = from {
-            s_from = i.to_string();
-        }
-        let to = txn.to;
-        if let Some(i) = to {
-            s_to = i.to_string();
-        }
-        // let value = txn.value.to_string();
-        // let contract_used = txn.contract_address;
+        // println!("Txn hash {:?}", );
+        // let txn_hash = log.meta.as_ref().unwrap().transaction_hash.to_fixed_bytes();
+        let txn_hash = txn.hash.value().unwrap().to_fixed_bytes();
+        let transaction_hash: H256 = ethers::core::types::TxHash::from(txn_hash);
+        println!("\n\n\ntrnasaction hash {}\n\n\n", transaction_hash);
 
-        // let s_contract_used: String = match contract_used {
-        //     Some(i) => i.to_string(),
-        //     None => String::from("NA"),
-        // };
-        // let block_number = txn.block_number.to_string();
-        // let function_name: String = match txn.function_name {
-        //     Some(i) => i.to_string(),
-        //     None => String::from("NA"),
-        // };
-        // let t_hash: String = match txn.hash {
-        //     account::GenesisOption::None => String::from("NA"),
-        //     account::GenesisOption::Genesis => String::from("0x00"),
-        //     account::GenesisOption::Some(i) => i.to_string(),
-        // };
-
-        // println!("Sender:{:?},Recipient:{:?}, Value:{:?}, Contract used:{:?}, Block Number:{:?}, Function Used:{}",from,to,value,contract_used,block_number,function_name);
-
-        let txn_hash = txn.hash.value().unwrap().to_owned();
-        println!("\n\n\ntrnasaction hash {}\n\n\n", txn_hash);
-
-        if txn_hash != prev_txn_hash {
-            //   load_txns(contract_abi,txn_hash, network_metadata.clone(),contract_metadata.clone() );
-            prev_txn_hash = txn_hash;
+        if transaction_hash != prev_txn_hash {
+              load_txns(contract_abi,transaction_hash, network_metadata.clone(),contract_metadata.clone() ).await;
+            prev_txn_hash = transaction_hash;
         }
     }
 
