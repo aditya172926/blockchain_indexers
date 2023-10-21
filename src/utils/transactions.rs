@@ -1,6 +1,6 @@
 use crate::structs::contracts::ContractAbi;
 use crate::structs::index::{MethodParam, MethodParamDataType};
-use crate::structs::transactions::TransactionIndexed;
+use crate::structs::transactions::{TransactionIndexed, TransactionMethod};
 use chrono::Utc;
 use ethers::abi::{Abi, Function, Token};
 use ethers::{
@@ -10,12 +10,11 @@ use ethers::{
 use mongodb::bson::{Document, to_bson};
 
 pub async fn utils_transaction_indexed(decoded_txn_data: &(
-                Vec<MethodParam>,         // method params array
-                String,                            // function name
-                String,                            // transaction hash
+                TransactionMethod,                          // transaction hash
                 ethers::types::TransactionReceipt, // transaction receipt
             ),contract_slug:String,contract_address:&str,chain_id:String)->TransactionIndexed{
-    let block_number_option=decoded_txn_data.3.block_number;
+                println!("\n\n\n\n\n\n\n\n\ninside utils_trnasaction_indexed\n\n\n\n\n\n\n\n\n");
+    let block_number_option=decoded_txn_data.1.block_number;
     let block_number = match block_number_option {
         Some (object) => object.as_u64(),
         None => 0
@@ -24,25 +23,24 @@ pub async fn utils_transaction_indexed(decoded_txn_data: &(
     let ts: String = now.timestamp().to_string();
 
     let transaction_struct:crate::structs::transactions::Transaction = crate::structs::transactions::Transaction {
-        block_hash: decoded_txn_data.3.block_hash,
+        block_hash: decoded_txn_data.1.block_hash,
         block_number:block_number,
         contract_slug:contract_slug.clone(),
         contract_address: contract_address.clone().to_owned(),
         chain_id: chain_id.to_string(),
-        gas_used: decoded_txn_data.3.gas_used,
-        gas_price: decoded_txn_data.3.effective_gas_price,
-        from: decoded_txn_data.3.from,
-        to: decoded_txn_data.3.to,
-        txn_hash: decoded_txn_data.3.transaction_hash,
-        method_name: decoded_txn_data.1.clone(),
-        method_id: decoded_txn_data.2.clone(),
-        method_params: decoded_txn_data.0.clone(),
+        gas_used: decoded_txn_data.1.gas_used,
+        gas_price: decoded_txn_data.1.effective_gas_price,
+        from: decoded_txn_data.1.from,
+        to: decoded_txn_data.1.to,
+        txn_hash: decoded_txn_data.1.transaction_hash,
     };    
-
+    println!("\n\n\n {}\n\n\n{:?}\n\n\n{:?}",ts,transaction_struct, decoded_txn_data.0);
     let transaction_indexed:TransactionIndexed = TransactionIndexed {
         timestamp: ts,
         transaction: transaction_struct,
+        method:decoded_txn_data.0.clone()
     };
+    println!("transaction Indexed = {:?} ",transaction_indexed);
     return transaction_indexed;
 }
 
@@ -51,8 +49,7 @@ pub async fn utils_transaction_data<'a>(
     transaction_hash: TxHash,
     network_rpc_url: &str,
     methods: &Document,
-) -> (Vec<MethodParam>, String, String, TransactionReceipt) {
-    println!("The transaction hash is {:?}", transaction_hash);
+) -> (TransactionMethod, TransactionReceipt) {
 
     let provider =
         Provider::<Http>::try_from(network_rpc_url).expect("Failed to connect with a Provider");
@@ -97,13 +94,11 @@ pub async fn utils_transaction_data<'a>(
     // }
 
     
-    let decoded_transaction_data: (Vec<MethodParam>, String, String) =
+    let transaction_method: TransactionMethod =
     utils_transaction_method(abi, transaction, methods).await;
-
+    println!("trnsaction Method = {:?}, \n trxn receipt = {:?}", transaction_method,transaction_receipt);
     return (
-        decoded_transaction_data.0, // method_params
-        decoded_transaction_data.1, // method name
-        decoded_transaction_data.2, // method id
+        transaction_method,
         transaction_receipt,
     );
 }
@@ -112,7 +107,7 @@ async fn utils_transaction_method<'a>(
     contract_abi: &ContractAbi,
     transaction: Option<Transaction>,
     methods: &Document,
-) -> (Vec<MethodParam>, String, String) {
+) -> (TransactionMethod) {
     let input_data: String = transaction.unwrap().input.to_string();
     let method_id: &str = &input_data[2..10];
     let input_data = &input_data[10..]; // extracting the transaction hash
@@ -132,10 +127,11 @@ async fn utils_transaction_method<'a>(
     if method_name != "" {
         let param_result: (Vec<MethodParam>, String) =
             utils_transaction_method_params(contract_abi, method_name, input_data, methods).await;
-        return (param_result.0, param_result.1, method_id.to_string());
+        let result:TransactionMethod = TransactionMethod { name: param_result.1, id: method_id.to_string(), params: param_result.0,};
+        return result
     } else {
         println!("Couldn't find the function name");
-        return (Vec::new(), "".to_string(), "".to_string());
+        return TransactionMethod{params:Vec::new(), name:"".to_string(), id:"".to_string()};
     }
 }
 

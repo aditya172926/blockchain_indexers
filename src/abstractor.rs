@@ -221,10 +221,10 @@ pub async fn create_meta(meta_slug: &str, event_doc:TransactionIndexed) {
             let mut meta_owner: String = format!("0x{:020x}", loaded_transaction.transaction.from);
             // let mut meta_owner: String = String::new();
 
-            // creating meta loop
-            for param in loaded_transaction.transaction.method_params {
-                if prop_list.contains(&param.name) {
-                    let param_value = param.value.as_str();
+                // creating meta loop
+                for param in loaded_transaction.method.params {
+                    if prop_list.contains(&param.name) {
+                        let param_value = param.value.as_str();
 
                         // ipfs module
                         if ipfs == param.name {
