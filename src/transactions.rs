@@ -16,12 +16,14 @@ use ethers::etherscan::account::TxListParams;
 
 use crate::handlers::ens_ethereum::handler;
 use crate::structs::contracts::{ContractAbi, ContractMetaData};
+use crate::structs::meta::{self, MetaStruct, MetaSubStruct};
 use crate::structs::networks::NetworkStruct;
 use crate::structs::transactions::TransactionMethod;
 use crate::utils::index::utils_interesting_method;
 use crate::utils::transactions::utils_transaction_indexed;
 use crate::{structs, utils};
 use tokio::time::{sleep, Duration};
+use std::process::exit;
 
 async fn load_txns(
     contract_abi: &ContractAbi,
@@ -62,8 +64,21 @@ async fn load_txns(
             network_metadata.network_id,
         ).await;
 
-        let meta_indexed = handler(&decoded_txn_data.0.params); 
-        println!("\n\n\ninside if statement after of transaction indexed\n\n\n");
+        let meta_data = match handler(&transaction_indexed){
+            Some(object)=>{
+                let meta_sub_struct:MetaSubStruct= MetaSubStruct{
+                    data:object
+                };
+                let meta:MetaStruct = MetaStruct { metaOwner: object.modified.owner.unwrap() , metaId: object.modified.id.unwrap(), meta: meta_sub_struct
+                    , createdAt: (), updatedAt: (), sources: Vec::from(transaction_indexed) } 
+                object
+                
+            },
+            None=>exit(1)
+        } ;
+        
+
+        
         // abstractor::create_meta(&contract_slug,transaction_indexed).await;
 
         // let _ = db::db_transaction_store(

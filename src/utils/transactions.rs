@@ -40,10 +40,7 @@ pub async fn utils_transaction_indexed(
             to: decoded_txn_data.1.to,
             txn_hash: decoded_txn_data.1.transaction_hash,
         };
-    println!(
-        "\n\n\n {}\n\n\n{:?}\n\n\n{:?}",
-        ts, transaction_struct, decoded_txn_data.0
-    );
+    
     let transaction_indexed: TransactionIndexed = TransactionIndexed {
         timestamp: ts,
         transaction: transaction_struct,
