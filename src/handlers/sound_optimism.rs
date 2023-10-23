@@ -20,7 +20,7 @@ pub fn handler_ens(transaction_indexed: &TransactionIndexed) -> Option<MetaDataS
     if transaction_indexed.method.name == "register" {
         let meta_raw: EnsMeta = EnsMeta {
             name: transaction_indexed.method.params[0].value.clone(),
-            content: format!(
+            content: format!( 
                 "This ens handle is owned by {} ",
                 transaction_indexed.method.params[1].value.clone()
             ),

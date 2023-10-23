@@ -18,7 +18,7 @@ use web3::Web3;
 use env_logger::Env;
 use log::{debug, error, info, warn};
 
-use crate::handlers::ens_ethereum::handler_ens;
+// use crate::handlers::ens_ethereum::handler_ens;
 
 // modules
 mod db {
