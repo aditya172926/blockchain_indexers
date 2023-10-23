@@ -203,6 +203,7 @@ pub async fn get_history(
             };
             prev_txn_hash = transaction_hash;
         }
+        println!("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     }
 
     Ok(())
