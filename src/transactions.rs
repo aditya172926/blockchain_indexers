@@ -36,7 +36,7 @@ async fn load_txns(
     transaction_hash: H256,
     network_metadata: NetworkStruct,
     contract_metadata: ContractMetaData,
-) {
+) -> Option<MetaIndexed> {
     let mut decoded_txn_data: (
         TransactionMethod,
         ethers::types::TransactionReceipt, // transaction receipt
@@ -46,7 +46,7 @@ async fn load_txns(
         &network_metadata.network_rpc_url,
     )
     .await;
-
+    let mut meta_indexed_option: Option<MetaIndexed> = Default::default();
     if decoded_txn_data.0.name != "".to_string()
         && utils_interesting_method(
             &contract_metadata.method_of_interest,
@@ -56,11 +56,10 @@ async fn load_txns(
         let transaction_indexed: TransactionIndexed =
             utils_transaction_indexed(&decoded_txn_data, &contract_metadata).await;
 
-        let meta_indexed: MetaIndexed = utils_meta_indexed(&config, transaction_indexed).await;
-
-        let _ = db_meta_store(&db, meta_indexed).await;
+        meta_indexed_option = utils_meta_indexed(&config, transaction_indexed).await;
     }
     println!("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    meta_indexed_option
 }
 
 pub async fn get_txns(
@@ -89,7 +88,7 @@ pub async fn get_txns(
                 info!("\nTransactionHash -> {:?}\n", transaction_hash);
 
                 if transaction_hash != prev_txn_hash {
-                    load_txns(
+                    match load_txns(
                         db,
                         config.to_owned(),
                         contract_abi,
@@ -97,7 +96,17 @@ pub async fn get_txns(
                         network_metadata.clone(),
                         contract_metadata.clone(),
                     )
-                    .await;
+                    .await
+                    {
+                        Some(object) => {
+                            info!("Addind live_txns meta_indexed to db...");
+                            // let _ = db_meta_store(&db, object).await;
+                        }
+                        None => {
+                            warn!("load_txns returned None for live_txns");
+                            continue;
+                        }
+                    };
                     prev_txn_hash = transaction_hash;
                 }
             }
@@ -174,7 +183,7 @@ pub async fn get_history(
         info!("\ntransaction hash {:?}\n", transaction_hash);
 
         if transaction_hash != prev_txn_hash {
-            load_txns(
+            match load_txns(
                 db,
                 config.to_owned(),
                 contract_abi,
@@ -182,7 +191,16 @@ pub async fn get_history(
                 network_metadata.clone(),
                 contract_metadata.clone(),
             )
-            .await;
+            .await {
+                Some(object) => {
+                    info!("Addint history_txn meta_indexed into db...");
+                    // let _ = db_meta_store(&db, object).await;
+                },
+                None => {
+                    warn!("load_txns returned None in history_txns");
+                    continue;
+                }
+            };
             prev_txn_hash = transaction_hash;
         }
     }

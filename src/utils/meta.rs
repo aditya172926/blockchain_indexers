@@ -12,8 +12,8 @@ use crate::{
 pub async fn utils_meta_indexed(
     config: &Config,
     transaction_indexed: TransactionIndexed,
-) -> MetaIndexed {
-    let meta_indexed: MetaIndexed = match handler_poap_ethereum(&transaction_indexed).await {
+) -> Option<MetaIndexed> {
+    let meta_indexed: Option<MetaIndexed> = match handler_poap_ethereum(&transaction_indexed).await {
         Some(object) => {
             let meta_indexed: MetaIndexed = MetaIndexed {
                 owner: object.modified.owner.clone().unwrap(),
@@ -24,11 +24,11 @@ pub async fn utils_meta_indexed(
                 updatedAt: String::from(""),
                 sources: vec![transaction_indexed],
             };
-            meta_indexed
+            Some(meta_indexed)
         }
         None => {
-            error!("handler returned null");
-            exit(1)
+            warn!("handler returned null");
+            None
         }
     };
     info!("\nmeta indexed {:?}\n", meta_indexed);
