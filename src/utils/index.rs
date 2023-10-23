@@ -1,4 +1,5 @@
 use ethcontract::{Http, Instance, H160};
+use ethers::abi::Token;
 use reqwest::get;
 use std::fs::File;
 use std::{collections::HashSet, fs};
@@ -66,8 +67,11 @@ pub async fn utils_url_data(param: &str) -> Result<reqwest::Response, reqwest::E
     response
 }
 
-pub fn utils_interesting_method(method_of_interest:&Vec<std::string::String>,method_name:&String)-> bool{
-    if !method_of_interest.is_empty(){
+pub fn utils_interesting_method(
+    method_of_interest: &Vec<std::string::String>,
+    method_name: &String,
+) -> bool {
+    if !method_of_interest.is_empty() {
         return method_of_interest.contains(&method_name.as_str().to_string());
     }
     return true;
@@ -88,4 +92,37 @@ pub async fn utils_load_fn(handler: String) {
     println!("\n\n\n {:?}\n\n\n", file_path);
     let mut file = File::open(path);
     println!("\n\n\n {:?}\n\n\n", file);
+}
+
+pub trait TokenToString {
+    fn to_string(&self) -> String;
+}
+
+impl TokenToString for Token {
+    fn to_string(&self) -> String {
+        match self {
+            Token::Address(addr) => addr.to_string(),
+            Token::FixedBytes(bytes) => format!("{:?}", bytes),
+            Token::Bytes(bytes) => format!("{:?}", bytes),
+            Token::Int(int) => int.to_string(),
+            Token::Uint(uint) => uint.to_string(),
+            Token::Bool(boolean) => boolean.to_string(),
+            Token::String(string) => string.clone(),
+            Token::FixedArray(tokens) => {
+                let elements: Vec<String> =
+                    tokens.iter().map(|t| ToString::to_string(&t)).collect();
+                format!("[{}]", elements.join(", "))
+            }
+            Token::Array(tokens) => {
+                let elements: Vec<String> =
+                    tokens.iter().map(|t| TokenToString::to_string(t)).collect();
+                format!("[{}]", elements.join(", "))
+            }
+            Token::Tuple(tokens) => {
+                let elements: Vec<String> =
+                    tokens.iter().map(|t| ToString::to_string(&t)).collect();
+                format!("({})", elements.join(", "))
+            }
+        }
+    }
 }

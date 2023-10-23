@@ -1,5 +1,5 @@
 
-use ethers::types::{U256, H256, H160};
+use ethers::{types::{U256, H256, H160}, abi::Token};
 use serde::{Serialize, Deserialize};
 
 use super::index::MethodParam;
@@ -9,7 +9,7 @@ use super::index::MethodParam;
 pub struct TransactionMethod {
     pub name: String,
     pub id: String,
-    pub params: Vec<MethodParam>,
+    pub params: Vec<Token>,
 }
 #[derive(Clone,Serialize,Debug)]
 pub struct Transaction {
