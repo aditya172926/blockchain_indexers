@@ -201,8 +201,6 @@ pub async fn get_history(
 
     //Creating loop to iterate over all transactions
     for txn in txns {
-        // println!("Txn hash {:?}", );
-        // let txn_hash = log.meta.as_ref().unwrap().transaction_hash.to_fixed_bytes();
         let txn_hash = txn.hash.value().unwrap().to_fixed_bytes();
         let transaction_hash: H256 = ethers::core::types::TxHash::from(txn_hash);
         println!("\n\n\ntrnasaction hash {:?}\n\n\n", transaction_hash);

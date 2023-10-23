@@ -7,6 +7,7 @@ use futures::stream::StreamExt;
 use hex::ToHex;
 use mongodb::bson::document::ValueAccessError;
 use mongodb::bson::Document;
+use utils::index::utils_contract_instance;
 use std::collections::HashSet;
 use std::string::String;
 use std::{error::Error, str::FromStr};
@@ -53,9 +54,9 @@ mod handlers {
     pub(crate) mod lens_profile_polygon;
 }
 
-mod helpers {
-    pub(crate) mod erc721;
-}
+// mod helpers {
+//     pub(crate) mod erc721;
+// }
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -75,28 +76,27 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let contract_address_h160: H160 = contract_metadata.contract_address.parse().unwrap();
     let read_abi_from_h160: H160 = contract_metadata.read_abi_from.parse().unwrap();
     // println!("\n\n\n\n\n read_abi_from {} \n\n\n\n\n", read_abi_from.to_string());
-    let contract_instance: Instance<Http> =
-        Instance::at(web3, contract_abi.raw.clone(), contract_address_h160);
+    let contract_instance: Instance<Http> = utils_contract_instance(web3, contract_abi.raw.clone(), contract_address_h160);
 
     let start_block: u64 = 18381829;
     let end_block: u64 = 18395946;
 
-    let _ = transactions::get_history(
-        contract_metadata,
-        network_metadata,
-        &contract_abi,
-        start_block,
-        end_block,
-    )
-    .await;
-
-    // let _ = transactions::get_txns(
-    //     &contract_abi,
-    //     &contract_instance,
+    // let _ = transactions::get_history(
     //     contract_metadata,
     //     network_metadata,
+    //     &contract_abi,
+    //     start_block,
+    //     end_block,
     // )
     // .await;
+
+    let _ = transactions::get_txns(
+        &contract_abi,
+        &contract_instance,
+        contract_metadata,
+        network_metadata,
+    )
+    .await;
 
     // let _ = get_events(contract_instance, 17630615).await;
 
