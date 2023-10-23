@@ -86,14 +86,14 @@ async fn utils_transaction_method<'a>(
     let input_data: String = transaction.unwrap().input.to_string();
     let method_id: &str = &input_data[2..10];
     let input_data = &input_data[10..]; // extracting the transaction hash
-
+    info!("Metod id found in txn : {} ", method_id);
     if let Some(method) = contract_abi
         .stat
         .functions()
         .into_iter()
         .find(|&f| ethers::utils::hex::encode(f.short_signature()) == method_id)
     {
-        info!("Method Name: {}", method.name);
+        info!("Method Name found in abi: {}", method.name);
         let method_name = &method.name;
         let param_result: Vec<Token> =
             utils_transaction_method_params(contract_abi, method_name, input_data).await;
@@ -104,7 +104,7 @@ async fn utils_transaction_method<'a>(
         };
         result
     } else {
-        warn!("Method not found");
+        warn!("Method not found in abi ");
         return TransactionMethod {
             params: Vec::new(),
             name: "".to_string(),
