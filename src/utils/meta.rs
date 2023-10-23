@@ -16,8 +16,8 @@ pub async fn utils_meta_indexed(
     let meta_indexed: MetaIndexed = match handler_poap_ethereum(&transaction_indexed).await {
         Some(object) => {
             let meta_indexed: MetaIndexed = MetaIndexed {
-                metaOwner: object.modified.owner.clone().unwrap(),
-                metaId: object.modified.id.clone().unwrap(),
+                owner: object.modified.owner.clone().unwrap(),
+                id: object.modified.id.clone().unwrap(),
                 slug: config.slug.clone(),
                 data: object.clone(),
                 createdAt: String::from(""),

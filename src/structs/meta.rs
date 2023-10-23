@@ -34,8 +34,8 @@ pub struct MetaData {
 
 #[derive(Debug, Serialize)]
 pub struct MetaIndexed {
-    pub metaOwner: H160,
-    pub metaId: String,
+    pub owner: H160,
+    pub id: String,
     pub slug: String,
     pub data: MetaData,
     pub createdAt: String,
