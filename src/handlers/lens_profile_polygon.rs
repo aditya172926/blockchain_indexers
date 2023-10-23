@@ -1,7 +1,5 @@
 use ethers::types::H160;
-use web3::contract::ens::Ens;
-
-use crate::structs::index::MethodParam;
+use log::{debug, error, info, warn};
 use crate::structs::meta::{self, Meta, MetaData};
 use crate::structs::transactions::TransactionIndexed;
 #[derive(Debug)]
@@ -14,15 +12,16 @@ struct LensMeta {
     //missing data: followNFTURI
 }
 
-pub fn handler_lens_profile(transaction_indexed: &TransactionIndexed) -> Option<MetaData> {
+pub async fn handler_lens_profile(transaction_indexed: &TransactionIndexed) -> Option<MetaData> {
     if transaction_indexed.method.name == "proxyCreateProfile" {
+        let params_list = transaction_indexed.method.params[0].clone().into_tuple().unwrap();
+        info!("params_list -> {:?}", params_list);
         let meta_raw: LensMeta = LensMeta {
-            to: transaction_indexed.method.params[0].clone().into_address().unwrap(),
-            handle: transaction_indexed.method.params[1].to_string(),
-            imageURI: transaction_indexed.method.params[2].to_string(),
-            followModule: transaction_indexed.method.params[3].to_string(),
-            followModuleInitData: transaction_indexed.method.params[4].to_string(),
-            // followNFTURI: transaction_indexed.method.params[5].to_string(),
+            to: params_list[0].clone().into_address().unwrap(),
+            handle: params_list[1].to_string(),
+            imageURI: params_list[2].to_string(),
+            followModule: params_list[3].to_string(),
+            followModuleInitData: params_list[4].to_string(),
         };
 
         let mut image;

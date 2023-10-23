@@ -99,7 +99,7 @@ pub async fn get_txns(
                     {
                         Some(object) => {
                             info!("Addind live_txns meta_indexed to db...");
-                            // let _ = db_meta_store(&db, object).await;
+                            let _ = db_meta_store(&db, object).await;
                         }
                         None => {
                             warn!("load_txns returned None for live_txns");
@@ -194,7 +194,7 @@ pub async fn get_history(
             .await {
                 Some(object) => {
                     info!("Addint history_txn meta_indexed into db...");
-                    // let _ = db_meta_store(&db, object).await;
+                    let _ = db_meta_store(&db, object).await;
                 },
                 None => {
                     warn!("load_txns returned None in history_txns");
