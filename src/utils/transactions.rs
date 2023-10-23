@@ -8,6 +8,7 @@ use ethers::{
     types::{Transaction, TransactionReceipt, TxHash},
 };
 use mongodb::bson::{to_bson, Document};
+use log::{debug, error, info, warn};
 
 pub async fn utils_transaction_indexed(
     decoded_txn_data: &(
@@ -17,7 +18,7 @@ pub async fn utils_transaction_indexed(
     contract_address: &str,
     chain_id: String,
 ) -> TransactionIndexed {
-    println!("\n\n\n\n\n\n\n\n\ninside utils_trnasaction_indexed\n\n\n\n\n\n\n\n\n");
+    info!("\ninside utils_trnasaction_indexed\n");
     let block_number_option = decoded_txn_data.1.block_number;
     let block_number = match block_number_option {
         Some(object) => object.as_u64(),

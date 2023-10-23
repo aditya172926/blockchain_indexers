@@ -1,13 +1,13 @@
-use std::collections::HashSet;
-use std::str::FromStr;
-
 use ethcontract::Instance;
 use ethers::core::types::Chain;
 use ethers::etherscan::Client;
 use ethers::prelude::*;
 use ethers::types::H256;
 use futures::StreamExt;
+use log::{debug, error, info, warn};
 use mongodb::bson::Document;
+use std::collections::HashSet;
+use std::str::FromStr;
 use web3::transports::Http;
 
 use ethers::{prelude::account::Sort, providers::Provider};
@@ -165,34 +165,37 @@ pub async fn get_history(
     contract_abi: &ContractAbi,
 ) -> eyre::Result<()> {
     let _provider = Provider::try_from(network_metadata.network_rpc_url.clone())?;
+
+    // etherscan client builder
     let client = Client::builder()
         .with_api_key(network_metadata.network_api_key.clone())
         .chain(Chain::Mainnet)
         .unwrap()
         .build()
         .unwrap();
-    let paras = TxListParams {
+
+    let params = TxListParams {
         start_block: contract_metadata.start_block,
         end_block: contract_metadata.end_block,
         page: 0,
         offset: 0,
         sort: Sort::Asc,
     };
+
     let mut prev_txn_hash: H256 =
         H256::from_str("0x0000000000000000000000000000000000000000000000000000000000000000")
             .unwrap();
+
     //Fetching all transactions
-    println!(
-        "\n\n\n {} \n\n\n",
-        contract_metadata.contract_address_historical
-    );
+    info!("\n {} \n", contract_metadata.contract_address_historical);
+
     let txns = client
         .get_transactions(
             &contract_metadata
                 .contract_address_historical
                 .parse()
                 .unwrap(),
-            Some(paras),
+            Some(params),
         )
         .await
         .unwrap();
@@ -202,7 +205,7 @@ pub async fn get_history(
     for txn in txns {
         let txn_hash = txn.hash.value().unwrap().to_fixed_bytes();
         let transaction_hash: H256 = ethers::core::types::TxHash::from(txn_hash);
-        println!("\n\n\ntrnasaction hash {:?}\n\n\n", transaction_hash);
+        info!("\ntrnasaction hash {:?}\n", transaction_hash);
 
         if transaction_hash != prev_txn_hash {
             load_txns(

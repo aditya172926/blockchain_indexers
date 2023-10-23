@@ -10,6 +10,7 @@ use crate::structs::{contracts::ContractMetaData, networks::NetworkStruct};
 use std::collections::HashSet;
 use std::fs;
 use std::string::String;
+use log::{debug, error, info, warn};
 
 pub async fn utils_contract_data(config: &Config) -> (ContractMetaData, ContractAbi) {
     let contract_metadata: ContractMetaData = ContractMetaData {
@@ -22,7 +23,6 @@ pub async fn utils_contract_data(config: &Config) -> (ContractMetaData, Contract
         method_of_interest: config.source[0].interestedMethods.to_owned(),
     };
 
-    println!("The conntract metadata is {:?}", contract_metadata);
     let mut contract_abi_string: String = String::new();
     if contract_metadata.read_abi_from.contains("0x") {
         contract_abi_string = utils_contract_abi(
@@ -47,8 +47,8 @@ pub async fn utils_contract_data(config: &Config) -> (ContractMetaData, Contract
         raw: abi_json,
         stat: abi_static,
     };
-    println!(
-        "\n\n\n contract meta data {:?} \n\n contract abi {:?} \n\n\n",
+    info!(
+        "contract meta data {:?} \ncontract abi {:?}\n",
         contract_metadata, contract_abi
     );
     return (contract_metadata, contract_abi);
