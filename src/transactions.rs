@@ -39,7 +39,7 @@ async fn load_txns(
     let mut decoded_txn_data: (
         TransactionMethod,
         ethers::types::TransactionReceipt, // transaction receipt
-    ) = utils::transactions::utils_transaction_data(
+    ) = utils::transactions::utils_transaction_decode(
         contract_abi,
         transaction_hash,
         &network_metadata.network_rpc_url,

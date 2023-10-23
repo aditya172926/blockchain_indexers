@@ -48,7 +48,7 @@ pub async fn utils_transaction_indexed(
     transaction_indexed
 }
 
-pub async fn utils_transaction_data<'a>(
+pub async fn utils_transaction_decode<'a>(
     abi: &ContractAbi,
     transaction_hash: TxHash,
     network_rpc_url: &str,
@@ -113,10 +113,10 @@ async fn utils_transaction_method<'a>(
         .into_iter()
         .find(|&f| ethers::utils::hex::encode(f.short_signature()) == method_id)
     {
-        println!("Method Name: {}", method.name);
+        info!("Method Name: {}", method.name);
         method_name = &method.name;
     } else {
-        println!("Method not found");
+        warn!("Method not found");
     }
 
     if method_name != "" {
@@ -129,7 +129,7 @@ async fn utils_transaction_method<'a>(
         };
         return result;
     } else {
-        println!("Couldn't find the function name");
+        warn!("Couldn't find the function name");
         return TransactionMethod {
             params: Vec::new(),
             name: "".to_string(),
@@ -158,8 +158,8 @@ pub async fn utils_transaction_method_params<'a>(
     for (index, input) in function.inputs.iter().enumerate() {
         // let cloned_token: Token = decoded_inputs[index].clone();
         // println!("The cloned token is {:?}", cloned_token);
-        println!(
-            "The method_param before formatting ************************ {:?}",
+        info!(
+            "The method_param before formatting ************************ {:?}\n",
             input
         );
 
@@ -229,7 +229,7 @@ pub async fn utils_transaction_method_params<'a>(
         //     method_params.push(method_param);
         // }
     }
-    println!(
+    info!(
         "The method params are@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ {:?}",
         method_params
     );
