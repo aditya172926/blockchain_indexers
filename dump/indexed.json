@@ -1,0 +1,27 @@
+{ timestamp: "1698058323", 
+transaction: Transaction { 
+    block_hash: Some(0x8ab7eeb8535be4ad5d3acb84415fab31abd3c65cb90e3cc9a23b74997870709f), block_number: 49048535, 
+    contract_address: "0xDb46d1Dc155634FbC732f92E853b10B288AD5a1d", 
+    chain_id: 137, 
+    gas_used: Some(313322), 
+    gas_price: Some(334273986260), 
+    from: 0xe7af8325aa443f7678b651d4f0de23663e818691, 
+    to: Some(0x1eec6eccaa4625da3fa6cd6339dbcc2418710e8a), 
+    txn_hash: 0xb5f3f3e254ce7817f78f54e62e2eebbfce6930f318b68b22cd235a51c7b177f5 }, 
+    method: TransactionMethod 
+    { name: "proxyCreateProfile", 
+    id: "07e5f948", 
+    params: [
+        // 0
+        Tuple([Address(0x1227a8178b2efadb82e6b1e6fb30cd4b209608cf), 
+        // 1
+        String("coinnessgl"), 
+        // 2
+        String(""), 
+        // 3
+        Address(0x0000000000000000000000000000000000000000), 
+        // 4
+        Bytes([]), 
+        // 5
+        String("ipfs://Qmd8mEPaDv8X3pcVRvkv6xq1UNHTNUoNwDWuMYcCad1ZdM")])] 
+} }

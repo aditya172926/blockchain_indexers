@@ -167,7 +167,7 @@ pub async fn get_history(
     let txns = client
         .get_transactions(
             &contract_metadata
-                .contract_address_historical
+                .read_abi_from
                 .parse()
                 .unwrap(),
             Some(params),

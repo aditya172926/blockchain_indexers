@@ -2,7 +2,7 @@ slug: ens_ethereum
 name: ENS
 image: https://ik.imagekit.io/macha1/studio/ENS.svg?updatedAt=1691498512298
 description: Ethereum Name Service on ethereum chain
-mode: "HISTORY_TXN"
+mode: HISTORY_TXN
 source:
   - kind: evm/contract
     networkId: 1

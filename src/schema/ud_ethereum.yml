@@ -2,6 +2,7 @@ slug: ud_ethereum
 name: Unstoppable Domains
 image: https://gateway.lighthouse.storage/ipfs/QmZj2x4f2KQS62fGZRX4mdTUQDFxA4RBgLvm9ziE5jp5dC
 description: Unstoppable domains contract deployed on network Ethereum
+mode: HISTORY_TXN
 source:
   - kind: evm/contract
     networkId: 1
