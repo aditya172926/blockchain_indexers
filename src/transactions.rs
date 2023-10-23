@@ -99,7 +99,7 @@ async fn load_txns(
 }
 
 pub async fn get_txns(
-    config: Config,
+    config: &Config,
     contract_abi: &ContractAbi,
     contract_instance: &Instance<Http>,
     contract_metadata: ContractMetaData,
@@ -159,7 +159,7 @@ pub async fn get_txns(
 }
 
 pub async fn get_history(
-    config: Config,
+    config: &Config,
     contract_metadata: &ContractMetaData,
     network_metadata: &NetworkStruct,
     contract_abi: &ContractAbi,

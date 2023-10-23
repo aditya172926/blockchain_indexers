@@ -97,7 +97,7 @@ mod helpers {
         // let text=text.mode;
     if &config.mode == "HISTORY_TXN" {
             let _ = transactions::get_history(
-                config.to_owned(),
+                &config,
                 &contract_metadata,
                 &network_metadata,
                 &contract_abi,
@@ -109,11 +109,11 @@ mod helpers {
     // if config.mode==String::from("LIVE_TXN"){
 
         let _ = transactions::get_txns(
-            config.to_owned(),
+            &config,
             &contract_abi,
             &contract_instance,
-            contract_metadata.clone(),
-            &network_metadata.clone(),
+            contract_metadata,
+            &network_metadata,
         )
         .await;
 // }
