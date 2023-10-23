@@ -1,3 +1,4 @@
+use ethers::types::H160;
 use web3::contract::ens::Ens;
 
 use crate::structs::index::MethodParam;
@@ -5,7 +6,7 @@ use crate::structs::meta::{self, Meta, MetaData};
 use crate::structs::transactions::TransactionIndexed;
 #[derive(Debug)]
 struct LensMeta {
-    to: String,
+    to: H160,
     handle: String,
     imageURI: String,
     followModule: String,
@@ -16,7 +17,7 @@ struct LensMeta {
 pub fn handler_lens_profile(transaction_indexed: &TransactionIndexed) -> Option<MetaData> {
     if transaction_indexed.method.name == "proxyCreateProfile" {
         let meta_raw: LensMeta = LensMeta {
-            to: transaction_indexed.method.params[0].to_string(),
+            to: transaction_indexed.method.params[0].clone().into_address().unwrap(),
             handle: transaction_indexed.method.params[1].to_string(),
             imageURI: transaction_indexed.method.params[2].to_string(),
             followModule: transaction_indexed.method.params[3].to_string(),
@@ -32,7 +33,7 @@ pub fn handler_lens_profile(transaction_indexed: &TransactionIndexed) -> Option<
         }
         let meta: Meta = Meta {
             id: Some(meta_raw.handle.clone()),
-            owner: Some(format!("0x{}", meta_raw.to)),
+            owner: Some(meta_raw.to),
             title: Some(format!("{}.lens", meta_raw.handle.clone())),
             image: Some(image),
         };

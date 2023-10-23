@@ -1,10 +1,12 @@
-use crate::structs::index::MethodParam;
 use crate::structs::meta::{self, Meta, MetaData};
 use crate::structs::transactions::TransactionIndexed;
+use ethers::types::{H160, U128, U256};
+use log::{debug, error, info, warn};
+
 #[derive(Debug)]
 struct PoapMeta {
-    from: String,
-    to: String,
+    from: H160,
+    to: H160,
     tokenId: String,
 }
 
@@ -13,16 +15,19 @@ pub async fn handler_poap_ethereum(transaction_indexed: &TransactionIndexed) -> 
         || transaction_indexed.method.name == "safeTransferFrom"
     {
         let meta_raw: PoapMeta = PoapMeta {
-            from: transaction_indexed.method.params[0].to_string(),
-            to: transaction_indexed.method.params[1].to_string(),
-            tokenId: transaction_indexed.method.params[2].to_string(),
+            from: transaction_indexed.method.params[0].clone().into_address().unwrap(),
+            to: transaction_indexed.method.params[1].clone().into_address().unwrap(),
+            tokenId: transaction_indexed.method.params[2].clone().into_uint().unwrap().to_string(),
         };
+
+        info!("meta_raw -> {:?}\n", meta_raw);
+
         let mut image = String::new();
 
         let meta: Meta = Meta {
             id: Some(meta_raw.tokenId.clone()),
-            owner: Some(meta_raw.to.clone()),
-            title: Some(meta_raw.tokenId.clone()),
+            owner: Some(meta_raw.to),
+            title: Some(meta_raw.tokenId),
             image: Some(image),
         };
         let meta_data: MetaData = MetaData { modified: meta };

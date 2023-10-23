@@ -1,3 +1,4 @@
+use ethers::types::H160;
 use web3::contract::ens::Ens;
 
 use crate::structs::index::MethodParam;
@@ -7,7 +8,7 @@ use crate::structs::transactions::TransactionIndexed;
 struct EnsMeta {
     name: String,
     content: String,
-    owner: String,
+    owner: H160,
     duration: String,
     secret: String,
     resolver: String,
@@ -24,7 +25,7 @@ pub fn handler_ens(transaction_indexed: &TransactionIndexed) -> Option<MetaData>
                 "This ens handle is owned by {} ",
                 transaction_indexed.method.params[1]
             ),
-            owner: transaction_indexed.method.params[1].to_string(),
+            owner: transaction_indexed.method.params[1].clone().into_address().unwrap(),
             duration: transaction_indexed.method.params[2].to_string(),
             secret: transaction_indexed.method.params[3].to_string(),
             resolver: transaction_indexed.method.params[4].to_string(),

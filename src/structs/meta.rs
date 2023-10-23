@@ -1,3 +1,4 @@
+use ethers::types::H160;
 use serde::Serialize;
 
 use super::transactions::TransactionIndexed;
@@ -7,7 +8,7 @@ pub struct Meta {
     #[serde(rename = "id", skip_serializing_if = "Option::is_none")]
     pub id: Option<String>,
     #[serde(rename = "owner", skip_serializing_if = "Option::is_none")]
-    pub owner: Option<String>,
+    pub owner: Option<H160>,
     #[serde(rename = "title", skip_serializing_if = "Option::is_none")]
     pub title: Option<String>,
     #[serde(rename = "image", skip_serializing_if = "Option::is_none")]
@@ -33,7 +34,7 @@ pub struct MetaData {
 
 #[derive(Debug, Serialize)]
 pub struct MetaIndexed {
-    pub metaOwner: String,
+    pub metaOwner: H160,
     pub metaId: String,
     pub slug: String,
     pub data: MetaData,
