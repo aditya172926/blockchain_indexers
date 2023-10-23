@@ -1,0 +1,20 @@
+slug: lens_profile_polygon
+name: Lens Profiles
+image: https://gateway.lighthouse.storage/ipfs/QmVxgZjiRCDg7x9UQqcNNHVx9HqfxwpQhxw8EnU7ccaMrM
+description: Lens contract deployed on network Polygon
+source:
+  - kind: evm/contract
+    networkId: 137
+    from: 0xDb46d1Dc155634FbC732f92E853b10B288AD5a1d
+    fromHistorical: __CONTRACT_ADRESS_HISTORICAL__
+    readAbiFrom: 0x1eeC6ecCaA4625da3Fa6Cd6339DBcc2418710E8a
+    startBlock: __BLOCK_NUMBER_TO_START_FROM__
+    endBlock: __BLOCK_NUMBER_TO_END_ON__
+    interestedEvents: []
+    interestedMethods: [proxyCreateProfile]
+    handlersEvents: []
+    handlersMethods: []
+features:
+  - vectorize: true
+    searchable: true
+    querable: true
