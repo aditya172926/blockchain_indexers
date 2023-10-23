@@ -17,7 +17,6 @@ struct LensPostMeta {
 pub async fn handler_lens_post(transaction_indexed: &TransactionIndexed) -> Option<MetaData> {
     if transaction_indexed.method.name == "post" {
         let params_list = transaction_indexed.method.params[0].clone().into_tuple().unwrap();
-        // info!("profileid {:?}, {:?}", params_list[0].clone().into_uint().unwrap(), params_list[0]);
         let meta_raw: LensPostMeta = LensPostMeta {
             profileId: params_list[0].clone().into_uint().unwrap(),
             contentURI: params_list[1].to_string(),

@@ -11,7 +11,7 @@ source:
     startBlock: 49057697
     endBlock: 49057697
     interestedEvents: []
-    interestedMethods: [collect, comment, follow, post, mirror, createProfile]
+    interestedMethods: [post, createProfile]
     handlersEvents: []
     handlersMethods: []
 features:

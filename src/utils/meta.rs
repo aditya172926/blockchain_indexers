@@ -2,15 +2,15 @@ use log::{debug, error, info, warn};
 use std::process::exit;
 
 use crate::{
-    handlers::ens_ethereum::handler_ens,
+    handlers::{ens_ethereum::handler_ens, lens_post::handler_lens_post},
     structs::{extract::Schema, meta::MetaIndexed, transactions::TransactionIndexed},
 };
 
 pub async fn utils_meta_indexed(
     schema: &Schema,
     transaction_indexed: TransactionIndexed,
-) -> MetaIndexed {
-    let meta_indexed: MetaIndexed = match handler_ens(&transaction_indexed).await {
+) -> Option<MetaIndexed> {
+    let meta_indexed: Option<MetaIndexed> = match handler_lens_post(&transaction_indexed).await {
         Some(object) => {
             let meta_indexed: MetaIndexed = MetaIndexed {
                 owner: object.modified.owner.clone().unwrap(),
@@ -21,11 +21,11 @@ pub async fn utils_meta_indexed(
                 updatedAt: String::from(""),
                 sources: vec![transaction_indexed],
             };
-            meta_indexed
+            Some(meta_indexed)
         }
         None => {
-            error!("handler returned null");
-            exit(1)
+            warn!("handler returned null");
+            None
         }
     };
     info!("\nmeta indexed {:?}\n", meta_indexed);
