@@ -3,10 +3,7 @@ use ethcontract::{Instance, Http, H160};
 use reqwest::get;
 use web3::Web3;
 
-pub async fn utils_contract_abi(
-    contract_chain_id: &str,
-    contract_address: &str,
-) -> String {
+pub async fn utils_contract_abi(contract_chain_id: &str, contract_address: &str) -> String {
     // println!("The Chain id is {}", contract_chain_id);
     let file: String = fs::read_to_string(r"config/constants.json")
         .expect("Error in reading the constants.json file");
@@ -42,7 +39,7 @@ pub async fn utils_contract_abi(
                 println!("Request failed with status code: {}", object.status());
             }
             return fetched_abi;
-        },
+        }
         Err(e) => {
             println!("Error in fetching contract abi {:?}", e);
             return "Error in response".to_string();
@@ -60,17 +57,19 @@ pub async fn utils_url_data(param: &str) -> Result<reqwest::Response, reqwest::E
     } else if param.starts_with("ipfs://") {
         let ipfs_cid = &param[7..param.len()];
         query = "https://ipfs.io/ipfs/".to_string() + ipfs_cid;
-    }
-    else if param.starts_with("https://"){
+    } else if param.starts_with("https://") {
         query = String::from(param);
     }
 
     let response = get(query).await;
-        response
+    response
 }
 
-pub fn utils_interesting_method(method_of_interest:&HashSet<String>,method_name:&String)-> bool{
-    if !method_of_interest.is_empty(){
+pub fn utils_interesting_method(
+    method_of_interest: &HashSet<String>,
+    method_name: &String,
+) -> bool {
+    if !method_of_interest.is_empty() {
         return method_of_interest.contains(method_name.as_str());
     }
     return true;

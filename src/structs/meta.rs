@@ -38,6 +38,7 @@ pub struct MetaSubStruct {
 pub struct MetaStruct {
     pub metaOwner: String,
     pub metaId: String,
+    pub slug: String,
     pub meta: MetaSubStruct,
     pub createdAt: String,
     pub updatedAt: String,

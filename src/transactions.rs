@@ -14,7 +14,9 @@ use ethers::{prelude::account::Sort, providers::Provider};
 
 use ethers::etherscan::account::TxListParams;
 
+use crate::handlers::lens_post::handler_lens_post;
 use crate::handlers::lens_profile_polygon::handler_lens_profile;
+use crate::handlers::poap_ethereum::handler_poap_ethereum;
 use crate::structs::contracts::{ContractAbi, ContractMetaData};
 use crate::structs::meta::{self, MetaStruct, MetaSubStruct};
 use crate::structs::networks::NetworkStruct;
@@ -52,7 +54,7 @@ async fn load_txns(
         println!(
             "\n\n\ninside if statement before of transaction indexed\n{:?}\n{}\n{}\n{}\n\n",
             decoded_txn_data,
-            contract_metadata.contract_slug,
+            contract_metadata.contract_slug.clone(),
             contract_metadata.contract_address,
             network_metadata.network_id
         );
@@ -60,13 +62,13 @@ async fn load_txns(
         let transaction_indexed: structs::transactions::TransactionIndexed =
             utils_transaction_indexed(
                 &decoded_txn_data,
-                contract_metadata.contract_slug,
+                contract_metadata.contract_slug.clone(),
                 &contract_metadata.contract_address,
                 network_metadata.network_id,
             )
             .await;
-        // let handler = handler_select(String::from("lens_profile_polygon"), transaction_indexed);
-        // let meta_block = match handler_lens_profile(&transaction_indexed) {
+
+        // let meta_block = match handler_lens_post(&transaction_indexed).await {
         //     Some(object) => {
         //         let meta_sub_struct: MetaSubStruct = MetaSubStruct {
         //             data: object.clone(),
@@ -74,6 +76,7 @@ async fn load_txns(
         //         let meta: MetaStruct = MetaStruct {
         //             metaOwner: object.modified.owner.unwrap(),
         //             metaId: object.modified.id.unwrap(),
+        //             slug: contract_metadata.contract_slug,
         //             meta: meta_sub_struct,
         //             createdAt: String::from(""),
         //             updatedAt: String::from(""),
@@ -172,7 +175,7 @@ pub async fn get_history(
     let _provider = Provider::try_from(network_metadata.network_rpc_url.clone())?;
     let client = Client::builder()
         .with_api_key(network_metadata.network_api_key.clone())
-        .chain(Chain::Mainnet)
+        .chain(Chain::Optimism)
         .unwrap()
         .build()
         .unwrap();
@@ -187,6 +190,10 @@ pub async fn get_history(
         H256::from_str("0x0000000000000000000000000000000000000000000000000000000000000000")
             .unwrap();
     //Fetching all transactions
+    println!(
+        "\n\n\n {} \n\n\n",
+        contract_metadata.contract_address_historical
+    );
     let txns = client
         .get_transactions(
             &contract_metadata
