@@ -17,7 +17,7 @@ struct EnsMeta {
     ownerControlledFuses: String,
 }
 
-pub fn handler_ens(transaction_indexed: &TransactionIndexed) -> Option<MetaData> {
+pub async fn handler_ens(transaction_indexed: &TransactionIndexed) -> Option<MetaData> {
     if transaction_indexed.method.name == "register" {
         let meta_raw: EnsMeta = EnsMeta {
             name: transaction_indexed.method.params[0].to_string(),
@@ -25,7 +25,10 @@ pub fn handler_ens(transaction_indexed: &TransactionIndexed) -> Option<MetaData>
                 "This ens handle is owned by {} ",
                 transaction_indexed.method.params[1]
             ),
-            owner: transaction_indexed.method.params[1].clone().into_address().unwrap(),
+            owner: transaction_indexed.method.params[1]
+                .clone()
+                .into_address()
+                .unwrap(),
             duration: transaction_indexed.method.params[2].to_string(),
             secret: transaction_indexed.method.params[3].to_string(),
             resolver: transaction_indexed.method.params[4].to_string(),

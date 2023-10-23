@@ -2,18 +2,15 @@ use log::{debug, error, info, warn};
 use std::process::exit;
 
 use crate::{
-    handlers::poap_ethereum::handler_poap_ethereum,
-    structs::{
-        contracts::ContractMetaData, extract::Schema, meta::MetaIndexed,
-        transactions::TransactionIndexed,
-    },
+    handlers::ens_ethereum::handler_ens,
+    structs::{extract::Schema, meta::MetaIndexed, transactions::TransactionIndexed},
 };
 
 pub async fn utils_meta_indexed(
     schema: &Schema,
     transaction_indexed: TransactionIndexed,
 ) -> MetaIndexed {
-    let meta_indexed: MetaIndexed = match handler_poap_ethereum(&transaction_indexed).await {
+    let meta_indexed: MetaIndexed = match handler_ens(&transaction_indexed).await {
         Some(object) => {
             let meta_indexed: MetaIndexed = MetaIndexed {
                 owner: object.modified.owner.clone().unwrap(),
