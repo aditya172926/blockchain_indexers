@@ -52,7 +52,7 @@ pub async fn utils_contract_abi(contract_metadata: &ContractMetaData) -> String 
         }
     }
 
-    let mut api_url = str::replace(&api, "{}", &contract_metadata.contract_address);
+    let mut api_url = str::replace(&api, "{}", &contract_metadata.read_abi_from);
     api_url = api_url[1..api_url.len() - 1].to_string();
     // println!("The api_url is {}", api_url);
 
