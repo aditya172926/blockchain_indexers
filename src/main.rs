@@ -64,7 +64,7 @@ mod helpers {
 async fn main() -> Result<(), Box<dyn Error>> {
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
     let contract_result: (structs::contracts::ContractMetaData, ContractAbi) =
-        utils::contracts::utils_contract_data("sound_optimism").await;
+        utils::contracts::utils_contract_data("poap_ethereum").await;
 
     let contract_metadata: structs::contracts::ContractMetaData = contract_result.0;
     let contract_abi: structs::contracts::ContractAbi = contract_result.1;
@@ -81,8 +81,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let contract_instance: Instance<Http> =
         Instance::at(web3, contract_abi.raw.clone(), contract_address_h160);
 
-    let start_block: u64 = 110622289;
-    let end_block: u64 = 110651516;
+    let start_block: u64 = 18395946;
+    let end_block: u64 = 18408219;
 
     let _ = transactions::get_history(
         contract_metadata,

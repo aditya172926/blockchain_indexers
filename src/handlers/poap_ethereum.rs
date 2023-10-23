@@ -10,8 +10,12 @@ struct PoapMeta {
     tokenId: String,
 }
 
-pub fn handler_poap_ethereum(transaction_indexed: &TransactionIndexed) -> Option<MetaDataStruct> {
-    if transaction_indexed.method.name == "transferFrom" {
+pub async fn handler_poap_ethereum(
+    transaction_indexed: &TransactionIndexed,
+) -> Option<MetaDataStruct> {
+    if transaction_indexed.method.name == "transferFrom"
+        || transaction_indexed.method.name == "safeTransferFrom"
+    {
         let meta_raw: PoapMeta = PoapMeta {
             from: transaction_indexed.method.params[0].value.clone(),
             to: transaction_indexed.method.params[1].value.clone(),
