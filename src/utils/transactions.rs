@@ -15,7 +15,7 @@ pub async fn utils_transaction_indexed(
         TransactionMethod,                 // transaction hash
         ethers::types::TransactionReceipt, // transaction receipt
     ),
-    contract_metadata: &ContractMetaData
+    contract_metadata: &ContractMetaData,
 ) -> TransactionIndexed {
     info!("\ninside utils_trnasaction_indexed\n");
     let block_number_option = decoded_txn_data.1.block_number;
@@ -61,9 +61,8 @@ pub async fn utils_transaction_decode<'a>(
         .get_transaction(transaction_hash)
         .await
         .expect("Failed to get the transaction");
-    info!("\n\ntransaction {:?}\n\n", transaction);
+    debug!("\n\ntransaction {:?}\n\n", transaction);
     let transaction_receipt_result = provider.get_transaction_receipt(transaction_hash).await;
-    // .expect("Couldn't get the transaction receipt");
 
     let transaction_receipt = match transaction_receipt_result {
         Ok(object) => match object {
@@ -71,28 +70,10 @@ pub async fn utils_transaction_decode<'a>(
             None => TransactionReceipt::default(),
         },
         Err(err) => {
-            println!("Error in fetching transaction receipt {:?}", err);
+            error!("Error in fetching transaction receipt {:?}", err);
             TransactionReceipt::default()
         }
     };
-
-    // let transaction_receipt_formatted:ethers::core::types::transaction::response::TransactionReceipt;
-    // match transaction_receipt {
-    //     txn => {
-    //         match txn {
-    //             Some(object) => {
-    //                 transaction_receipt_formatted = object;
-    //             },
-    //             None => {
-    //                 transaction_receipt_formatted = TransactionReceipt::default();
-    //             }
-    //         }
-    //         // transaction_receipt_formatted = txn;
-    //     }
-    //     _ => {
-    //         transaction_receipt_formatted = TransactionReceipt::default();
-    //     }
-    // }
 
     let transaction_method: TransactionMethod = utils_transaction_method(abi, transaction).await;
     return (transaction_method, transaction_receipt);
@@ -101,12 +82,11 @@ pub async fn utils_transaction_decode<'a>(
 async fn utils_transaction_method<'a>(
     contract_abi: &ContractAbi,
     transaction: Option<Transaction>,
-) -> (TransactionMethod) {
+) -> TransactionMethod {
     let input_data: String = transaction.unwrap().input.to_string();
     let method_id: &str = &input_data[2..10];
     let input_data = &input_data[10..]; // extracting the transaction hash
 
-    let mut method_name: &str = "";
     if let Some(method) = contract_abi
         .stat
         .functions()
@@ -114,22 +94,16 @@ async fn utils_transaction_method<'a>(
         .find(|&f| ethers::utils::hex::encode(f.short_signature()) == method_id)
     {
         info!("Method Name: {}", method.name);
-        method_name = &method.name;
-    } else {
-        warn!("Method not found");
-    }
-
-    if method_name != "" {
         let param_result: (Vec<MethodParam>, String) =
-            utils_transaction_method_params(contract_abi, method_name, input_data).await;
+            utils_transaction_method_params(contract_abi, &method.name, input_data).await;
         let result: TransactionMethod = TransactionMethod {
             name: param_result.1,
             id: method_id.to_string(),
             params: param_result.0,
         };
-        return result;
+        result
     } else {
-        warn!("Couldn't find the function name");
+        warn!("Method not found");
         return TransactionMethod {
             params: Vec::new(),
             name: "".to_string(),
@@ -156,8 +130,6 @@ pub async fn utils_transaction_method_params<'a>(
         .expect("failed to decode inputs");
 
     for (index, input) in function.inputs.iter().enumerate() {
-        // let cloned_token: Token = decoded_inputs[index].clone();
-        // println!("The cloned token is {:?}", cloned_token);
         info!(
             "The method_param before formatting ************************ {:?}\n",
             input
@@ -229,7 +201,7 @@ pub async fn utils_transaction_method_params<'a>(
         //     method_params.push(method_param);
         // }
     }
-    info!(
+    debug!(
         "The method params are@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ {:?}",
         method_params
     );
