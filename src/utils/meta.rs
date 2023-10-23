@@ -2,7 +2,7 @@ use std::process::exit;
 use log::{debug, error, info, warn};
 
 use crate::{
-    handlers::poap_ethereum::handler_poap_ethereum,
+    handlers::{poap_ethereum::handler_poap_ethereum, lens_post::handler_lens_post},
     structs::{
         contracts::ContractMetaData,
         meta::{MetaIndexed, MetaSubStruct},
@@ -13,8 +13,8 @@ use crate::{
 pub async fn utils_meta_indexed(
     config: &Config,
     transaction_indexed: TransactionIndexed,
-) -> MetaIndexed {
-    let meta_indexed: MetaIndexed = match handler_poap_ethereum(&transaction_indexed).await {
+) -> Option<MetaIndexed> {
+    let meta_indexed: Option<MetaIndexed> = match handler_lens_post(&transaction_indexed).await {
         Some(object) => {
             let meta_sub_struct: MetaSubStruct = MetaSubStruct {
                 data: object.clone(),
@@ -29,11 +29,11 @@ pub async fn utils_meta_indexed(
                 sources: vec![transaction_indexed],
             };
             info!("\nmeta indexed {:?}\n", meta_indexed);
-            meta_indexed
+            Some(meta_indexed)
         },
         None => {
             error!("handler returned null");
-            exit(1)
+            None
         }
     };
     meta_indexed

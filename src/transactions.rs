@@ -21,7 +21,6 @@ use crate::structs::networks::NetworkStruct;
 use crate::structs::transactions::{TransactionIndexed, TransactionMethod};
 use crate::utils::index::utils_interesting_method;
 use crate::utils::meta::utils_meta_indexed;
-// use crate::utils::meta::utils_meta_indexed;
 use crate::utils::transactions::utils_transaction_indexed;
 use crate::{structs, utils};
 use std::process::exit;
@@ -53,7 +52,16 @@ async fn load_txns(
         let transaction_indexed: TransactionIndexed =
             utils_transaction_indexed(&decoded_txn_data, &contract_metadata).await;
 
-        let meta_indexed: MetaIndexed = utils_meta_indexed(&config, transaction_indexed).await;
+        let meta_indexed: MetaIndexed = match utils_meta_indexed(&config, transaction_indexed).await {
+            Some(object) => {
+                info!("\n\nGot meta_indexed object\n\n");
+                object
+            },
+            None => {
+                error!("Handler function returned None");
+                exit(1);
+            }
+        };
         info!("meta_indexed -> {:?}", meta_indexed);
         // abstractor::create_meta(&contract_slug,transaction_indexed).await;
 

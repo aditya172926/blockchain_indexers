@@ -60,7 +60,7 @@ mod helpers {
 async fn main() -> Result<(), Box<dyn Error>> {
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
 
-    let config: structs::extract::Config = reader::utils_config(String::from("poap_nft"));
+    let config: structs::extract::Config = reader::utils_config(String::from("lens_post"));
 
     let network_metadata: structs::networks::NetworkStruct =
         utils::networks::utils_network_data(config.source[0].networkId).unwrap();
