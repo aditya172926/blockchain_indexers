@@ -11,8 +11,11 @@ use mongodb::bson::document::ValueAccessError;
 use mongodb::bson::Document;
 use std::collections::HashSet;
 use std::error::Error;
+use std::fs;
+use std::process::exit;
 use std::string::String;
 use structs::contracts::ContractAbi;
+use utils::db::utils_db;
 use utils::index::utils_contract_instance;
 use utils::reader;
 use web3::transports::Http;
@@ -26,6 +29,7 @@ mod db {
 }
 mod utils {
     pub(crate) mod contracts;
+    pub(crate) mod db;
     pub(crate) mod index;
     pub(crate) mod meta;
     pub(crate) mod networks;
@@ -60,7 +64,15 @@ mod helpers {
 async fn main() -> Result<(), Box<dyn Error>> {
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
 
-    let config: structs::extract::Config = reader::utils_config(String::from("poap_nft"));
+    let file: String =
+        fs::read_to_string(r"config/index.json").expect("Error in reading the index.json file");
+    let file_data = serde_json::from_str::<serde_json::Value>(&file).unwrap();
+    info!("after parsing index json {} ", file_data["env"].to_string());
+
+    let db = utils_db(file_data["env"].to_string()).await;
+
+    let config: structs::extract::Config =
+        reader::utils_config(String::from(file_data["slug"].to_string()));
 
     let network_metadata: structs::networks::NetworkStruct =
         utils::networks::utils_network_data(config.source[0].networkId).unwrap();
@@ -81,6 +93,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     if &config.mode == "HISTORY_TXN" {
         let _ = transactions::get_history(
+            &db,
             &config,
             &contract_metadata,
             &network_metadata,
@@ -89,6 +102,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .await;
     } else if &config.mode == "LIVE_TXN" {
         let _ = transactions::get_txns(
+            &db,
             &config,
             &contract_abi,
             &contract_instance,

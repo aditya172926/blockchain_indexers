@@ -95,3 +95,14 @@ pub struct Config {
     pub source: Vec<Source>,
     pub features: Vec<features>,
 }
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct Db {
+    pub client: String,
+    pub database: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct DbEnv {
+    pub prod: Db,
+    pub dev: Db,
+}

@@ -6,6 +6,7 @@ use ethers::types::H256;
 use futures::StreamExt;
 use log::{debug, error, info, warn};
 use mongodb::bson::Document;
+use serde_json::Value;
 use std::collections::HashSet;
 use std::str::FromStr;
 use web3::transports::Http;
@@ -14,12 +15,14 @@ use ethers::{prelude::account::Sort, providers::Provider};
 
 use ethers::etherscan::account::TxListParams;
 
+use crate::db::index::db_meta_store;
 use crate::structs::contracts::{ContractAbi, ContractMetaData};
-use crate::structs::extract::Config;
-use crate::structs::meta::{self, MetaIndexed, MetaSubStruct};
+use crate::structs::extract::{Config, Db};
+use crate::structs::meta::{self, MetaIndexed};
 use crate::structs::networks::NetworkStruct;
 use crate::structs::transactions::{TransactionIndexed, TransactionMethod};
 use crate::utils::index::utils_interesting_method;
+use crate::utils::meta::utils_meta_indexed;
 // use crate::utils::meta::utils_meta_indexed;
 use crate::utils::transactions::utils_transaction_indexed;
 use crate::{structs, utils};
@@ -27,6 +30,7 @@ use std::process::exit;
 use tokio::time::{sleep, Duration};
 
 async fn load_txns(
+    db: &Db,
     config: Config,
     contract_abi: &ContractAbi,
     transaction_hash: H256,
@@ -52,25 +56,15 @@ async fn load_txns(
         let transaction_indexed: TransactionIndexed =
             utils_transaction_indexed(&decoded_txn_data, &contract_metadata).await;
 
-        // let meta_indexed: MetaIndexed = utils_meta_indexed(&config, transaction_indexed).await;
-        // info!("meta_indexed -> {:?}", meta_indexed);
-        // abstractor::create_meta(&contract_slug,transaction_indexed).await;
+        let meta_indexed: MetaIndexed = utils_meta_indexed(&config, transaction_indexed).await;
 
-        // let _ = db::db_transaction_store(
-        //     decoded_txn_data.0, //method_params
-        //     decoded_txn_data.1, // function name
-        //     decoded_txn_data.2, // function id
-        //     decoded_txn_data.3, // transaction receipt
-        //     contract_address.clone(),
-        //     String::from(&contract_slug),
-        //     &chain_id,
-        // )
-        // .await;
+        let _ = db_meta_store(&db, meta_indexed).await;
     }
     println!("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 }
 
 pub async fn get_txns(
+    db: &Db,
     config: &Config,
     contract_abi: &ContractAbi,
     contract_instance: &Instance<Http>,
@@ -96,6 +90,7 @@ pub async fn get_txns(
 
                 if transaction_hash != prev_txn_hash {
                     load_txns(
+                        db,
                         config.to_owned(),
                         contract_abi,
                         transaction_hash,
@@ -128,6 +123,7 @@ pub async fn get_txns(
 }
 
 pub async fn get_history(
+    db: &Db,
     config: &Config,
     contract_metadata: &ContractMetaData,
     network_metadata: &NetworkStruct,
@@ -179,6 +175,7 @@ pub async fn get_history(
 
         if transaction_hash != prev_txn_hash {
             load_txns(
+                db,
                 config.to_owned(),
                 contract_abi,
                 transaction_hash,

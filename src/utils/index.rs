@@ -7,7 +7,7 @@ use web3::Web3;
 
 pub async fn utils_contract_abi(contract_chain_id: &str, contract_address: &str) -> String {
     // println!("The Chain id is {}", contract_chain_id);
-    let file: String = fs::read_to_string(r"config/constants.json")
+    let file: String = fs::read_to_string(r"constants/constants.json")
         .expect("Error in reading the constants.json file");
     let file_data = serde_json::from_str::<serde_json::Value>(&file);
 

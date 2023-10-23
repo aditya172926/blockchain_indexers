@@ -30,16 +30,13 @@ pub struct MetaData {
     // raw:Option<>,
     pub modified: Meta,
 }
-#[derive(Debug)]
-pub struct MetaSubStruct {
-    pub data: MetaData,
-}
-#[derive(Debug)]
+
+#[derive(Debug, Serialize)]
 pub struct MetaIndexed {
     pub metaOwner: String,
     pub metaId: String,
     pub slug: String,
-    pub meta: MetaSubStruct,
+    pub data: MetaData,
     pub createdAt: String,
     pub updatedAt: String,
     pub sources: Vec<TransactionIndexed>,
