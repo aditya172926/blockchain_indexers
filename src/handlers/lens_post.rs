@@ -60,7 +60,7 @@ pub async fn handler_lens_post(transaction_indexed: &TransactionIndexed) -> Opti
         // println!("\n\n\n {:?} \n\n\n", re.unwrap());
         let meta: Meta = Meta {
             id: Some(meta_id.clone()),
-            owner: Some(format!("{}", transaction_indexed.transaction.from)),
+            owner: Some(transaction_indexed.transaction.from),
             title: Some(meta_title.clone()),
             image: Some(meta_image.clone()),
         };
