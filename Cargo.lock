@@ -1373,6 +1373,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "eval"
+version = "0.4.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ba90c19bed0c67afb0a24340b42d13ddddcb5413c4c17a04c11871bd6b572c42"
+dependencies = [
+ "quick-error",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "event-listener"
 version = "2.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2291,6 +2302,7 @@ dependencies = [
  "env_logger",
  "ethcontract",
  "ethers",
+ "eval",
  "eyre 0.3.10",
  "futures",
  "hex",

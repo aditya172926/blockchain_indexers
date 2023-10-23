@@ -1,7 +1,7 @@
 use web3::contract::ens::Ens;
 
-use crate::structs::index::{Meta, MethodParam};
-use crate::structs::meta::{self, MetaDataStruct, MetaIndexedStruct};
+use crate::structs::index::MethodParam;
+use crate::structs::meta::{self, Meta, MetaData};
 use crate::structs::transactions::TransactionIndexed;
 #[derive(Debug)]
 struct LensMeta {
@@ -12,7 +12,7 @@ struct LensMeta {
     followModuleInitData: String,
 }
 
-pub fn handler_lens_profile(transaction_indexed: &TransactionIndexed) -> Option<MetaDataStruct> {
+pub fn handler_lens_profile(transaction_indexed: &TransactionIndexed) -> Option<MetaData> {
     if transaction_indexed.method.name == "proxyCreateProfile" {
         let meta_raw: LensMeta = LensMeta {
             to: transaction_indexed.method.params[0].value.clone(),
@@ -28,16 +28,14 @@ pub fn handler_lens_profile(transaction_indexed: &TransactionIndexed) -> Option<
         } else {
             image = String::from("https://i.seadn.io/gae/S67RadRtlIbTNk0UojZM-TEl4pybcblKyg3HxQHl0-JmxYZ2deLX-pK2Z89khCWHGeaXeYfE8Vxqj06YCUcqk0q1KWD9T997lGnGHw?auto=format&dpr=1&w=3840")
         }
-        let meta_indexed: MetaIndexedStruct = MetaIndexedStruct {
+        let meta: Meta = Meta {
             id: Some(meta_raw.handle.clone()),
             owner: Some(format!("0x{}", meta_raw.to)),
             title: Some(format!("{}.lens", meta_raw.handle.clone())),
             image: Some(image),
         };
-        println!("\n\n\nMeta indexed {:?} \n\n\n", meta_indexed);
-        let meta_data: MetaDataStruct = MetaDataStruct {
-            modified: meta_indexed,
-        };
+        // println!("\n\n\nMeta indexed {:?} \n\n\n", meta);
+        let meta_data: MetaData = MetaData { modified: meta };
         return Some(meta_data);
     } else {
         return None;

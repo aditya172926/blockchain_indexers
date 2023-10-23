@@ -35,16 +35,14 @@ pub fn handler_ens(transaction_indexed: &TransactionIndexed) -> Option<MetaDataS
         let mut image = String::from(
             "https://pbs.twimg.com/profile_images/1455381288756695041/acatxTm8_400x400.jpg",
         );
-        let meta_indexed: MetaIndexedStruct = MetaIndexedStruct {
+        let meta: Meta = Meta {
             id: Some(meta_raw.name.clone()),
             owner: Some(meta_raw.owner),
             title: Some(format!("{}.eth", meta_raw.name.clone())),
             image: Some(image),
         };
         println!("\n\n\nMeta indexed {:?} \n\n\n", meta_indexed);
-        let meta_data: MetaDataStruct = MetaDataStruct {
-            modified: meta_indexed,
-        };
+        let meta_data: MetaDataStruct = MetaData { modified: meta };
         return Some(meta_data);
     } else {
         return None;

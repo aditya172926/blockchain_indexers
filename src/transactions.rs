@@ -18,10 +18,11 @@ use crate::handlers::lens_post::handler_lens_post;
 use crate::handlers::lens_profile_polygon::handler_lens_profile;
 use crate::handlers::poap_ethereum::handler_poap_ethereum;
 use crate::structs::contracts::{ContractAbi, ContractMetaData};
-use crate::structs::meta::{self, MetaStruct, MetaSubStruct};
+use crate::structs::meta::{self, MetaIndexed, MetaSubStruct};
 use crate::structs::networks::NetworkStruct;
-use crate::structs::transactions::TransactionMethod;
+use crate::structs::transactions::{TransactionIndexed, TransactionMethod};
 use crate::utils::index::utils_interesting_method;
+use crate::utils::meta::utils_meta_indexed;
 use crate::utils::transactions::utils_transaction_indexed;
 use crate::{structs, utils};
 use std::process::exit;
@@ -59,37 +60,16 @@ async fn load_txns(
             network_metadata.network_id
         );
 
-        let transaction_indexed: structs::transactions::TransactionIndexed =
-            utils_transaction_indexed(
-                &decoded_txn_data,
-                contract_metadata.contract_slug.clone(),
-                &contract_metadata.contract_address,
-                network_metadata.network_id,
-            )
-            .await;
+        let transaction_indexed: TransactionIndexed = utils_transaction_indexed(
+            &decoded_txn_data,
+            contract_metadata.contract_slug.clone(),
+            &contract_metadata.contract_address,
+            network_metadata.network_id,
+        )
+        .await;
 
-        let meta_block = match handler_poap_ethereum(&transaction_indexed).await {
-            Some(object) => {
-                let meta_sub_struct: MetaSubStruct = MetaSubStruct {
-                    data: object.clone(),
-                };
-                let meta: MetaStruct = MetaStruct {
-                    metaOwner: object.modified.owner.unwrap(),
-                    metaId: object.modified.id.unwrap(),
-                    slug: contract_metadata.contract_slug,
-                    meta: meta_sub_struct,
-                    createdAt: String::from(""),
-                    updatedAt: String::from(""),
-                    sources: vec![transaction_indexed],
-                };
-                meta
-            }
-            None => {
-                println!("handler returned null");
-                exit(1)
-            }
-        };
-        println!("\n\n\n\n\n meta block {:?} \n\n\n\n\n", meta_block);
+        let meta_indexed: MetaIndexed =
+            utils_meta_indexed(transaction_indexed, contract_metadata).await;
 
         // abstractor::create_meta(&contract_slug,transaction_indexed).await;
 
@@ -175,7 +155,7 @@ pub async fn get_history(
     let _provider = Provider::try_from(network_metadata.network_rpc_url.clone())?;
     let client = Client::builder()
         .with_api_key(network_metadata.network_api_key.clone())
-        .chain(Chain::Mainnet)
+        .chain(Chain::Optimism)
         .unwrap()
         .build()
         .unwrap();

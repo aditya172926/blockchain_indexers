@@ -1,6 +1,7 @@
-use std::{fs, collections::HashSet};
-use ethcontract::{Instance, Http, H160};
+use ethcontract::{Http, Instance, H160};
 use reqwest::get;
+use std::fs::File;
+use std::{collections::HashSet, fs};
 use web3::Web3;
 
 pub async fn utils_contract_abi(contract_chain_id: &str, contract_address: &str) -> String {
@@ -75,6 +76,19 @@ pub fn utils_interesting_method(
     return true;
 }
 
-pub fn utils_contract_instance(web3_provider: Web3<Http>, contract_abi:web3::ethabi::Contract, contract_address: H160) -> Instance<Http> {
+pub fn utils_contract_instance(
+    web3_provider: Web3<Http>,
+    contract_abi: web3::ethabi::Contract,
+    contract_address: H160,
+) -> Instance<Http> {
     Instance::at(web3_provider, contract_abi, contract_address)
+}
+
+pub async fn utils_load_fn(handler: String) {
+    let path = format!("handlers/{}.rs", handler);
+    println!("\n\n\n {}\n\n\n", path);
+    let file_path = std::path::Path::new(&path);
+    println!("\n\n\n {:?}\n\n\n", file_path);
+    let mut file = File::open(path);
+    println!("\n\n\n {:?}\n\n\n", file);
 }
