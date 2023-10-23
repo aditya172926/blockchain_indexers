@@ -1,3 +1,4 @@
+use env_logger::Env;
 use ethcontract::contract::Instance;
 use ethcontract::prelude::*;
 use ethers::providers::Provider;
@@ -5,18 +6,17 @@ use ethers::types::{Filter, H256};
 use futures::join;
 use futures::stream::StreamExt;
 use hex::ToHex;
+use log::{debug, error, info, warn};
 use mongodb::bson::document::ValueAccessError;
 use mongodb::bson::Document;
 use std::collections::HashSet;
-use std::string::String;
 use std::error::Error;
+use std::string::String;
 use structs::contracts::ContractAbi;
 use utils::index::utils_contract_instance;
 use utils::reader;
 use web3::transports::Http;
 use web3::Web3;
-use env_logger::Env;
-use log::{debug, error, info, warn};
 
 // use crate::handlers::ens_ethereum::handler_ens;
 
@@ -60,7 +60,7 @@ mod helpers {
 async fn main() -> Result<(), Box<dyn Error>> {
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
 
-    let config: structs::extract::Config = reader::utils_config(String::from("lens_profile_polygon"));
+    let config: structs::extract::Config = reader::utils_config(String::from("poap_nft"));
 
     let network_metadata: structs::networks::NetworkStruct =
         utils::networks::utils_network_data(config.source[0].networkId).unwrap();
@@ -96,7 +96,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
             &network_metadata,
         )
         .await;
-    } 
+    }
 
     Ok(())
 }

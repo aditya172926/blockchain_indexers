@@ -14,7 +14,6 @@ use ethers::{prelude::account::Sort, providers::Provider};
 
 use ethers::etherscan::account::TxListParams;
 
-
 use crate::structs::contracts::{ContractAbi, ContractMetaData};
 use crate::structs::extract::Config;
 use crate::structs::meta::{self, MetaIndexed, MetaSubStruct};
@@ -166,10 +165,7 @@ pub async fn get_history(
 
     let txns = client
         .get_transactions(
-            &contract_metadata
-                .read_abi_from
-                .parse()
-                .unwrap(),
+            &contract_metadata.contract_address.parse().unwrap(),
             Some(params),
         )
         .await
