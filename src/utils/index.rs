@@ -1,5 +1,7 @@
+use std::{fs, collections::HashSet};
+use ethcontract::{Instance, Http, H160};
 use reqwest::get;
-use std::{collections::HashSet, fs};
+use web3::Web3;
 
 pub async fn utils_contract_abi(contract_chain_id: &str, contract_address: &str) -> String {
     // println!("The Chain id is {}", contract_chain_id);
@@ -71,4 +73,8 @@ pub fn utils_interesting_method(
         return method_of_interest.contains(method_name.as_str());
     }
     return true;
+}
+
+pub fn utils_contract_instance(web3_provider: Web3<Http>, contract_abi:web3::ethabi::Contract, contract_address: H160) -> Instance<Http> {
+    Instance::at(web3_provider, contract_abi, contract_address)
 }
