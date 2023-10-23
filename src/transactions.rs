@@ -175,7 +175,7 @@ pub async fn get_history(
     let _provider = Provider::try_from(network_metadata.network_rpc_url.clone())?;
     let client = Client::builder()
         .with_api_key(network_metadata.network_api_key.clone())
-        .chain(Chain::Optimism)
+        .chain(Chain::Mainnet)
         .unwrap()
         .build()
         .unwrap();

@@ -58,7 +58,7 @@ mod handlers {
 
 mod helpers {
     pub(crate) mod erc721;
-    pub(crate) mod url;
+    pub(crate) mod url; 
 }
 // mod helpers {
 //     pub(crate) mod erc721;
@@ -68,7 +68,7 @@ mod helpers {
 async fn main() -> Result<(), Box<dyn Error>> {
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
     let contract_result: (structs::contracts::ContractMetaData, ContractAbi) =
-        utils::contracts::utils_contract_data("sound_optimism").await;
+        utils::contracts::utils_contract_data("poap_ethereum").await;
 
     let contract_metadata: structs::contracts::ContractMetaData = contract_result.0;
     let contract_abi: structs::contracts::ContractAbi = contract_result.1;
