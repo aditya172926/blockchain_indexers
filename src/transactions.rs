@@ -98,7 +98,7 @@ pub async fn get_txns(
                     .await
                     {
                         Some(object) => {
-                            info!("Addind live_txns meta_indexed to db...");
+                            info!("Adding live_txns meta_indexed to db...");
                             let _ = db_meta_store(&db, object).await;
                         }
                         None => {
@@ -193,7 +193,7 @@ pub async fn get_history(
             )
             .await {
                 Some(object) => {
-                    info!("Addint history_txn meta_indexed into db...");
+                    info!("Adding history_txn meta_indexed into db...");
                     let _ = db_meta_store(&db, object).await;
                 },
                 None => {
