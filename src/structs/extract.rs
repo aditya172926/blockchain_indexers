@@ -86,14 +86,20 @@ pub struct TxnSource {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct Config {
+pub struct Schema {
     pub slug: String,
     pub name: String,
     pub image: String,
     pub description: String,
-    pub mode: String,
     pub source: Vec<Source>,
     pub features: Vec<features>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct Config {
+    pub env: String,
+    pub slug: String,
+    pub mode: String,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Db {

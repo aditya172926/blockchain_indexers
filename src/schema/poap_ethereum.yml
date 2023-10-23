@@ -2,7 +2,6 @@ slug: poap_ethereum
 name: POAP
 image: https://ik.imagekit.io/macha1/studio/POAP.svg?updatedAt=1691498511907
 description: Proof of Attendance protocol contract deployed on network Ethereum
-mode: HISTORY_TXN
 source:
   - kind: evm/contract
     networkId: 1

@@ -17,7 +17,7 @@ use ethers::etherscan::account::TxListParams;
 
 use crate::db::index::db_meta_store;
 use crate::structs::contracts::{ContractAbi, ContractMetaData};
-use crate::structs::extract::{Config, Db};
+use crate::structs::extract::{Db, Schema};
 use crate::structs::meta::{self, MetaIndexed};
 use crate::structs::networks::NetworkStruct;
 use crate::structs::transactions::{TransactionIndexed, TransactionMethod};
@@ -31,7 +31,7 @@ use tokio::time::{sleep, Duration};
 
 async fn load_txns(
     db: &Db,
-    config: Config,
+    schema: Schema,
     contract_abi: &ContractAbi,
     transaction_hash: H256,
     network_metadata: NetworkStruct,
@@ -56,15 +56,14 @@ async fn load_txns(
         let transaction_indexed: TransactionIndexed =
             utils_transaction_indexed(&decoded_txn_data, &contract_metadata).await;
 
-        meta_indexed_option = utils_meta_indexed(&config, transaction_indexed).await;
+        meta_indexed_option = utils_meta_indexed(&schema, transaction_indexed).await;
     }
-    println!("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     meta_indexed_option
 }
 
 pub async fn get_txns(
     db: &Db,
-    config: &Config,
+    schema: &Schema,
     contract_abi: &ContractAbi,
     contract_instance: &Instance<Http>,
     contract_metadata: ContractMetaData,
@@ -90,7 +89,7 @@ pub async fn get_txns(
                 if transaction_hash != prev_txn_hash {
                     match load_txns(
                         db,
-                        config.to_owned(),
+                        schema.to_owned(),
                         contract_abi,
                         transaction_hash,
                         network_metadata.clone(),
@@ -128,12 +127,13 @@ pub async fn get_txns(
                 );
             }
         }
+        println!("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
     }
 }
 
 pub async fn get_history(
     db: &Db,
-    config: &Config,
+    schema: &Schema,
     contract_metadata: &ContractMetaData,
     network_metadata: &NetworkStruct,
     contract_abi: &ContractAbi,
@@ -185,7 +185,7 @@ pub async fn get_history(
         if transaction_hash != prev_txn_hash {
             match load_txns(
                 db,
-                config.to_owned(),
+                schema.to_owned(),
                 contract_abi,
                 transaction_hash,
                 network_metadata.clone(),
