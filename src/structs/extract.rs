@@ -40,7 +40,7 @@ pub struct MetaImage {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Source {
     pub kind: String,
-    pub networkId: String,
+    pub networkId: u64,
     pub from: String,
     pub fromHistorical: String,
     pub readAbiFrom: String,

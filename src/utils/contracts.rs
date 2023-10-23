@@ -7,10 +7,10 @@ use crate::db::{self, index};
 use crate::structs::contracts::ContractAbi;
 use crate::structs::extract::Config;
 use crate::structs::{contracts::ContractMetaData, networks::NetworkStruct};
+use log::{debug, error, info, warn};
 use std::collections::HashSet;
 use std::fs;
 use std::string::String;
-use log::{debug, error, info, warn};
 
 pub async fn utils_contract_data(config: &Config) -> (ContractMetaData, ContractAbi) {
     let contract_metadata: ContractMetaData = ContractMetaData {
@@ -18,25 +18,12 @@ pub async fn utils_contract_data(config: &Config) -> (ContractMetaData, Contract
         contract_address_historical: config.source[0].fromHistorical.to_owned(),
         read_abi_from: config.source[0].readAbiFrom.to_owned(),
         chain_id: config.source[0].networkId.to_owned(),
-        start_block:config.source[0].startBlock.to_owned(),
-        end_block:config.source[0].endBlock.to_owned(),
+        start_block: config.source[0].startBlock.to_owned(),
+        end_block: config.source[0].endBlock.to_owned(),
         method_of_interest: config.source[0].interestedMethods.to_owned(),
     };
 
-    let mut contract_abi_string: String = String::new();
-    if contract_metadata.read_abi_from.contains("0x") {
-        contract_abi_string = utils_contract_abi(
-            &contract_metadata.chain_id,
-            &contract_metadata.read_abi_from,
-        )
-        .await;
-    } else {
-        contract_abi_string = utils_contract_abi(
-            &contract_metadata.chain_id,
-            &contract_metadata.contract_address,
-        )
-        .await;
-    }
+    let mut contract_abi_string: String = utils_contract_abi(&contract_metadata).await;
 
     let abi_json = serde_json::from_str(&contract_abi_string).unwrap();
     let abi_static: &'static Abi = Box::leak(Box::new(
@@ -47,16 +34,10 @@ pub async fn utils_contract_data(config: &Config) -> (ContractMetaData, Contract
         raw: abi_json,
         stat: abi_static,
     };
-    info!(
-        "contract meta data {:?} \ncontract abi {:?}\n",
-        contract_metadata, contract_abi
-    );
     return (contract_metadata, contract_abi);
 }
 
-
-
-pub async fn utils_contract_abi(contract_chain_id: &str, contract_address: &str) -> String {
+pub async fn utils_contract_abi(contract_metadata: &ContractMetaData) -> String {
     let file: String = fs::read_to_string(r"config/constants.json")
         .expect("Error in reading the constants.json file");
     let file_data = serde_json::from_str::<serde_json::Value>(&file);
@@ -64,14 +45,14 @@ pub async fn utils_contract_abi(contract_chain_id: &str, contract_address: &str)
     let mut api: String = String::new();
     match file_data {
         Ok(object) => {
-            api = object[contract_chain_id]["_api"].to_string();
+            api = object[contract_metadata.chain_id.to_string()]["_api"].to_string();
         }
         Err(e) => {
-            println!("{:?}", e);
+            error!("{:?}", e);
         }
     }
 
-    let mut api_url = str::replace(&api, "{}", &contract_address);
+    let mut api_url = str::replace(&api, "{}", &contract_metadata.contract_address);
     api_url = api_url[1..api_url.len() - 1].to_string();
     // println!("The api_url is {}", api_url);
 
@@ -89,7 +70,7 @@ pub async fn utils_contract_abi(contract_chain_id: &str, contract_address: &str)
                 fetched_abi = json["result"].as_str().unwrap().to_owned();
                 // println!("The fetched contract abi is {:?}", fetched_abi);
             } else {
-                println!("Request failed with status code: {}", object.status());
+                error!("Request failed with status code: {}", object.status());
             }
 
             return fetched_abi;

@@ -3,7 +3,7 @@ use serde::Serialize;
 use super::transactions::TransactionIndexed;
 
 #[derive(Serialize, Clone, Debug)]
-pub struct MetaIndexedStruct {
+pub struct Meta {
     #[serde(rename = "id", skip_serializing_if = "Option::is_none")]
     pub id: Option<String>,
     #[serde(rename = "owner", skip_serializing_if = "Option::is_none")]
@@ -25,17 +25,17 @@ pub struct MetaIndexedStruct {
 }
 
 #[derive(Serialize, Clone, Debug)]
-pub struct MetaDataStruct {
+pub struct MetaData {
     // #[serde(rename = "raw", skip_serializing_if = "Option::is_none")]
     // raw:Option<>,
-    pub modified: MetaIndexedStruct,
+    pub modified: Meta,
 }
 #[derive(Debug)]
 pub struct MetaSubStruct {
-    pub data: MetaDataStruct,
+    pub data: MetaData,
 }
 #[derive(Debug)]
-pub struct MetaStruct {
+pub struct MetaIndexed {
     pub metaOwner: String,
     pub metaId: String,
     pub slug: String,

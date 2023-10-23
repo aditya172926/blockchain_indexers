@@ -23,7 +23,7 @@ pub struct ContractMetaData {
     pub contract_address: String,
     pub contract_address_historical: String,
     pub read_abi_from: String,
-    pub chain_id: String,
+    pub chain_id: u64,
     pub start_block:u64,
     pub end_block:u64,
     pub method_of_interest: Vec<std::string::String>,

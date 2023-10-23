@@ -1,5 +1,13 @@
 use ethcontract::contract::Instance;
 use ethcontract::prelude::*;
+use ethers::providers::Provider;
+use ethers::types::{Filter, H256};
+use futures::join;
+use futures::stream::StreamExt;
+use hex::ToHex;
+use mongodb::bson::document::ValueAccessError;
+use mongodb::bson::Document;
+use std::collections::HashSet;
 use std::string::String;
 use std::error::Error;
 use structs::contracts::ContractAbi;
@@ -19,6 +27,7 @@ mod db {
 mod utils {
     pub(crate) mod contracts;
     pub(crate) mod index;
+    pub(crate) mod meta;
     pub(crate) mod networks;
     pub(crate) mod reader;
     pub(crate) mod transactions;
@@ -46,9 +55,6 @@ mod helpers {
     pub(crate) mod erc721;
     pub(crate) mod url;
 }
-// mod helpers {
-//     pub(crate) mod erc721;
-// }
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -57,7 +63,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let config: structs::extract::Config = reader::utils_config(String::from("poap_nft"));
 
     let network_metadata: structs::networks::NetworkStruct =
-        utils::networks::utils_network_data(&config.source[0].networkId).unwrap();
+        utils::networks::utils_network_data(config.source[0].networkId).unwrap();
 
     let contract_result: (structs::contracts::ContractMetaData, ContractAbi) =
         utils::contracts::utils_contract_data(&config).await;
@@ -81,18 +87,16 @@ async fn main() -> Result<(), Box<dyn Error>> {
             &contract_abi,
         )
         .await;
-    }
-
-    let _ = transactions::get_txns(
-        &config,
-        &contract_abi,
-        &contract_instance,
-        contract_metadata,
-        &network_metadata,
-    )
-    .await;
-
-    // // let _ = get_events(contract_instance, 17630615).await;
+    } else if &config.mode == "LIVE_TXN" {
+        let _ = transactions::get_txns(
+            &config,
+            &contract_abi,
+            &contract_instance,
+            contract_metadata,
+            &network_metadata,
+        )
+        .await;
+    } 
 
     Ok(())
 }

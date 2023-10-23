@@ -2,28 +2,23 @@ slug: poap_nft
 name: POAP
 image: https://ik.imagekit.io/macha1/studio/POAP.svg?updatedAt=1691498511907
 description: Proof of Attendance protocol contract deployed on network Ethereum
-mode: transaction
+mode: HISTORY_TXN
 source:
   - kind: evm/contract
     networkId: 1
     from: 0x22c1f6050e56d2876009903609a2cc3fef83b415
-    fromHistorical: 0x4e90495F66FB04A5fBA401967aBD607E2ea0Ab46
+    fromHistorical: 0x22c1f6050e56d2876009903609a2cc3fef83b415
     readAbiFrom: 0x4e90495F66FB04A5fBA401967aBD607E2ea0Ab46
-    startBlock: 1
-    endBlock: 10000
+    startBlock: 18406969
+    endBlock: 18408219
     interestedEvents: []
     interestedMethods:
       [
         transferFrom,
-        mintEventToManyUsers,
-        safeTransferFrom,
-        burn,
-        setBaseURI,
-        mintToken,
-        mintUserToManyEvents,
+        safeTransferFrom
       ]
     handlersEvents: []
-    handlersMethods: [transferFrom]
+    handlersMethods: []
 features:
   - vectorize: true
     searchable: true

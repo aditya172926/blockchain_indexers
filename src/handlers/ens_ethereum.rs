@@ -1,7 +1,7 @@
 use web3::contract::ens::Ens;
 
-use crate::structs::index::{Meta, MethodParam};
-use crate::structs::meta::{self, MetaDataStruct, MetaIndexedStruct};
+use crate::structs::index::MethodParam;
+use crate::structs::meta::{self, Meta, MetaData};
 use crate::structs::transactions::TransactionIndexed;
 #[derive(Debug)]
 struct EnsMeta {
@@ -16,7 +16,7 @@ struct EnsMeta {
     ownerControlledFuses: String,
 }
 
-pub fn handler_ens(transaction_indexed: &TransactionIndexed) -> Option<MetaDataStruct> {
+pub fn handler_ens(transaction_indexed: &TransactionIndexed) -> Option<MetaData> {
     if transaction_indexed.method.name == "register" {
         let meta_raw: EnsMeta = EnsMeta {
             name: transaction_indexed.method.params[0].value.clone(),
@@ -35,16 +35,14 @@ pub fn handler_ens(transaction_indexed: &TransactionIndexed) -> Option<MetaDataS
         let mut image = String::from(
             "https://pbs.twimg.com/profile_images/1455381288756695041/acatxTm8_400x400.jpg",
         );
-        let meta_indexed: MetaIndexedStruct = MetaIndexedStruct {
+        let meta: Meta = Meta {
             id: Some(meta_raw.name.clone()),
             owner: Some(meta_raw.owner),
             title: Some(format!("{}.eth", meta_raw.name.clone())),
             image: Some(image),
         };
-        println!("\n\n\nMeta indexed {:?} \n\n\n", meta_indexed);
-        let meta_data: MetaDataStruct = MetaDataStruct {
-            modified: meta_indexed,
-        };
+        // println!("\n\n\nMeta indexed {:?} \n\n\n", meta);
+        let meta_data: MetaData = MetaData { modified: meta };
         return Some(meta_data);
     } else {
         return None;

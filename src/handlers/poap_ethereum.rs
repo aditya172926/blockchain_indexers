@@ -1,7 +1,5 @@
-use web3::contract::ens::Ens;
-
-use crate::structs::index::{Meta, MethodParam};
-use crate::structs::meta::{self, MetaDataStruct, MetaIndexedStruct};
+use crate::structs::index::MethodParam;
+use crate::structs::meta::{self, Meta, MetaData};
 use crate::structs::transactions::TransactionIndexed;
 #[derive(Debug)]
 struct PoapMeta {
@@ -10,9 +8,7 @@ struct PoapMeta {
     tokenId: String,
 }
 
-pub async fn handler_poap_ethereum(
-    transaction_indexed: &TransactionIndexed,
-) -> Option<MetaDataStruct> {
+pub async fn handler_poap_ethereum(transaction_indexed: &TransactionIndexed) -> Option<MetaData> {
     if transaction_indexed.method.name == "transferFrom"
         || transaction_indexed.method.name == "safeTransferFrom"
     {
@@ -21,20 +17,17 @@ pub async fn handler_poap_ethereum(
             to: transaction_indexed.method.params[1].value.clone(),
             tokenId: transaction_indexed.method.params[2].value.clone(),
         };
-        let mut image = String::from("");
+        let mut image = String::new();
 
-        let meta_indexed: MetaIndexedStruct = MetaIndexedStruct {
+        let meta: Meta = Meta {
             id: Some(meta_raw.tokenId.clone()),
             owner: Some(meta_raw.to.clone()),
             title: Some(meta_raw.tokenId.clone()),
             image: Some(image),
         };
-        println!("\n\n\nMeta indexed {:?} \n\n\n", meta_indexed);
-        let meta_data: MetaDataStruct = MetaDataStruct {
-            modified: meta_indexed,
-        };
-        return Some(meta_data);
+        let meta_data: MetaData = MetaData { modified: meta };
+        Some(meta_data)
     } else {
-        return None;
+        None
     }
 }

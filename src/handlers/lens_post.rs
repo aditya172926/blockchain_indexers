@@ -3,8 +3,8 @@ use std::fmt::format;
 use web3::contract::ens::Ens;
 
 use crate::helpers::url::helper_url_data;
-use crate::structs::index::{Meta, MethodParam};
-use crate::structs::meta::{self, MetaDataStruct, MetaIndexedStruct};
+use crate::structs::index::MethodParam;
+use crate::structs::meta::{self, Meta, MetaData};
 use crate::structs::transactions::TransactionIndexed;
 #[derive(Debug)]
 struct LensPostMeta {
@@ -15,7 +15,7 @@ struct LensPostMeta {
     referenceModule: String,
 }
 
-pub async fn handler_lens_post(transaction_indexed: &TransactionIndexed) -> Option<MetaDataStruct> {
+pub async fn handler_lens_post(transaction_indexed: &TransactionIndexed) -> Option<MetaData> {
     if transaction_indexed.method.name == "post" {
         let meta_raw: LensPostMeta = LensPostMeta {
             profileId: transaction_indexed.method.params[0].value.clone(),
@@ -59,16 +59,14 @@ pub async fn handler_lens_post(transaction_indexed: &TransactionIndexed) -> Opti
             }
         }
         // println!("\n\n\n {:?} \n\n\n", re.unwrap());
-        let meta_indexed: MetaIndexedStruct = MetaIndexedStruct {
+        let meta: Meta = Meta {
             id: Some(meta_id.clone()),
             owner: Some(format!("{}", transaction_indexed.transaction.from)),
             title: Some(meta_title.clone()),
             image: Some(meta_image.clone()),
         };
-        println!("\n\n\nMeta indexed {:?} \n\n\n", meta_indexed);
-        let meta_data: MetaDataStruct = MetaDataStruct {
-            modified: meta_indexed,
-        };
+        // println!("\n\n\nMeta indexed {:?} \n\n\n", meta_indexed);
+        let meta_data: MetaData = MetaData { modified: meta };
         return Some(meta_data);
     } else {
         return None;

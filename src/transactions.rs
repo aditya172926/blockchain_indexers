@@ -19,10 +19,11 @@ use crate::handlers::lens_profile_polygon::handler_lens_profile;
 use crate::handlers::poap_ethereum::handler_poap_ethereum;
 use crate::structs::contracts::{ContractAbi, ContractMetaData};
 use crate::structs::extract::Config;
-use crate::structs::meta::{self, MetaStruct, MetaSubStruct};
+use crate::structs::meta::{self, MetaIndexed, MetaSubStruct};
 use crate::structs::networks::NetworkStruct;
-use crate::structs::transactions::TransactionMethod;
+use crate::structs::transactions::{TransactionIndexed, TransactionMethod};
 use crate::utils::index::utils_interesting_method;
+use crate::utils::meta::utils_meta_indexed;
 use crate::utils::transactions::utils_transaction_indexed;
 use crate::{structs, utils};
 use std::process::exit;
@@ -51,37 +52,11 @@ async fn load_txns(
             &decoded_txn_data.0.name,
         )
     {
-        let transaction_indexed: structs::transactions::TransactionIndexed =
-            utils_transaction_indexed(
-                &decoded_txn_data,
-                &contract_metadata.contract_address,
-                network_metadata.network_id,
-            )
-            .await;
+        let transaction_indexed: TransactionIndexed =
+            utils_transaction_indexed(&decoded_txn_data, &contract_metadata).await;
 
-        let meta_block = match handler_lens_post(&transaction_indexed).await {
-            Some(object) => {
-                let meta_sub_struct: MetaSubStruct = MetaSubStruct {
-                    data: object.clone(),
-                };
-                let meta: MetaStruct = MetaStruct {
-                    metaOwner: object.modified.owner.unwrap(),
-                    metaId: object.modified.id.unwrap(),
-                    slug: config.slug,
-                    meta: meta_sub_struct,
-                    createdAt: String::from(""),
-                    updatedAt: String::from(""),
-                    sources: vec![transaction_indexed],
-                };
-                meta
-            }
-            None => {
-                println!("handler returned null");
-                exit(1)
-            }
-        };
-        println!("\n\n\n\n\n meta block {:?} \n\n\n\n\n", meta_block);
-
+        let meta_indexed: MetaIndexed = utils_meta_indexed(&config, transaction_indexed).await;
+        info!("meta_indexed -> {:?}", meta_indexed);
         // abstractor::create_meta(&contract_slug,transaction_indexed).await;
 
         // let _ = db::db_transaction_store(
@@ -105,8 +80,6 @@ pub async fn get_txns(
     contract_metadata: ContractMetaData,
     network_metadata: &NetworkStruct,
 ) {
-    // eth block number:17691422
-    //polygon block number:45033964
     let event_stream = contract_instance
         .all_events()
         .from_block(ethcontract::BlockNumber::from(
@@ -122,10 +95,8 @@ pub async fn get_txns(
             Some(Ok(log)) => {
                 let txn_hash = log.meta.as_ref().unwrap().transaction_hash.to_fixed_bytes();
                 let transaction_hash: H256 = ethers::core::types::TxHash::from(txn_hash);
-                println!(
-                    "//////// TransactionHash /////// \n txn = {:?}",
-                    transaction_hash
-                );
+                info!("\nTransactionHash -> {:?}\n", transaction_hash);
+
                 if transaction_hash != prev_txn_hash {
                     load_txns(
                         config.to_owned(),
@@ -139,10 +110,11 @@ pub async fn get_txns(
                 }
             }
             Some(Err(e)) => {
-                println!("Error: {}", e);
+                error!("Error: {:?}", e);
+                continue;
             }
             None => {
-                println!("Stream ended, reconnecting...");
+                warn!("Stream ended, reconnecting...");
                 sleep(Duration::from_secs(2)).await;
 
                 event_stream = Box::pin(
@@ -166,10 +138,15 @@ pub async fn get_history(
 ) -> eyre::Result<()> {
     let _provider = Provider::try_from(network_metadata.network_rpc_url.clone())?;
 
+    let chain_type = match network_metadata.network_id {
+        1 => Chain::Mainnet,
+        137 => Chain::Polygon,
+        u64::MIN..=0_u64 | 2_u64..=136_u64 | 138_u64..=u64::MAX => Chain::Mainnet,
+    };
     // etherscan client builder
     let client = Client::builder()
         .with_api_key(network_metadata.network_api_key.clone())
-        .chain(Chain::Mainnet)
+        .chain(chain_type)
         .unwrap()
         .build()
         .unwrap();
@@ -199,13 +176,12 @@ pub async fn get_history(
         )
         .await
         .unwrap();
-    // println!("{:?}",&txns);
 
     //Creating loop to iterate over all transactions
     for txn in txns {
         let txn_hash = txn.hash.value().unwrap().to_fixed_bytes();
         let transaction_hash: H256 = ethers::core::types::TxHash::from(txn_hash);
-        info!("\ntrnasaction hash {:?}\n", transaction_hash);
+        info!("\ntransaction hash {:?}\n", transaction_hash);
 
         if transaction_hash != prev_txn_hash {
             load_txns(

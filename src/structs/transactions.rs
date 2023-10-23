@@ -16,7 +16,7 @@ pub struct Transaction {
     pub block_hash: Option<H256>,
     pub block_number: u64,
     pub contract_address: String,
-    pub chain_id: String,
+    pub chain_id: u64,
     pub gas_used: Option<U256>,
     pub gas_price: Option<U256>,
     pub from: H160,

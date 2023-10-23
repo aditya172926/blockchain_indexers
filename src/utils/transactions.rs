@@ -1,4 +1,4 @@
-use crate::structs::contracts::ContractAbi;
+use crate::structs::contracts::{ContractAbi, ContractMetaData};
 use crate::structs::index::{MethodParam, MethodParamDataType};
 use crate::structs::transactions::{TransactionIndexed, TransactionMethod};
 use chrono::Utc;
@@ -7,16 +7,15 @@ use ethers::{
     providers::{Http, Middleware, Provider},
     types::{Transaction, TransactionReceipt, TxHash},
 };
-use mongodb::bson::{to_bson, Document};
 use log::{debug, error, info, warn};
+use mongodb::bson::{to_bson, Document};
 
 pub async fn utils_transaction_indexed(
     decoded_txn_data: &(
         TransactionMethod,                 // transaction hash
         ethers::types::TransactionReceipt, // transaction receipt
     ),
-    contract_address: &str,
-    chain_id: String,
+    contract_metadata: &ContractMetaData
 ) -> TransactionIndexed {
     info!("\ninside utils_trnasaction_indexed\n");
     let block_number_option = decoded_txn_data.1.block_number;
@@ -28,25 +27,25 @@ pub async fn utils_transaction_indexed(
     let ts: String = now.timestamp().to_string();
 
     let transaction_struct: crate::structs::transactions::Transaction =
-        crate::structs::transactions::Transaction { 
+        crate::structs::transactions::Transaction {
             block_hash: decoded_txn_data.1.block_hash,
             block_number: block_number,
-            contract_address: contract_address.clone().to_owned(),
-            chain_id: chain_id.to_string(),
+            contract_address: contract_metadata.contract_address.clone().to_owned(),
+            chain_id: contract_metadata.chain_id,
             gas_used: decoded_txn_data.1.gas_used,
             gas_price: decoded_txn_data.1.effective_gas_price,
             from: decoded_txn_data.1.from,
             to: decoded_txn_data.1.to,
             txn_hash: decoded_txn_data.1.transaction_hash,
         };
-    
+
     let transaction_indexed: TransactionIndexed = TransactionIndexed {
         timestamp: ts,
         transaction: transaction_struct,
         method: decoded_txn_data.0.clone(),
     };
-    println!("transaction Indexed = {:?} ", transaction_indexed);
-    return transaction_indexed;
+    info!("\ntransaction Indexed = {:?} \n", transaction_indexed);
+    transaction_indexed
 }
 
 pub async fn utils_transaction_data<'a>(
@@ -62,7 +61,7 @@ pub async fn utils_transaction_data<'a>(
         .get_transaction(transaction_hash)
         .await
         .expect("Failed to get the transaction");
-    println!("\n\ntransaction {:?}\n\n", transaction);
+    info!("\n\ntransaction {:?}\n\n", transaction);
     let transaction_receipt_result = provider.get_transaction_receipt(transaction_hash).await;
     // .expect("Couldn't get the transaction receipt");
 
@@ -95,12 +94,7 @@ pub async fn utils_transaction_data<'a>(
     //     }
     // }
 
-    let transaction_method: TransactionMethod =
-        utils_transaction_method(abi, transaction).await;
-    println!(
-        "trnsaction Method = {:?}, \n trxn receipt = {:?}",
-        transaction_method, transaction_receipt
-    );
+    let transaction_method: TransactionMethod = utils_transaction_method(abi, transaction).await;
     return (transaction_method, transaction_receipt);
 }
 
