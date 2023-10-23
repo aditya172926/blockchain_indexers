@@ -2,7 +2,6 @@ slug: lens_profile_polygon
 name: Lens Profiles
 image: https://gateway.lighthouse.storage/ipfs/QmVxgZjiRCDg7x9UQqcNNHVx9HqfxwpQhxw8EnU7ccaMrM
 description: Lens contract deployed on network Polygon
-mode: HISTORY_TXN
 source:
   - kind: evm/contract
     networkId: 137

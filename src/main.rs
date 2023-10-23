@@ -21,6 +21,8 @@ use utils::reader;
 use web3::transports::Http;
 use web3::Web3;
 
+use crate::structs::extract::Config;
+
 // use crate::handlers::ens_ethereum::handler_ens;
 
 // modules
@@ -64,21 +66,21 @@ mod helpers {
 async fn main() -> Result<(), Box<dyn Error>> {
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
 
-    let file: String =
-        fs::read_to_string(r"config/index.json").expect("Error in reading the index.json file");
-    let file_data = serde_json::from_str::<serde_json::Value>(&file).unwrap();
-    info!("after parsing index json {} ", file_data["env"].to_string());
+    let f = std::fs::File::open(String::from("config/index.yml")).expect("Could not open file.");
+    let config: Config = serde_yaml::from_reader(f).expect("Could not read values.");
 
-    let db = utils_db(file_data["env"].to_string()).await;
+    info!("after parsing index json {} ", config.env.to_string());
 
-    let config: structs::extract::Config =
-        reader::utils_config(String::from(file_data["slug"].to_string()));
+    let db = utils_db(config.env.to_string()).await;
+
+    let schema: structs::extract::Schema =
+        reader::utils_schema(String::from(config.slug.to_string()));
 
     let network_metadata: structs::networks::NetworkStruct =
-        utils::networks::utils_network_data(config.source[0].networkId).unwrap();
+        utils::networks::utils_network_data(schema.source[0].networkId).unwrap();
 
     let contract_result: (structs::contracts::ContractMetaData, ContractAbi) =
-        utils::contracts::utils_contract_data(&config).await;
+        utils::contracts::utils_contract_data(&schema).await;
 
     let contract_metadata: structs::contracts::ContractMetaData = contract_result.0;
     let contract_abi: structs::contracts::ContractAbi = contract_result.1;
@@ -94,7 +96,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     if &config.mode == "HISTORY_TXN" {
         let _ = transactions::get_history(
             &db,
-            &config,
+            &schema,
             &contract_metadata,
             &network_metadata,
             &contract_abi,
@@ -103,7 +105,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     } else if &config.mode == "LIVE_TXN" {
         let _ = transactions::get_txns(
             &db,
-            &config,
+            &schema,
             &contract_abi,
             &contract_instance,
             contract_metadata,
