@@ -30,12 +30,35 @@ pub async fn utils_meta_indexed(
     let fname = &schema.source[0].handlersMethods;
     print!("the fname: {}", fname);
 
+<<<<<<< HEAD
     match fname.as_ref() {
         "handler_ens" => match handler_ens(&transaction_indexed).await {
             Some(object) => Some(meta_indexed),
             None => {
                 warn!("handler returned null");
                 None
+=======
+    let mut meta_indexed: MetaIndexed=MetaIndexed::default();
+    match fname.as_ref(){
+        "handler_ens"=>{
+            match handler_ens(&transaction_indexed).await {
+                Some(object) => {
+                     meta_indexed = MetaIndexed {
+                        owner: object.clone().modified.unwrap().owner.unwrap(),
+                        id: object.clone().modified.unwrap().id.unwrap(),
+                        slug: schema.slug.clone(),
+                        data: object.clone(),
+                        createdAt: transaction_indexed.clone().timestamp,
+                        updatedAt: transaction_indexed.clone().timestamp,
+                        sources: vec![transaction_indexed],
+                    };
+                    Some(meta_indexed)
+                }
+                None => {
+                    warn!("handler returned null");
+                    None
+                }
+>>>>>>> 43853358efb96fc831a9e9183d64a79e73111a9d
             }
         },
         "handler_lens_post" => match handler_lens_post(&transaction_indexed).await {

@@ -34,7 +34,7 @@ pub struct MetaData {
     pub modified: Option<Meta>,
 }
 
-#[derive(Debug, Serialize, Default)]
+#[derive(Debug, Serialize, Default, Clone)]
 pub struct MetaIndexed {
     pub owner: H160,
     pub id: String,
