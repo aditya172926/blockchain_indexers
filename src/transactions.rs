@@ -37,6 +37,7 @@ async fn load_txns(
     network_metadata: NetworkStruct,
     contract_metadata: ContractMetaData,
 ) -> Option<MetaIndexed> {
+
     let mut decoded_txn_data: (
         TransactionMethod,
         ethers::types::TransactionReceipt, // transaction receipt
@@ -57,6 +58,7 @@ async fn load_txns(
             utils_transaction_indexed(&decoded_txn_data, &contract_metadata).await;
 
         meta_indexed_option = utils_meta_indexed(&schema, transaction_indexed).await;
+        
     }
     meta_indexed_option
 }
@@ -140,13 +142,11 @@ pub async fn get_history(
     network_metadata: &NetworkStruct,
     contract_abi: &ContractAbi,
 ) -> eyre::Result<()> {
+
     let _provider = Provider::try_from(network_metadata.network_rpc_url.clone())?;
 
-    let chain_type = match network_metadata.network_id {
-        1 => Chain::Mainnet,
-        137 => Chain::Polygon,
-        u64::MIN..=0_u64 | 2_u64..=136_u64 | 138_u64..=u64::MAX => Chain::Mainnet,
-    };
+    let chain_type=Chain::from_str(&network_metadata.network_name.to_string().trim()).unwrap();
+
     // etherscan client builder
     let client = Client::builder()
         .with_api_key(network_metadata.network_api_key.clone())
@@ -172,7 +172,7 @@ pub async fn get_history(
 
     let txns = client
         .get_transactions(
-            &contract_metadata.contract_address.parse().unwrap(),
+            &contract_metadata.contract_address_historical.parse().unwrap(),
             Some(params),
         )
         .await
@@ -183,6 +183,7 @@ pub async fn get_history(
         let txn_hash = txn.hash.value().unwrap().to_fixed_bytes();
         let transaction_hash: H256 = ethers::core::types::TxHash::from(txn_hash);
         info!("\ntransaction hash {:?}\n", transaction_hash);
+        // exit(1);
 
         if transaction_hash != prev_txn_hash {
             match load_txns(

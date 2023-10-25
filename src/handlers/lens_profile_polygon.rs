@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use ethers::types::H160;
 use log::{debug, error, info, warn};
 use crate::structs::meta::{self, Meta, MetaData};
@@ -23,6 +25,13 @@ pub async fn handler_lens_profile(transaction_indexed: &TransactionIndexed) -> O
             followModule: params_list[3].to_string(),
             followModuleInitData: params_list[4].to_string(),
         };
+        let raw_data=HashMap::from([
+            (String::from("to"),meta_raw.to.to_string()),
+            ((String::from("handle"),meta_raw.handle.to_owned())),
+            (String::from("imageURI"),meta_raw.imageURI.to_owned()),
+            (String::from("followModule"),meta_raw.followModule),
+            (String::from("followModuleInitData"),meta_raw.followModuleInitData)
+        ]);
 
         let mut image;
         if meta_raw.imageURI != "" {
@@ -36,7 +45,7 @@ pub async fn handler_lens_profile(transaction_indexed: &TransactionIndexed) -> O
             title: Some(format!("{}.lens", meta_raw.handle.clone())),
             image: Some(image),
         };
-        let meta_data: MetaData = MetaData { modified: meta };
+        let meta_data: MetaData = MetaData { modified: Some(meta),raw:raw_data };
         return Some(meta_data);
     } else {
         return None;

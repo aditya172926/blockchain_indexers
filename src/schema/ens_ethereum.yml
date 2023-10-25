@@ -13,7 +13,7 @@ source:
     interestedEvents: []
     interestedMethods: [register]
     handlersEvents: [__ARRAY_OF_HANDLER_EVENTS_NAME__]
-    handlersMethods: [__ARRAY_OF_HANDLER_METHODS_NAME__]
+    handlersMethods: handler_ens
 features:
   - vectorize: true
     searchable: true

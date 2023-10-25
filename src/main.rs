@@ -76,6 +76,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let schema: structs::extract::Schema =
         reader::utils_schema(String::from(config.slug.to_string()));
 
+
+
     let network_metadata: structs::networks::NetworkStruct =
         utils::networks::utils_network_data(schema.source[0].networkId).unwrap();
 
