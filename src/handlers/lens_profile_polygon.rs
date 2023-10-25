@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 
-use ethers::types::H160;
-use log::{debug, error, info, warn};
 use crate::structs::meta::{self, Meta, MetaData};
 use crate::structs::transactions::TransactionIndexed;
+use ethers::types::H160;
+use log::{debug, error, info, warn};
 #[derive(Debug)]
 struct LensMeta {
     to: H160,
@@ -16,7 +16,10 @@ struct LensMeta {
 
 pub async fn handler_lens_profile(transaction_indexed: &TransactionIndexed) -> Option<MetaData> {
     if transaction_indexed.method.name == "proxyCreateProfile" {
-        let params_list = transaction_indexed.method.params[0].clone().into_tuple().unwrap();
+        let params_list = transaction_indexed.method.params[0]
+            .clone()
+            .into_tuple()
+            .unwrap();
         info!("params_list -> {:?}", params_list);
         let meta_raw: LensMeta = LensMeta {
             to: params_list[0].clone().into_address().unwrap(),
@@ -25,12 +28,15 @@ pub async fn handler_lens_profile(transaction_indexed: &TransactionIndexed) -> O
             followModule: params_list[3].to_string(),
             followModuleInitData: params_list[4].to_string(),
         };
-        let raw_data=HashMap::from([
-            (String::from("to"),meta_raw.to.to_string()),
-            ((String::from("handle"),meta_raw.handle.to_owned())),
-            (String::from("imageURI"),meta_raw.imageURI.to_owned()),
-            (String::from("followModule"),meta_raw.followModule),
-            (String::from("followModuleInitData"),meta_raw.followModuleInitData)
+        let raw_data = HashMap::from([
+            (String::from("to"), meta_raw.to.to_string()),
+            ((String::from("handle"), meta_raw.handle.to_owned())),
+            (String::from("imageURI"), meta_raw.imageURI.to_owned()),
+            (String::from("followModule"), meta_raw.followModule),
+            (
+                String::from("followModuleInitData"),
+                meta_raw.followModuleInitData,
+            ),
         ]);
 
         let mut image;
@@ -44,8 +50,12 @@ pub async fn handler_lens_profile(transaction_indexed: &TransactionIndexed) -> O
             owner: Some(meta_raw.to),
             title: Some(format!("{}.lens", meta_raw.handle.clone())),
             image: Some(image),
+            content: None,
         };
-        let meta_data: MetaData = MetaData { modified: Some(meta),raw:raw_data };
+        let meta_data: MetaData = MetaData {
+            modified: Some(meta),
+            raw: raw_data,
+        };
         return Some(meta_data);
     } else {
         return None;

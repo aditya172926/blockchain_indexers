@@ -1,11 +1,11 @@
 use std::collections::HashMap;
 
 use ethers::types::H160;
-use serde::{Serialize,Deserialize};
+use serde::{Deserialize, Serialize};
 
 use super::transactions::TransactionIndexed;
 
-#[derive(Serialize, Clone, Debug,Deserialize,Default)]
+#[derive(Serialize, Clone, Debug, Deserialize, Default)]
 pub struct Meta {
     #[serde(rename = "id", skip_serializing_if = "Option::is_none")]
     pub id: Option<String>,
@@ -15,8 +15,8 @@ pub struct Meta {
     pub title: Option<String>,
     #[serde(rename = "image", skip_serializing_if = "Option::is_none")]
     pub image: Option<String>,
-    // #[serde(rename = "content", skip_serializing_if = "Option::is_none")]
-    // pub content: Option<String>,
+    #[serde(rename = "content", skip_serializing_if = "Option::is_none")]
+    pub content: Option<String>,
     // #[serde(rename = "context", skip_serializing_if = "Option::is_none")]
     // pub context: Option<String>,
     // #[serde(rename = "ipfs", skip_serializing_if = "Option::is_none")]
@@ -27,14 +27,14 @@ pub struct Meta {
     // pub updated_at: Option<String>,
 }
 
-#[derive(Serialize, Clone, Debug,Default)]
+#[derive(Serialize, Clone, Debug, Default)]
 pub struct MetaData {
     // #[serde(rename = "raw", skip_serializing_if = "Option::is_none")]
-    pub raw: HashMap<String,String>,
+    pub raw: HashMap<String, String>,
     pub modified: Option<Meta>,
 }
 
-#[derive(Debug, Serialize,Default)]
+#[derive(Debug, Serialize, Default)]
 pub struct MetaIndexed {
     pub owner: H160,
     pub id: String,
@@ -42,5 +42,15 @@ pub struct MetaIndexed {
     pub data: MetaData,
     pub createdAt: String,
     pub updatedAt: String,
+}
+
+pub struct MetaResult {
+    pub id: String,
+    pub owner: String,
+    pub insert: MetaIndexed,
+    pub update: Option<serde_json::Value>,
     pub sources: Vec<TransactionIndexed>,
 }
+
+#[derive(Debug, Serialize, Default)]
+pub struct MetaIndexed {}

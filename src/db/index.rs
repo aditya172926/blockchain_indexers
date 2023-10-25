@@ -36,7 +36,7 @@ where
 
 pub async fn db_meta_store(
     db: &Db,
-    meta: Vec<MetaIndexed>,
+    result: Vec<MetarResult>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let client_options: ClientOptions = ClientOptions::parse(db.client.clone()).await?;
     let client: Client = Client::with_options(client_options)?;
