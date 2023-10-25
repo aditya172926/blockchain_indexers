@@ -28,7 +28,7 @@ pub async fn utils_meta_indexed(
                         slug: schema.slug.clone(),
                         data: object.clone(),
                         createdAt: transaction_indexed.clone().timestamp,
-                        updatedAt: String::from(""),
+                        updatedAt: transaction_indexed.clone().timestamp,
                         sources: vec![transaction_indexed],
                     };
                     Some(meta_indexed)
