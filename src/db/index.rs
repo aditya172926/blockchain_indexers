@@ -44,10 +44,11 @@ pub async fn db_meta_store(
     let collection: mongodb::Collection<Document> = db.collection::<Document>("meta_temp");
 
     for meta_item in meta {
-        if let Some(modified) = &meta_item.data.modified {
+        if let Some(source) = meta_item.sources.last() {
+            // println!("\n\n\n {} \n\n\n", )
             let filter = doc! {
-                "document.slug": &meta_item.slug,
-                "document.data.modified.title": &modified.title,
+                "document.sources.transaction.txn_hash": format!("0x{:x}", &source.transaction.txn_hash),
+                "document.sources.transaction.chain_id": Bson::Int64(source.transaction.chain_id as i64),
             };
 
             // Check if a document with the same slug and title already exists
