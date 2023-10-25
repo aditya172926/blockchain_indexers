@@ -1,3 +1,5 @@
+use std::process::exit;
+
 use crate::structs::contracts::{ContractAbi, ContractMetaData};
 use crate::structs::index::{MethodParam, MethodParamDataType};
 use crate::structs::transactions::{TransactionIndexed, TransactionMethod};
@@ -61,9 +63,10 @@ pub async fn utils_transaction_decode<'a>(
         .get_transaction(transaction_hash)
         .await
         .expect("Failed to get the transaction");
-    debug!("\n\ntransaction {:?}\n\n", transaction);
+    // exit(1);
     let transaction_receipt_result = provider.get_transaction_receipt(transaction_hash).await;
-
+    println!("\n\ntransaction {:?}\n\n", transaction_receipt_result);
+    
     let transaction_receipt = match transaction_receipt_result {
         Ok(object) => match object {
             Some(txn_receipt) => txn_receipt,

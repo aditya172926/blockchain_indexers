@@ -1,9 +1,11 @@
+use std::collections::HashMap;
+
 use ethers::types::H160;
-use serde::Serialize;
+use serde::{Serialize,Deserialize};
 
 use super::transactions::TransactionIndexed;
 
-#[derive(Serialize, Clone, Debug)]
+#[derive(Serialize, Clone, Debug,Deserialize,Default)]
 pub struct Meta {
     #[serde(rename = "id", skip_serializing_if = "Option::is_none")]
     pub id: Option<String>,
@@ -25,14 +27,14 @@ pub struct Meta {
     // pub updated_at: Option<String>,
 }
 
-#[derive(Serialize, Clone, Debug)]
+#[derive(Serialize, Clone, Debug,Default)]
 pub struct MetaData {
     // #[serde(rename = "raw", skip_serializing_if = "Option::is_none")]
-    // raw:Option<>,
-    pub modified: Meta,
+    pub raw: HashMap<String,String>,
+    pub modified: Option<Meta>,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize,Default)]
 pub struct MetaIndexed {
     pub owner: H160,
     pub id: String,

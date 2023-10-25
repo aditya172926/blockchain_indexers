@@ -13,7 +13,7 @@ source:
     interestedEvents: []
     interestedMethods: [post, createProfile]
     handlersEvents: []
-    handlersMethods: []
+    handlersMethods: handler_lens_post
 features:
   - vectorize: true
     searchable: true

@@ -13,7 +13,7 @@ source:
     interestedEvents: []
     interestedMethods: [proxyCreateProfile]
     handlersEvents: []
-    handlersMethods: []
+    handlersMethods: handler_lens_profile
 features:
   - vectorize: true
     searchable: true

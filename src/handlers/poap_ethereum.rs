@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::structs::meta::{self, Meta, MetaData};
 use crate::structs::transactions::TransactionIndexed;
 use ethers::types::{H160, U128, U256};
@@ -20,6 +22,12 @@ pub async fn handler_poap_ethereum(transaction_indexed: &TransactionIndexed) -> 
             tokenId: transaction_indexed.method.params[2].clone().into_uint().unwrap().to_string(),
         };
 
+        let raw_data=HashMap::from([
+            (String::from("profileId"),meta_raw.from.to_string()),
+            ((String::from("contentURI"),meta_raw.to.to_string())),
+            (String::from("collectModule"),meta_raw.tokenId.to_string()),
+        ]);
+
         info!("meta_raw -> {:?}\n", meta_raw);
 
         let mut image = String::new();
@@ -30,7 +38,7 @@ pub async fn handler_poap_ethereum(transaction_indexed: &TransactionIndexed) -> 
             title: Some(meta_raw.tokenId),
             image: Some(image),
         };
-        let meta_data: MetaData = MetaData { modified: meta };
+        let meta_data: MetaData = MetaData { modified: Some(meta),raw:raw_data };
         Some(meta_data)
     } else {
         None

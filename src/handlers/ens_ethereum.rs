@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use ethers::types::H160;
 use web3::contract::ens::Ens;
 
@@ -16,7 +17,6 @@ struct EnsMeta {
     reverseRecord: String,
     ownerControlledFuses: String,
 }
-
 pub async fn handler_ens(transaction_indexed: &TransactionIndexed) -> Option<MetaData> {
     if transaction_indexed.method.name == "register" {
         let meta_raw: EnsMeta = EnsMeta {
@@ -36,17 +36,25 @@ pub async fn handler_ens(transaction_indexed: &TransactionIndexed) -> Option<Met
             reverseRecord: transaction_indexed.method.params[6].to_string(),
             ownerControlledFuses: transaction_indexed.method.params[7].to_string(),
         };
+        let mut raw_data = HashMap::from([
+            (String::from("owner"),meta_raw.owner.clone().to_string()),
+            (String::from("name"),meta_raw.name),
+            (String::from("duration"),meta_raw.duration)
+        ]);
+
         let mut image = String::from(
             "https://pbs.twimg.com/profile_images/1455381288756695041/acatxTm8_400x400.jpg",
         );
         let meta: Meta = Meta {
-            id: Some(meta_raw.name.clone()),
+            id: Some(transaction_indexed.method.params[0].to_string()),
             owner: Some(meta_raw.owner),
-            title: Some(format!("{}.eth", meta_raw.name.clone())),
+            title: Some(format!("{}.eth", raw_data.get("owner").unwrap())),
             image: Some(image),
         };
+        
+        
         // println!("\n\n\nMeta indexed {:?} \n\n\n", meta);
-        let meta_data: MetaData = MetaData { modified: meta };
+        let meta_data: MetaData = MetaData { modified: Some(meta),raw:raw_data  };
         return Some(meta_data);
     } else {
         return None;
