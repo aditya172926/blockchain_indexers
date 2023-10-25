@@ -41,7 +41,7 @@ pub async fn db_meta_store(
     let client_options: ClientOptions = ClientOptions::parse(db.client.clone()).await?;
     let client: Client = Client::with_options(client_options)?;
     let db: mongodb::Database = client.database(&db.database);
-    let collection: mongodb::Collection<Document> = db.collection::<Document>("metas");
+    let collection: mongodb::Collection<Document> = db.collection::<Document>("meta_temp");
 
     let mut documents = Vec::new();
     for meta_item in meta {
