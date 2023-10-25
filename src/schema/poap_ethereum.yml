@@ -13,7 +13,7 @@ source:
     interestedEvents: []
     interestedMethods: [transferFrom, safeTransferFrom]
     handlersEvents: []
-    handlersMethods: []
+    handlersMethods: handler_poap_ethereum
 features:
   - vectorize: true
     searchable: true
