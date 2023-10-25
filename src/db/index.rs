@@ -43,14 +43,26 @@ pub async fn db_meta_store(
     let db: mongodb::Database = client.database(&db.database);
     let collection: mongodb::Collection<Document> = db.collection::<Document>("meta_temp");
 
-    let mut documents = Vec::new();
     for meta_item in meta {
-        let doc_bson: Bson = to_bson(&meta_item).unwrap();
-        let doc = doc! {"document": doc_bson};
-        documents.push(doc);
+        if let Some(modified) = &meta_item.data.modified {
+            let filter = doc! {
+                "document.slug": &meta_item.slug,
+                "document.data.modified.title": &modified.title,
+            };
+
+            // Check if a document with the same slug and title already exists
+            if collection.find_one(filter, None).await?.is_none() {
+                let doc_bson: Bson = to_bson(&meta_item).unwrap();
+                let doc = doc! {"document": doc_bson};
+
+                // Insert the document if it doesn't exist
+                collection.insert_one(doc, None).await?;
+                info!("Inserted meta doc: {:?}", meta_item);
+            } else {
+                info!("Meta document already exists in the database");
+            }
+        }
     }
-    collection.insert_many(documents, None).await?;
-    info!("Inserted meta docs");
 
     Ok(())
 }
