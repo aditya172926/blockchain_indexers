@@ -2,7 +2,7 @@ use log::{debug, error, info, warn};
 use std::process::exit;
 
 use crate::{
-    handlers::{ens_ethereum::handler_ens, lens_post::handler_lens_post},
+    handlers::{ens_ethereum::handler_ens, lens_post::handler_lens_post, lens_profile_polygon::handler_lens_profile},
     structs::{extract::Schema, meta::MetaIndexed, transactions::TransactionIndexed},
 };
 
@@ -10,7 +10,7 @@ pub async fn utils_meta_indexed(
     schema: &Schema,
     transaction_indexed: TransactionIndexed,
 ) -> Option<MetaIndexed> {
-    let meta_indexed: Option<MetaIndexed> = match handler_lens_post(&transaction_indexed).await {
+    let meta_indexed: Option<MetaIndexed> = match handler_lens_profile(&transaction_indexed).await {
         Some(object) => {
             let meta_indexed: MetaIndexed = MetaIndexed {
                 owner: object.modified.owner.clone().unwrap(),

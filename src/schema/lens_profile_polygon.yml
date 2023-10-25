@@ -5,11 +5,11 @@ description: Lens contract deployed on network Polygon
 source:
   - kind: evm/contract
     networkId: 137
-    from: 0xDb46d1Dc155634FbC732f92E853b10B288AD5a1d
+    from: 0x1eeC6ecCaA4625da3Fa6Cd6339DBcc2418710E8a
     fromHistorical: 0x1eeC6ecCaA4625da3Fa6Cd6339DBcc2418710E8a
     readAbiFrom: 0x1eeC6ecCaA4625da3Fa6Cd6339DBcc2418710E8a
-    startBlock: 49043769
-    endBlock: 49048535
+    startBlock: 49050800
+    endBlock: 49060151
     interestedEvents: []
     interestedMethods: [proxyCreateProfile]
     handlersEvents: []
