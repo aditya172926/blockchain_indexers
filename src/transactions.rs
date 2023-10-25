@@ -37,7 +37,6 @@ async fn load_txns(
     network_metadata: NetworkStruct,
     contract_metadata: ContractMetaData,
 ) -> Option<MetaIndexed> {
-
     let mut decoded_txn_data: (
         TransactionMethod,
         ethers::types::TransactionReceipt, // transaction receipt
@@ -58,7 +57,6 @@ async fn load_txns(
             utils_transaction_indexed(&decoded_txn_data, &contract_metadata).await;
 
         meta_indexed_option = utils_meta_indexed(&schema, transaction_indexed).await;
-        
     }
     meta_indexed_option
 }
@@ -82,6 +80,7 @@ pub async fn get_txns(
         H256::from_str("0x0000000000000000000000000000000000000000000000000000000000000000")
             .unwrap();
     loop {
+        let mut meta_objects: Vec<MetaIndexed> = Vec::new();
         match event_stream.next().await {
             Some(Ok(log)) => {
                 let txn_hash = log.meta.as_ref().unwrap().transaction_hash.to_fixed_bytes();
@@ -101,7 +100,7 @@ pub async fn get_txns(
                     {
                         Some(object) => {
                             info!("Adding live_txns meta_indexed to db...");
-                            let _ = db_meta_store(&db, object).await;
+                            meta_objects.push(object);
                         }
                         None => {
                             warn!("load_txns returned None for live_txns");
@@ -109,6 +108,10 @@ pub async fn get_txns(
                         }
                     };
                     prev_txn_hash = transaction_hash;
+                }
+                if !meta_objects.is_empty() {
+                    info!("Adding history_txn meta_indexed into db...");
+                    let _ = db_meta_store(&db, meta_objects).await;
                 }
             }
             Some(Err(e)) => {
@@ -142,10 +145,9 @@ pub async fn get_history(
     network_metadata: &NetworkStruct,
     contract_abi: &ContractAbi,
 ) -> eyre::Result<()> {
-
     let _provider = Provider::try_from(network_metadata.network_rpc_url.clone())?;
 
-    let chain_type=Chain::from_str(&network_metadata.network_name.to_string().trim()).unwrap();
+    let chain_type = Chain::from_str(&network_metadata.network_name.to_string().trim()).unwrap();
 
     // etherscan client builder
     let client = Client::builder()
@@ -172,12 +174,15 @@ pub async fn get_history(
 
     let txns = client
         .get_transactions(
-            &contract_metadata.contract_address_historical.parse().unwrap(),
+            &contract_metadata
+                .contract_address_historical
+                .parse()
+                .unwrap(),
             Some(params),
         )
         .await
         .unwrap();
-
+    let mut meta_objects: Vec<MetaIndexed> = Vec::new();
     //Creating loop to iterate over all transactions
     for txn in txns {
         let txn_hash = txn.hash.value().unwrap().to_fixed_bytes();
@@ -198,7 +203,7 @@ pub async fn get_history(
             {
                 Some(object) => {
                     info!("Adding history_txn meta_indexed into db...");
-                    let _ = db_meta_store(&db, object).await;
+                    meta_objects.push(object);
                 }
                 None => {
                     warn!("load_txns returned None in history_txns");
@@ -210,6 +215,11 @@ pub async fn get_history(
         println!(
             "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
         );
+    }
+
+    if !meta_objects.is_empty() {
+        info!("Adding history_txn meta_indexed into db...");
+        let _ = db_meta_store(&db, meta_objects).await;
     }
 
     Ok(())

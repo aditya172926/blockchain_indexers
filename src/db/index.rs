@@ -34,15 +34,23 @@ where
     serializer.serialize_some(&bson_array)
 }
 
-pub async fn db_meta_store(db: &Db, meta: MetaIndexed) -> Result<(), Box<dyn std::error::Error>> {
+pub async fn db_meta_store(
+    db: &Db,
+    meta: Vec<MetaIndexed>,
+) -> Result<(), Box<dyn std::error::Error>> {
     let client_options: ClientOptions = ClientOptions::parse(db.client.clone()).await?;
     let client: Client = Client::with_options(client_options)?;
     let db: mongodb::Database = client.database(&db.database);
     let collection: mongodb::Collection<Document> = db.collection::<Document>("metas");
-    let doc_bson: Bson = to_bson(&meta).unwrap();
-    let doc = doc! {"document":doc_bson};
-    collection.insert_one(doc, None).await?;
-    info!("Inserted meta doc");
+
+    let mut documents = Vec::new();
+    for meta_item in meta {
+        let doc_bson: Bson = to_bson(&meta_item).unwrap();
+        let doc = doc! {"document": doc_bson};
+        documents.push(doc);
+    }
+    collection.insert_many(documents, None).await?;
+    info!("Inserted meta docs");
 
     Ok(())
 }
