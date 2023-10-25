@@ -99,7 +99,7 @@ pub async fn get_txns(
                     {
                         Some(object) => {
                             info!("Addind live_txns meta_indexed to db...");
-                            // let _ = db_meta_store(&db, object).await;
+                            let _ = db_meta_store(&db, object).await;
                         }
                         None => {
                             warn!("load_txns returned None for live_txns");
@@ -127,7 +127,9 @@ pub async fn get_txns(
                 );
             }
         }
-        println!("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        println!(
+            "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+        );
     }
 }
 
@@ -191,11 +193,12 @@ pub async fn get_history(
                 network_metadata.clone(),
                 contract_metadata.clone(),
             )
-            .await {
+            .await
+            {
                 Some(object) => {
                     info!("Addint history_txn meta_indexed into db...");
-                    // let _ = db_meta_store(&db, object).await;
-                },
+                    let _ = db_meta_store(&db, object).await;
+                }
                 None => {
                     warn!("load_txns returned None in history_txns");
                     continue;
@@ -203,7 +206,9 @@ pub async fn get_history(
             };
             prev_txn_hash = transaction_hash;
         }
-        println!("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        println!(
+            "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+        );
     }
 
     Ok(())
