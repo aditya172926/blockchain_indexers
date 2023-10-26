@@ -1,8 +1,8 @@
-use std::collections::{ HashMap};
+use std::collections::HashMap;
 
-use serde::{Deserialize, Serialize};
+use crate::structs::meta::{self};
 use crate::structs::transactions::TransactionIndexed;
-use crate::structs::meta::{self, MetaData};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Meta {
@@ -55,7 +55,6 @@ pub struct Source {
     pub handlersEvents: Vec<String>,
     pub handlersMethods: String,
 }
-
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct features {

@@ -1,7 +1,9 @@
+use std::collections::HashMap;
+
 // use crate::structs::{ContractData, MethodParam, Transaction, Meta};
 use crate::structs::contracts::ContractData;
 use crate::structs::extract::Db;
-use crate::structs::meta::MetaIndexed;
+use crate::structs::meta::{MetaIndexed, MetaResult};
 use crate::structs::{self, index::MethodParam, transactions::TransactionIndexed};
 use chrono::Utc;
 use ethcontract::RawLog;
@@ -36,34 +38,71 @@ where
 
 pub async fn db_meta_store(
     db: &Db,
-    result: Vec<MetarResult>,
+    results: Vec<MetaResult>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let client_options: ClientOptions = ClientOptions::parse(db.client.clone()).await?;
     let client: Client = Client::with_options(client_options)?;
     let db: mongodb::Database = client.database(&db.database);
     let collection: mongodb::Collection<Document> = db.collection::<Document>("meta_temp");
 
-    for meta_item in meta {
-        if let Some(source) = meta_item.sources.last() {
-            // println!("\n\n\n {} \n\n\n", )
-            let filter = doc! {
-                "document.sources.transaction.txn_hash": format!("0x{:x}", &source.transaction.txn_hash),
-                "document.sources.transaction.chain_id": Bson::Int64(source.transaction.chain_id as i64),
-            };
+    for result in results {
+        match result.insert {
+            Some(object) => {
+                let filter = doc! {
+                    "sources.transaction.txn_hash": format!("0x{:x}", &result.source.transaction.txn_hash),
+                    "sources.transaction.chain_id": Bson::Int64(result.source.transaction.chain_id as i64),
+                    "document.slug":&object.slug,
+                    "document.id":&object.id
+                };
+                if collection.find_one(filter, None).await?.is_none() {
+                    let object_bson: Bson = to_bson(&object).unwrap();
+                    let source = vec![result.source];
+                    let source_bson: Bson = to_bson(&source).unwrap();
+                    let doc = doc! {"document":object_bson, "sources":source_bson};
 
-            // Check if a document with the same slug and title already exists
-            if collection.find_one(filter, None).await?.is_none() {
-                let doc_bson: Bson = to_bson(&meta_item).unwrap();
-                let doc = doc! {"document": doc_bson};
+                    // Insert the document if it doesn't exist
+                    collection.insert_one(doc, None).await?;
+                } else {
+                    info!("Meta document already exists in the database");
+                }
+            }
+            None => {
+                let filter = doc! {
+                    "sources.transaction.chain_id": Bson::Int64(result.source.transaction.chain_id as i64),
+                    "document.slug":result.slug,
+                    "document.id":&result.source.method.params[0].to_string()
+                };
+                // for (key, value) in result.update.unwrap().into_iter() {
+                //     let update = doc! {"$set": {key:value}};
+                // }
 
-                // Insert the document if it doesn't exist
-                collection.insert_one(doc, None).await?;
-                info!("Inserted meta doc: {:?}", meta_item);
-            } else {
-                info!("Meta document already exists in the database");
+                let update = doc! {"$set": to_bson(&result.update).unwrap()};
+                collection.update_one(filter, update, None).await.unwrap();
             }
         }
     }
+
+    // for meta_item in result {
+    // if let Some(source) = meta_item.sources.last() {
+    //     // println!("\n\n\n {} \n\n\n", )
+    //     let filter = doc! {
+    //         "document.sources.transaction.txn_hash": format!("0x{:x}", &source.transaction.txn_hash),
+    //         "document.sources.transaction.chain_id": Bson::Int64(source.transaction.chain_id as i64),
+    //     };
+
+    //     // Check if a document with the same slug and title already exists
+    //     if collection.find_one(filter, None).await?.is_none() {
+    //         let doc_bson: Bson = to_bson(&meta_item).unwrap();
+    //         let doc = doc! {"document": doc_bson};
+
+    //         // Insert the document if it doesn't exist
+    //         collection.insert_one(doc, None).await?;
+    //         info!("Inserted meta doc: {:?}", meta_item);
+    //     } else {
+    //         info!("Meta document already exists in the database");
+    //     }
+    // }
+    // }
 
     Ok(())
 }
