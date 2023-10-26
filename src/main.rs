@@ -22,6 +22,7 @@ use web3::transports::Http;
 use web3::Web3;
 
 use crate::structs::extract::Config;
+use crate::structs::log::Log;
 
 // use crate::handlers::ens_ethereum::handler_ens;
 
@@ -46,6 +47,8 @@ mod structs {
     pub(crate) mod meta;
     pub(crate) mod networks;
     pub(crate) mod transactions;
+    pub(crate) mod log;
+    
 }
 
 mod abstractor;
@@ -115,6 +118,12 @@ async fn main() -> Result<(), Box<dyn Error>> {
         )
         .await;
     }
+    let logger:Log=Log{
+        slug:schema.slug.to_string(),
+        blockStart:schema.source[0].startBlock.to_string(),
+        blockEnd:schema.source[0].endBlock.to_string(),
+    };
+    let _ = db::index::db_log_store(&db, logger).await;
 
     Ok(())
 }

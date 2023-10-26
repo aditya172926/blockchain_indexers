@@ -99,7 +99,7 @@ pub async fn handler_ens(
         )
         .await;
 
-        let result = MetaResult {
+        let result: MetaResult = MetaResult {
             id: transaction_indexed.method.params[0].to_string(),
             owner: transaction_indexed.method.params[1].to_string(),
             slug: schema.slug.clone(),
