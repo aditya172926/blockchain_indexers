@@ -15,10 +15,11 @@ use ethers::{prelude::account::Sort, providers::Provider};
 
 use ethers::etherscan::account::TxListParams;
 
-use crate::db::index::db_meta_store;
+use crate::db::index::{db_log_store, db_meta_store};
 // use crate::db::index::db_meta_store;
 use crate::structs::contracts::{ContractAbi, ContractMetaData};
 use crate::structs::extract::{Db, Schema};
+use crate::structs::log::Log;
 use crate::structs::meta::{self, MetaIndexed, MetaResult};
 use crate::structs::networks::NetworkStruct;
 use crate::structs::transactions::{TransactionIndexed, TransactionMethod};
@@ -112,7 +113,7 @@ pub async fn get_txns(
                 }
                 if !meta_objects.is_empty() {
                     info!("Adding history_txn meta_indexed into db...");
-                    let _ = db_meta_store(&db, meta_objects).await;
+                    let _ = db_meta_store(&db, &meta_objects).await;
                 }
             }
             Some(Err(e)) => {
@@ -172,7 +173,10 @@ pub async fn get_history(
 
     //Fetching all transactions
     info!("\n {} \n", contract_metadata.contract_address_historical);
-
+    info!(
+        "\n\n {} \n{:?}\n\n",
+        &contract_metadata.contract_address_historical, params
+    );
     let txns = client
         .get_transactions(
             &contract_metadata
@@ -205,6 +209,7 @@ pub async fn get_history(
                 Some(object) => {
                     info!("Adding history_txn meta_indexed into db...");
                     meta_objects.push(object);
+                    info!("\n\nlength of meta objects {}\n\n", meta_objects.len());
                 }
                 None => {
                     warn!("load_txns returned None in history_txns");
@@ -217,11 +222,17 @@ pub async fn get_history(
             "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
         );
     }
-
     if !meta_objects.is_empty() {
         info!("Adding history_txn meta_indexed into db...");
-        let _ = db_meta_store(&db, meta_objects).await;
+        let _ = db_meta_store(&db, &meta_objects).await;
     }
+    let logger: Log = Log {
+        slug: schema.slug.to_string(),
+        docsLength: meta_objects.len().to_string(),
+        blockStart: schema.source[0].startBlock.to_string(),
+        blockEnd: schema.source[0].endBlock.to_string(),
+    };
+    let _ = db_log_store(&db, logger).await;
 
     Ok(())
 }

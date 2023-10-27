@@ -44,11 +44,10 @@ mod structs {
     pub(crate) mod contracts;
     pub(crate) mod extract;
     pub(crate) mod index;
+    pub(crate) mod log;
     pub(crate) mod meta;
     pub(crate) mod networks;
     pub(crate) mod transactions;
-    pub(crate) mod log;
-    
 }
 
 mod abstractor;
@@ -78,8 +77,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let schema: structs::extract::Schema =
         reader::utils_schema(String::from(config.slug.to_string()));
-
-
 
     let network_metadata: structs::networks::NetworkStruct =
         utils::networks::utils_network_data(schema.source[0].networkId).unwrap();
@@ -118,12 +115,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
         )
         .await;
     }
-    let logger:Log=Log{
-        slug:schema.slug.to_string(),
-        blockStart:schema.source[0].startBlock.to_string(),
-        blockEnd:schema.source[0].endBlock.to_string(),
-    };
-    let _ = db::index::db_log_store(&db, logger).await;
 
     Ok(())
 }

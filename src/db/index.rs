@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use crate::structs::contracts::ContractData;
 use crate::structs::extract::Db;
 use crate::structs::meta::{MetaIndexed, MetaResult};
-use crate::structs::{self, index::MethodParam, transactions::TransactionIndexed, log::Log};
+use crate::structs::{self, index::MethodParam, log::Log, transactions::TransactionIndexed};
 use chrono::Utc;
 use ethcontract::RawLog;
 use ethers::types::TransactionReceipt;
@@ -37,12 +37,12 @@ where
     serializer.serialize_some(&bson_array)
 }
 
-pub async fn db_log_store(db:&Db,log:Log)-> Result<(), Box<dyn std::error::Error>>{
+pub async fn db_log_store(db: &Db, log: Log) -> Result<(), Box<dyn std::error::Error>> {
     let client_options: ClientOptions = ClientOptions::parse(db.client.clone()).await?;
     let client: Client = Client::with_options(client_options)?;
     let db: mongodb::Database = client.database(&db.database);
     let collection: mongodb::Collection<Document> = db.collection::<Document>("logs");
-    let bson_log=to_bson(&log).unwrap();
+    let bson_log = to_bson(&log).unwrap();
     let doc = doc! {"log":bson_log};
 
     collection.insert_one(doc, None).await;
@@ -51,7 +51,7 @@ pub async fn db_log_store(db:&Db,log:Log)-> Result<(), Box<dyn std::error::Error
 
 pub async fn db_meta_store(
     db: &Db,
-    results: Vec<MetaResult>,
+    results: &Vec<MetaResult>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let client_options: ClientOptions = ClientOptions::parse(db.client.clone()).await?;
     let client: Client = Client::with_options(client_options)?;
@@ -59,7 +59,7 @@ pub async fn db_meta_store(
     let collection: mongodb::Collection<Document> = db.collection::<Document>("metas");
 
     for result in results {
-        match result.insert {
+        match &result.insert {
             Some(object) => {
                 let filter = doc! {
                     "sources.transaction.txn_hash": format!("0x{:x}", &result.source.transaction.txn_hash),
@@ -69,7 +69,7 @@ pub async fn db_meta_store(
                 };
                 if collection.find_one(filter, None).await?.is_none() {
                     let object_bson: Bson = to_bson(&object).unwrap();
-                    let source = vec![result.source];
+                    let source = vec![&result.source];
                     let source_bson: Bson = to_bson(&source).unwrap();
                     let doc = doc! {"document":object_bson, "sources":source_bson};
 
@@ -82,16 +82,17 @@ pub async fn db_meta_store(
             None => {
                 let filter = doc! {
                     "sources.transaction.chain_id": Bson::Int64(result.source.transaction.chain_id as i64),
-                    "document.slug":result.slug,
+                    "document.slug":&result.slug,
                     "document.id":&result.source.method.params[0].to_string()
                 };
 
                 // for (key, value) in result.update.unwrap().into_iter() {
                 //     let update = doc! {"$set": {key:value}};
                 // }
-                let source = vec![result.source];
+                let source = &result.source;
                 let source_bson: Bson = to_bson(&source).unwrap();
-                let update = doc! {"$set": to_bson(&result.update).unwrap(),"$push":{"sources":source_bson}};
+                let update =
+                    doc! {"$set": to_bson(&result.update).unwrap(),"$push":{"sources":source_bson}};
 
                 collection.update_one(filter, update, None).await.unwrap();
             }

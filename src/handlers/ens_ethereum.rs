@@ -42,8 +42,8 @@ pub async fn handler(
         reverseRecord,
         ownerControlledFuses,
     };
-    let mut raw_data = HashMap::from([
-        (String::from("owner"), meta_raw.owner.clone().to_string()),
+    let mut raw_data: HashMap<String, String> = HashMap::from([
+        (String::from("owner"), format!("0x{:x}", meta_raw.owner)),
         (String::from("name"), meta_raw.name),
         (String::from("duration"), meta_raw.duration),
     ]);
@@ -119,6 +119,31 @@ pub async fn handler_ens(
         let result = MetaResult {
             id: transaction_indexed.method.params[0].to_string(),
             owner: transaction_indexed.transaction.from.to_string(),
+            slug: schema.slug.clone(),
+            insert: None,
+            update: Some(update_obj),
+            source: transaction_indexed.clone(),
+        };
+        return Some(result);
+    } else if transaction_indexed.method.name == "reclaim" {
+        let update_obj: HashMap<String, String> = HashMap::from([
+            (
+                String::from("document.owner"),
+                transaction_indexed.method.params[1].to_string(),
+            ),
+            (
+                String::from("document.raw.owner"),
+                transaction_indexed.method.params[1].to_string(),
+            ),
+            (
+                String::from("document.modified.owner"),
+                transaction_indexed.method.params[1].to_string(),
+            ),
+        ]);
+
+        let result = MetaResult {
+            id: transaction_indexed.method.params[0].to_string(),
+            owner: transaction_indexed.method.params[1].to_string(),
             slug: schema.slug.clone(),
             insert: None,
             update: Some(update_obj),
