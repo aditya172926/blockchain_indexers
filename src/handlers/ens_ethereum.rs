@@ -78,7 +78,9 @@ pub async fn handler_ens(
     transaction_indexed: &TransactionIndexed,
     schema: &Schema,
 ) -> Option<MetaResult> {
-    if transaction_indexed.method.name == "register" {
+    if transaction_indexed.method.name == "register"
+        || transaction_indexed.method.name == "registerOnly"
+    {
         let meta_data = handler(
             transaction_indexed.method.params[0].to_string(),
             format!(
