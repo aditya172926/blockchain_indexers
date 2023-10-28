@@ -5,22 +5,22 @@ use mongodb::bson::Document;
 
 use crate::db::{self, index};
 use crate::structs::contracts::ContractAbi;
-use crate::structs::extract::Schema;
+use crate::structs::extract::{Schema, Config};
 use crate::structs::{contracts::ContractMetaData, networks::NetworkStruct};
 use log::{debug, error, info, warn};
 use std::collections::HashSet;
 use std::fs;
 use std::string::String;
 
-pub async fn utils_contract_data(schema: &Schema) -> (ContractMetaData, ContractAbi) {
+pub async fn utils_contract_data(config:&Config,schema: &Schema) -> (ContractMetaData, ContractAbi) {
     let contract_metadata: ContractMetaData = ContractMetaData {
-        contract_address: schema.source[0].from.to_owned(),
-        contract_address_historical: schema.source[0].fromHistorical.to_owned(),
-        read_abi_from: schema.source[0].readAbiFrom.to_owned(),
-        chain_id: schema.source[0].networkId.to_owned(),
-        start_block: schema.source[0].startBlock.to_owned(),
-        end_block: schema.source[0].endBlock.to_owned(),
-        method_of_interest: schema.source[0].interestedMethods.to_owned(),
+        contract_address: schema.source[config.sourceIndex].from.to_owned(),
+        contract_address_historical: schema.source[config.sourceIndex].fromHistorical.to_owned(),
+        read_abi_from: schema.source[config.sourceIndex].readAbiFrom.to_owned(),
+        chain_id: schema.source[config.sourceIndex].networkId.to_owned(),
+        start_block: schema.indexing.startBlock,
+        end_block: schema.indexing.endBlock,
+        method_of_interest: schema.source[config.sourceIndex].interestedMethods.to_owned(),
     };
 
     let mut contract_abi_string: String = utils_contract_abi(&contract_metadata).await;

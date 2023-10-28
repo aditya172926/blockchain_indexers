@@ -8,12 +8,22 @@ source:
     from: 0x1eeC6ecCaA4625da3Fa6Cd6339DBcc2418710E8a
     fromHistorical: 0x1eeC6ecCaA4625da3Fa6Cd6339DBcc2418710E8a
     readAbiFrom: 0x1eeC6ecCaA4625da3Fa6Cd6339DBcc2418710E8a
-    startBlock: 49050800
-    endBlock: 49060151
     interestedEvents: []
-    interestedMethods: [proxyCreateProfile]
+    interestedMethods: [proxyCreateProfile, transferOwnership]
     handlersEvents: []
     handlersMethods: handler_lens_profile
+  - kind: evm/contract
+    networkId: 137
+    from: 0xDb46d1Dc155634FbC732f92E853b10B288AD5a1d
+    fromHistorical: 0xDb46d1Dc155634FbC732f92E853b10B288AD5a1d
+    readAbiFrom: 0xBA97fc9137b7cbBBC7fcB70a87DA645d917C902F
+    interestedEvents: []
+    interestedMethods: [setProfileImageURI, burn]
+    handlersEvents: []
+    handlersMethods: handler_lens_profile
+indexing:
+  startBlock: 49050800
+  endBlock: 49060151
 features:
   - vectorize: true
     searchable: true
