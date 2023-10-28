@@ -229,8 +229,8 @@ pub async fn get_history(
     let logger: Log = Log {
         slug: schema.slug.to_string(),
         docsLength: meta_objects.len().to_string(),
-        blockStart: schema.source[0].startBlock.to_string(),
-        blockEnd: schema.source[0].endBlock.to_string(),
+        blockStart: schema.indexing.startBlock.to_string(),
+        blockEnd: schema.indexing.endBlock.to_string(),
     };
     let _ = db_log_store(&db, logger).await;
 

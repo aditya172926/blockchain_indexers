@@ -82,7 +82,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         utils::networks::utils_network_data(schema.source[0].networkId).unwrap();
 
     let contract_result: (structs::contracts::ContractMetaData, ContractAbi) =
-        utils::contracts::utils_contract_data(&schema).await;
+        utils::contracts::utils_contract_data(&config,&schema).await;
 
     let contract_metadata: structs::contracts::ContractMetaData = contract_result.0;
     let contract_abi: structs::contracts::ContractAbi = contract_result.1;

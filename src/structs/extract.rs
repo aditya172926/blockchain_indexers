@@ -48,8 +48,6 @@ pub struct Source {
     pub from: String,
     pub fromHistorical: String,
     pub readAbiFrom: String,
-    pub startBlock: u64,
-    pub endBlock: u64,
     pub interestedEvents: Vec<String>,
     pub interestedMethods: Vec<String>,
     pub handlersEvents: Vec<String>,
@@ -96,7 +94,14 @@ pub struct Schema {
     pub image: String,
     pub description: String,
     pub source: Vec<Source>,
+    pub indexing: Index,
     pub features: Vec<features>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct Index {
+    pub startBlock: u64,
+    pub endBlock: u64,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -104,6 +109,7 @@ pub struct Config {
     pub env: String,
     pub slug: String,
     pub mode: String,
+    pub sourceIndex: usize,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Db {
