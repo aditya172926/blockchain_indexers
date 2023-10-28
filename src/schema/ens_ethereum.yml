@@ -14,10 +14,9 @@ source:
     interestedMethods: [register, renew, registerOnly, reclaim]
     handlersEvents: [__ARRAY_OF_HANDLER_EVENTS_NAME__]
     handlersMethods: handler_ens
-# insert:
-#   - startBlock: 18432690
-#     endBlock: 18432692
-#     interestedMethods: [register]
+indexing:
+  startBlock: 17125818
+  endBlock: 171265818
 features:
   - vectorize: true
     searchable: true
