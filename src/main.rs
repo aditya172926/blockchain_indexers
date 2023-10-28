@@ -115,6 +115,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let endblc=web3::types::U64::from(18447807);
      let addr:ethcontract::prelude::Address="0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85".parse()?;
 
+    //example of how to be create a topic
      let mut topic=web3::ethabi::TopicFilter::default();
      let topic0:ethcontract::TransactionHash="2ef04366eacee099db3b85a35e28ea31977d46d87d0f46ddd0b2172bee1d1a81".parse().unwrap();
      topic.topic0=Topic::OneOf(vec![topic0]);
