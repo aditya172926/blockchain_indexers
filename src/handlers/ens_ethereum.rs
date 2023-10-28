@@ -54,7 +54,7 @@ pub async fn handler(
     let meta_modified: Meta = Meta {
         id: Some(name.clone()),
         owner: Some(meta_raw.owner),
-        title: Some(format!("{}.eth", raw_data.get("owner").unwrap())),
+        title: Some(format!("{}.eth", raw_data.get("name").unwrap())),
         image: Some(image),
         content: None,
     };
