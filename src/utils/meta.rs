@@ -3,7 +3,10 @@ use std::process::exit;
 use log::{debug, error, info, warn};
 
 use crate::{
-    handlers::ens_ethereum::handler_ens,
+    handlers::{
+        ens_ethereum::handler_ens, lens_profile_polygon::handler_lens_profile,
+        poap_ethereum::handler_poap_ethereum,
+    },
     structs::{
         extract::Schema,
         meta::{MetaIndexed, MetaResult},
@@ -26,47 +29,33 @@ pub async fn utils_meta_indexed(
                 Some(object)
             }
             None => {
-                warn!("handler returned null");
+                warn!("ens handler returned null");
                 None
             }
         },
+        "handler_lens_profile" => match handler_lens_profile(&transaction_indexed, schema).await {
+            Some(object) => {
+                info!("\n\n meta result {:?}\n\n", object);
+                Some(object)
+            }
+            None => {
+                warn!("lens profile handler returned null");
+                None
+            }
+        },
+        "handler_poap_ethereum" => {
+            match handler_poap_ethereum(&transaction_indexed, schema).await {
+                Some(object) => {
+                    info!("\n\n meta result {:?}\n\n", object);
+                    Some(object)
+                }
+                None => {
+                    warn!("lens profile handler returned null");
+                    None
+                }
+            }
+        }
         // "handler_lens_post" => match handler_lens_post(&transaction_indexed).await {
-        //     Some(object) => {
-        //         meta_indexed = MetaIndexed {
-        //             owner: object.clone().modified.unwrap().owner.unwrap(),
-        //             id: object.clone().modified.unwrap().id.unwrap(),
-        //             slug: schema.slug.clone(),
-        //             data: object.clone(),
-        //             createdAt: transaction_indexed.clone().timestamp,
-        //             updatedAt: String::from(""),
-        //             sources: vec![transaction_indexed],
-        //         };
-        //         Some(meta_indexed)
-        //     }
-        //     None => {
-        //         warn!("handler returned null");
-        //         None
-        //     }
-        // },
-        // "handler_lens_profile" => match handler_lens_profile(&transaction_indexed).await {
-        //     Some(object) => {
-        //         meta_indexed = MetaIndexed {
-        //             owner: object.clone().modified.unwrap().owner.unwrap(),
-        //             id: object.clone().modified.unwrap().id.unwrap(),
-        //             slug: schema.slug.clone(),
-        //             data: object.clone(),
-        //             createdAt: transaction_indexed.clone().timestamp,
-        //             updatedAt: String::from(""),
-        //             sources: vec![transaction_indexed],
-        //         };
-        //         Some(meta_indexed)
-        //     }
-        //     None => {
-        //         warn!("handler returned null");
-        //         None
-        //     }
-        // },
-        // "handler_poap_ethereum" => match handler_poap_ethereum(&transaction_indexed).await {
         //     Some(object) => {
         //         meta_indexed = MetaIndexed {
         //             owner: object.clone().modified.unwrap().owner.unwrap(),

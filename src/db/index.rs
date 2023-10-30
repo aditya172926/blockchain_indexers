@@ -58,6 +58,7 @@ pub async fn db_meta_store(
     let db: mongodb::Database = client.database(&db.database);
     let collection: mongodb::Collection<Document> = db.collection::<Document>("metas");
 
+    // info!("results : {:?}", results);
     for result in results {
         match &result.insert {
             Some(object) => {
@@ -85,6 +86,8 @@ pub async fn db_meta_store(
                     "document.slug":&result.slug,
                     "document.id":&result.source.method.params[0].to_string()
                 };
+
+                info!("Updating Meta document in the database");
 
                 // for (key, value) in result.update.unwrap().into_iter() {
                 //     let update = doc! {"$set": {key:value}};
