@@ -22,6 +22,7 @@ use web3::transports::Http;
 use web3::Web3;
 
 use crate::structs::extract::Config;
+use crate::structs::log::Log;
 
 // use crate::handlers::ens_ethereum::handler_ens;
 
@@ -43,6 +44,7 @@ mod structs {
     pub(crate) mod contracts;
     pub(crate) mod extract;
     pub(crate) mod index;
+    pub(crate) mod log;
     pub(crate) mod meta;
     pub(crate) mod networks;
     pub(crate) mod transactions;
@@ -76,13 +78,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let schema: structs::extract::Schema =
         reader::utils_schema(String::from(config.slug.to_string()));
 
-
-
     let network_metadata: structs::networks::NetworkStruct =
         utils::networks::utils_network_data(schema.source[0].networkId).unwrap();
 
     let contract_result: (structs::contracts::ContractMetaData, ContractAbi) =
-        utils::contracts::utils_contract_data(&schema).await;
+        utils::contracts::utils_contract_data(&config,&schema).await;
 
     let contract_metadata: structs::contracts::ContractMetaData = contract_result.0;
     let contract_abi: structs::contracts::ContractAbi = contract_result.1;

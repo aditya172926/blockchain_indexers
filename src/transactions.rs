@@ -15,10 +15,12 @@ use ethers::{prelude::account::Sort, providers::Provider};
 
 use ethers::etherscan::account::TxListParams;
 
-use crate::db::index::db_meta_store;
+use crate::db::index::{db_log_store, db_meta_store};
+// use crate::db::index::db_meta_store;
 use crate::structs::contracts::{ContractAbi, ContractMetaData};
 use crate::structs::extract::{Db, Schema};
-use crate::structs::meta::{self, MetaIndexed};
+use crate::structs::log::Log;
+use crate::structs::meta::{self, MetaIndexed, MetaResult};
 use crate::structs::networks::NetworkStruct;
 use crate::structs::transactions::{TransactionIndexed, TransactionMethod};
 use crate::utils::index::utils_interesting_method;
@@ -36,7 +38,7 @@ async fn load_txns(
     transaction_hash: H256,
     network_metadata: NetworkStruct,
     contract_metadata: ContractMetaData,
-) -> Option<MetaIndexed> {
+) -> Option<MetaResult> {
     let mut decoded_txn_data: (
         TransactionMethod,
         ethers::types::TransactionReceipt, // transaction receipt
@@ -46,7 +48,7 @@ async fn load_txns(
         &network_metadata.network_rpc_url,
     )
     .await;
-    let mut meta_indexed_option: Option<MetaIndexed> = Default::default();
+    let mut meta_indexed_option: Option<MetaResult> = Default::default();
     if decoded_txn_data.0.name != "".to_string()
         && utils_interesting_method(
             &contract_metadata.method_of_interest,
@@ -80,7 +82,7 @@ pub async fn get_txns(
         H256::from_str("0x0000000000000000000000000000000000000000000000000000000000000000")
             .unwrap();
     loop {
-        let mut meta_objects: Vec<MetaIndexed> = Vec::new();
+        let mut meta_objects: Vec<MetaResult> = Vec::new();
         match event_stream.next().await {
             Some(Ok(log)) => {
                 let txn_hash = log.meta.as_ref().unwrap().transaction_hash.to_fixed_bytes();
@@ -111,7 +113,7 @@ pub async fn get_txns(
                 }
                 if !meta_objects.is_empty() {
                     info!("Adding history_txn meta_indexed into db...");
-                    let _ = db_meta_store(&db, meta_objects).await;
+                    let _ = db_meta_store(&db, &meta_objects).await;
                 }
             }
             Some(Err(e)) => {
@@ -171,7 +173,10 @@ pub async fn get_history(
 
     //Fetching all transactions
     info!("\n {} \n", contract_metadata.contract_address_historical);
-
+    info!(
+        "\n\n {} \n{:?}\n\n",
+        &contract_metadata.contract_address_historical, params
+    );
     let txns = client
         .get_transactions(
             &contract_metadata
@@ -182,7 +187,7 @@ pub async fn get_history(
         )
         .await
         .unwrap();
-    let mut meta_objects: Vec<MetaIndexed> = Vec::new();
+    let mut meta_objects: Vec<MetaResult> = Vec::new();
     //Creating loop to iterate over all transactions
     for txn in txns {
         let txn_hash = txn.hash.value().unwrap().to_fixed_bytes();
@@ -204,6 +209,7 @@ pub async fn get_history(
                 Some(object) => {
                     info!("Adding history_txn meta_indexed into db...");
                     meta_objects.push(object);
+                    info!("\n\nlength of meta objects {}\n\n", meta_objects.len());
                 }
                 None => {
                     warn!("load_txns returned None in history_txns");
@@ -216,11 +222,17 @@ pub async fn get_history(
             "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
         );
     }
-
     if !meta_objects.is_empty() {
         info!("Adding history_txn meta_indexed into db...");
-        let _ = db_meta_store(&db, meta_objects).await;
+        let _ = db_meta_store(&db, &meta_objects).await;
     }
+    let logger: Log = Log {
+        slug: schema.slug.to_string(),
+        docsLength: meta_objects.len().to_string(),
+        blockStart: schema.indexing.startBlock.to_string(),
+        blockEnd: schema.indexing.endBlock.to_string(),
+    };
+    let _ = db_log_store(&db, logger).await;
 
     Ok(())
 }

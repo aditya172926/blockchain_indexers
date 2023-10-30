@@ -2,9 +2,9 @@ use ethers::types::H160;
 use std::collections::HashMap;
 use web3::contract::ens::Ens;
 
-use crate::structs::extract::Owner;
+use crate::structs::extract::{Owner, Schema};
 use crate::structs::index::MethodParam;
-use crate::structs::meta::{self, Meta, MetaData, MetaResult};
+use crate::structs::meta::{Meta, MetaIndexed, MetaResult};
 use crate::structs::transactions::TransactionIndexed;
 #[derive(Debug)]
 struct EnsMeta {
@@ -18,6 +18,7 @@ struct EnsMeta {
     reverseRecord: String,
     ownerControlledFuses: String,
 }
+
 pub async fn handler(
     name: String,
     content: String,
@@ -28,7 +29,8 @@ pub async fn handler(
     data: String,
     reverseRecord: String,
     ownerControlledFuses: String,
-) -> Option<MetaData> {
+    slug: String,
+) -> Option<MetaIndexed> {
     let meta_raw: EnsMeta = EnsMeta {
         name: name.clone(),
         content,
@@ -40,8 +42,8 @@ pub async fn handler(
         reverseRecord,
         ownerControlledFuses,
     };
-    let mut raw_data = HashMap::from([
-        (String::from("owner"), meta_raw.owner.clone().to_string()),
+    let mut raw_data: HashMap<String, String> = HashMap::from([
+        (String::from("owner"), format!("0x{:x}", meta_raw.owner)),
         (String::from("name"), meta_raw.name),
         (String::from("duration"), meta_raw.duration),
     ]);
@@ -50,30 +52,35 @@ pub async fn handler(
         "https://pbs.twimg.com/profile_images/1455381288756695041/acatxTm8_400x400.jpg",
     );
     let meta_modified: Meta = Meta {
-        id: Some(name),
+        id: Some(name.clone()),
         owner: Some(meta_raw.owner),
-        title: Some(format!("{}.eth", raw_data.get("owner").unwrap())),
+        title: Some(format!("{}.eth", raw_data.get("name").unwrap())),
         image: Some(image),
         content: None,
     };
 
-    meta_indexed = MetaIndexed {
+    let meta_indexed = MetaIndexed {
         owner: owner,
         id: name,
-        slug: schema.slug.clone(),
+        slug,
         raw: raw_data,
-        modified: Some(meta_modified)
-        createdAt: transaction_indexed.clone().timestamp,
-        updatedAt: String::from(""),
+        modified: Some(meta_modified),
+        createdAt: "".to_string(),
+        updatedAt: "".to_string(),
     };
 
     // println!("\n\n\nMeta indexed {:?} \n\n\n", meta);
-    
-    return Some(meta_data);
+
+    return Some(meta_indexed);
 }
 
-pub async fn handler_ens(transaction_indexed: &TransactionIndexed) -> Option<MetaResult> {
-    if transaction_indexed.method.name == "register" {
+pub async fn handler_ens(
+    transaction_indexed: &TransactionIndexed,
+    schema: &Schema,
+) -> Option<MetaResult> {
+    if transaction_indexed.method.name == "register"
+        || transaction_indexed.method.name == "registerOnly"
+    {
         let meta_data = handler(
             transaction_indexed.method.params[0].to_string(),
             format!(
@@ -90,27 +97,57 @@ pub async fn handler_ens(transaction_indexed: &TransactionIndexed) -> Option<Met
             transaction_indexed.method.params[5].to_string(),
             transaction_indexed.method.params[6].to_string(),
             transaction_indexed.method.params[7].to_string(),
+            schema.slug.clone(),
         )
         .await;
 
-
-        let result = MetaResult{
+        let result: MetaResult = MetaResult {
             id: transaction_indexed.method.params[0].to_string(),
             owner: transaction_indexed.method.params[1].to_string(),
+            slug: schema.slug.clone(),
             insert: meta_data,
             update: None,
-            source: transaction_indexed,
+            source: transaction_indexed.clone(),
         };
         return Some(result);
-
-        
     } else if transaction_indexed.method.name == "renew" {
-        let result = MetaResult{
+        let mut update_obj = HashMap::new();
+        update_obj.insert(
+            String::from("document.raw.duration"),
+            transaction_indexed.method.params[1].to_string(),
+        );
+        let result = MetaResult {
             id: transaction_indexed.method.params[0].to_string(),
             owner: transaction_indexed.transaction.from.to_string(),
+            slug: schema.slug.clone(),
             insert: None,
-            update: Some({"document.raw.duration":  transaction_indexed.method.params[1].to_string()}),
-            source: transaction_indexed,
+            update: Some(update_obj),
+            source: transaction_indexed.clone(),
+        };
+        return Some(result);
+    } else if transaction_indexed.method.name == "reclaim" {
+        let update_obj: HashMap<String, String> = HashMap::from([
+            (
+                String::from("document.owner"),
+                transaction_indexed.method.params[1].to_string(),
+            ),
+            (
+                String::from("document.raw.owner"),
+                transaction_indexed.method.params[1].to_string(),
+            ),
+            (
+                String::from("document.modified.owner"),
+                transaction_indexed.method.params[1].to_string(),
+            ),
+        ]);
+
+        let result = MetaResult {
+            id: transaction_indexed.method.params[0].to_string(),
+            owner: transaction_indexed.method.params[1].to_string(),
+            slug: schema.slug.clone(),
+            insert: None,
+            update: Some(update_obj),
+            source: transaction_indexed.clone(),
         };
         return Some(result);
     } else {

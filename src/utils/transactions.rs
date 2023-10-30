@@ -63,10 +63,9 @@ pub async fn utils_transaction_decode<'a>(
         .get_transaction(transaction_hash)
         .await
         .expect("Failed to get the transaction");
-    // exit(1);
+
     let transaction_receipt_result = provider.get_transaction_receipt(transaction_hash).await;
-    println!("\n\ntransaction {:?}\n\n", transaction_receipt_result);
-    
+
     let transaction_receipt = match transaction_receipt_result {
         Ok(object) => match object {
             Some(txn_receipt) => txn_receipt,
@@ -89,14 +88,17 @@ async fn utils_transaction_method<'a>(
     let input_data: String = transaction.unwrap().input.to_string();
     let method_id: &str = &input_data[2..10];
     let input_data = &input_data[10..]; // extracting the transaction hash
-    info!("Metod id found in txn : {} ", method_id);
+
     if let Some(method) = contract_abi
         .stat
         .functions()
         .into_iter()
         .find(|&f| ethers::utils::hex::encode(f.short_signature()) == method_id)
     {
-        info!("Method Name found in abi: {}", method.name);
+        info!(
+            "Method Name found in abi: {} for method id {}",
+            method.name, method_id
+        );
         let method_name = &method.name;
         let param_result: Vec<Token> =
             utils_transaction_method_params(contract_abi, method_name, input_data).await;
@@ -107,7 +109,7 @@ async fn utils_transaction_method<'a>(
         };
         result
     } else {
-        warn!("Method not found in abi ");
+        warn!("Method not found in abi for method id {}", method_id);
         return TransactionMethod {
             params: Vec::new(),
             name: "".to_string(),

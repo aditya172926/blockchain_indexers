@@ -1,8 +1,8 @@
-use std::collections::{ HashMap};
+use std::collections::HashMap;
 
-use serde::{Deserialize, Serialize};
+use crate::structs::meta::{self};
 use crate::structs::transactions::TransactionIndexed;
-use crate::structs::meta::{self, MetaData};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Meta {
@@ -48,14 +48,11 @@ pub struct Source {
     pub from: String,
     pub fromHistorical: String,
     pub readAbiFrom: String,
-    pub startBlock: u64,
-    pub endBlock: u64,
     pub interestedEvents: Vec<String>,
     pub interestedMethods: Vec<String>,
     pub handlersEvents: Vec<String>,
     pub handlersMethods: String,
 }
-
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct features {
@@ -97,7 +94,14 @@ pub struct Schema {
     pub image: String,
     pub description: String,
     pub source: Vec<Source>,
+    pub indexing: Index,
     pub features: Vec<features>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct Index {
+    pub startBlock: u64,
+    pub endBlock: u64,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -105,6 +109,7 @@ pub struct Config {
     pub env: String,
     pub slug: String,
     pub mode: String,
+    pub sourceIndex: usize,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Db {

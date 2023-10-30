@@ -27,30 +27,22 @@ pub struct Meta {
     // pub updated_at: Option<String>,
 }
 
-#[derive(Serialize, Clone, Debug, Default)]
-pub struct MetaData {
-    // #[serde(rename = "raw", skip_serializing_if = "Option::is_none")]
-    pub raw: HashMap<String, String>,
-    pub modified: Option<Meta>,
-}
-
 #[derive(Debug, Serialize, Default, Clone)]
 pub struct MetaIndexed {
     pub owner: H160,
     pub id: String,
     pub slug: String,
-    pub data: MetaData,
+    pub raw: HashMap<String, String>,
+    pub modified: Option<Meta>,
     pub createdAt: String,
     pub updatedAt: String,
 }
-
+#[derive(Debug, Serialize, Default, Clone)]
 pub struct MetaResult {
     pub id: String,
     pub owner: String,
-    pub insert: MetaIndexed,
-    pub update: Option<serde_json::Value>,
-    pub sources: Vec<TransactionIndexed>,
+    pub slug: String,
+    pub insert: Option<MetaIndexed>,
+    pub update: Option<HashMap<String, String>>,
+    pub source: TransactionIndexed,
 }
-
-#[derive(Debug, Serialize, Default)]
-pub struct MetaIndexed {}

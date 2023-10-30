@@ -2,17 +2,17 @@ use ethers::{
     abi::Token,
     types::{H160, H256, U256},
 };
-use serde::{Deserialize, Serialize, Deserializer};
+use serde::{Deserialize, Deserializer, Serialize};
 
 use super::index::MethodParam;
 
-#[derive(Serialize, Clone, Debug, Deserialize)]
+#[derive(Serialize, Clone, Debug, Deserialize, Default)]
 pub struct TransactionMethod {
     pub name: String,
     pub id: String,
     pub params: Vec<Token>,
 }
-#[derive(Clone, Serialize, Debug,Deserialize)]
+#[derive(Clone, Serialize, Debug, Deserialize, Default)]
 pub struct Transaction {
     pub block_hash: Option<H256>,
     pub block_number: u64,
@@ -26,7 +26,7 @@ pub struct Transaction {
     // pub status: Option<U64>
 }
 
-#[derive(Clone, Debug, Serialize)]
+#[derive(Clone, Debug, Serialize, Default)]
 pub struct TransactionIndexed {
     pub timestamp: String,
     pub transaction: Transaction,
