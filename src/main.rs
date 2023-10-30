@@ -1,7 +1,7 @@
 use env_logger::Env;
 use ethcontract::contract::Instance;
-use ethcontract::{prelude::*, transport};
 use ethcontract::log::LogFilterBuilder;
+use ethcontract::{prelude::*, transport};
 use ethers::abi::TopicFilter;
 use ethers::providers::Provider;
 use ethers::types::{Filter, H256, U64};
@@ -21,7 +21,7 @@ use structs::contracts::ContractAbi;
 use utils::db::utils_db;
 use utils::index::utils_contract_instance;
 use utils::reader;
-use web3::transports::{Http, http};
+use web3::transports::{http, Http};
 use web3::Web3;
 
 use crate::structs::extract::Config;
@@ -66,17 +66,15 @@ mod helpers {
     pub(crate) mod erc721;
     pub(crate) mod url;
 }
-use ethers::contract::{EthEvent, self};
+use ethers::contract::{self, EthEvent};
 #[derive(Debug, Clone, EthEvent, Copy)]
 pub struct Transfer {
     #[ethevent(indexed)]
-    pub from:ethers::types::Address,
+    pub from: ethers::types::Address,
     #[ethevent(indexed)]
-    pub to:ethers::types::Address,
-    pub tokenId:ethers::types::U256
+    pub to: ethers::types::Address,
+    pub tokenId: ethers::types::U256,
 }
-
-
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -96,64 +94,66 @@ async fn main() -> Result<(), Box<dyn Error>> {
         utils::networks::utils_network_data(schema.source[0].networkId).unwrap();
 
     let contract_result: (structs::contracts::ContractMetaData, ContractAbi) =
-        utils::contracts::utils_contract_data(&config,&schema).await;
+        utils::contracts::utils_contract_data(&config, &schema).await;
 
     let contract_metadata: structs::contracts::ContractMetaData = contract_result.0;
     let contract_abi: structs::contracts::ContractAbi = contract_result.1;
 
     let transport: Http = Http::new(&network_metadata.network_rpc_url)?;
     let my_web3: Web3<Http> = Web3::new(transport);
-    
 
-    
     let contract_address_h160: H160 = contract_metadata.contract_address.parse().unwrap();
     let read_abi_from_h160: H160 = contract_metadata.read_abi_from.parse().unwrap();
-    let contract_instance: Instance<Http> =
-    utils_contract_instance(my_web3.clone(), contract_abi.raw.clone(), contract_address_h160);
+    let contract_instance: Instance<Http> = utils_contract_instance(
+        my_web3.clone(),
+        contract_abi.raw.clone(),
+        contract_address_h160,
+    );
 
-    let strblc=web3::types::U64::from(18447805);
-    let endblc=web3::types::U64::from(18447807);
-     let addr:ethcontract::prelude::Address="0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85".parse()?;
+    let strblc = web3::types::U64::from(18447805);
+    let endblc = web3::types::U64::from(18447807);
+    let addr: ethcontract::prelude::Address =
+        "0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85".parse()?;
 
     //example of how to be create a topic
-     let mut topic=web3::ethabi::TopicFilter::default();
-     let topic0:ethcontract::TransactionHash="2ef04366eacee099db3b85a35e28ea31977d46d87d0f46ddd0b2172bee1d1a81".parse().unwrap();
-     topic.topic0=Topic::OneOf(vec![topic0]);
+    let mut topic = web3::ethabi::TopicFilter::default();
+    let topic0: ethcontract::TransactionHash =
+        "2ef04366eacee099db3b85a35e28ea31977d46d87d0f46ddd0b2172bee1d1a81"
+            .parse()
+            .unwrap();
+    topic.topic0 = Topic::OneOf(vec![topic0]);
 
-    let mut filter:LogFilterBuilder<ethcontract::Http> = LogFilterBuilder::new(my_web3)
-    .from_block(BlockNumber::Number(strblc))
-    .to_block(BlockNumber::Number(endblc))
-    .address(vec![addr])
-    .block_page_size(100)
-    .limit(10)
-    .poll_interval(core::time::Duration::new(1, 0));
+    let mut filter: LogFilterBuilder<ethcontract::Http> = LogFilterBuilder::new(my_web3)
+        .from_block(BlockNumber::Number(strblc))
+        .to_block(BlockNumber::Number(endblc))
+        .address(vec![addr])
+        .block_page_size(100)
+        .limit(10)
+        .poll_interval(core::time::Duration::new(1, 0));
     // .topic0(Topic::OneOf(vec![topic0]))
     // .topic1(Topic::OneOf(...))
     // .topic2(Topic::OneOf(...))
     // .topic3(Topic::OneOf(...))
 
-
-    // we have to create topc0,topic1,topic2 and topic3 to make it specific to events we want 
+    // we have to create topc0,topic1,topic2 and topic3 to make it specific to events we want
     // LogFilterBuilder: https://docs.rs/ethcontract/latest/ethcontract/log/struct.LogFilterBuilder.html
     //Topic enum: https://docs.rs/ethabi/18.0.0/ethabi/enum.Topic.html
     // example for topics: https://ethereum.stackexchange.com/questions/132794/erc20-event-listener-in-rust-programming
 
+    let logs = filter.past_logs().await.unwrap();
+    for log in logs {
+        info!("\n\nLog -> {:?}\n\n", log);
+    }
+    // println!("{:?}", logs);
 
-
-
-        let logs=filter.past_logs().await.unwrap();
-        println!("{:?}",logs);
-
-        exit(1);
+    exit(1);
 
     // let client=Provider::<ethers::providers::Http>::try_from("https://eth-mainnet.g.alchemy.com/v2/wiflVw_lj8Lx6x6n0GYWEMhQgMqnFW8x").unwrap();
-   
+
     // let abi=contract_result.1.string;
     // let c_abi: ethers::core::abi::Abi = serde_json::from_str(&abi).unwrap();
     // let contract =ethers::contract::Contract::new(addr,c_abi,Arc::new(client));
     // // let txn_event=contract.event_for_name::<ValueChanged>("Transfer").unwrap();
-
-    
 
     // let logs = contract
     // .event()
@@ -163,30 +163,26 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     // println!("{:?}", logs);
 
+    //     let ev = contract.event::<ValueChanged>().from_block(17125818).to_block(171265819);
 
-//     let ev = contract.event::<ValueChanged>().from_block(17125818).to_block(171265819);
+    //     let mut log_stream=Box::pin(ev.stream().await.unwrap());
+    //     // println!("The stream:{:?}",);
 
+    // //     while let Some(Ok(approval)) = log_stream.next().await {
+    // //         println!("Event caught:{:?}",approval);
+    // //    }
+    // loop {
 
-//     let mut log_stream=Box::pin(ev.stream().await.unwrap());
-//     // println!("The stream:{:?}",);
+    //    match logs.next().await {
 
-// //     while let Some(Ok(approval)) = log_stream.next().await {
-// //         println!("Event caught:{:?}",approval);
-// //    }
-// loop {
+    //             Ok(ev) => {println!("New event: {:?}", ev)},
+    //             Err(e) => {println!("Error: {:?}", e)},
+    //     }
+    // }
 
-//    match logs.next().await {
-
-//             Ok(ev) => {println!("New event: {:?}", ev)},
-//             Err(e) => {println!("Error: {:?}", e)},
-//     }
-// }
-
-
-
-        // let my_event = contract.event::<ValueChanged>();
-        // let watcher=my_event::watcher().from_block(5).to_block(10);
-        // let stream=
+    // let my_event = contract.event::<ValueChanged>();
+    // let watcher=my_event::watcher().from_block(5).to_block(10);
+    // let stream=
 
     // if &config.mode == "HISTORY_TXN" {
     //     let _ = transactions::get_history(
