@@ -1,8 +1,9 @@
 use env_logger::Env;
+// use hex_literal::hex;
 use ethcontract::contract::Instance;
-use ethcontract::{prelude::*, transport};
+use ethcontract::{prelude::*, transport, Topic};
 use ethcontract::log::LogFilterBuilder;
-use ethers::abi::TopicFilter;
+use ethers::abi::{TopicFilter, ethereum_types};
 use ethers::providers::Provider;
 use ethers::types::{Filter, H256, U64};
 use futures::join;
@@ -116,21 +117,23 @@ async fn main() -> Result<(), Box<dyn Error>> {
      let addr:ethcontract::prelude::Address="0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85".parse()?;
 
     //example of how to be create a topic
-     let mut topic=web3::ethabi::TopicFilter::default();
-     let topic0:ethcontract::TransactionHash="2ef04366eacee099db3b85a35e28ea31977d46d87d0f46ddd0b2172bee1d1a81".parse().unwrap();
-     topic.topic0=Topic::OneOf(vec![topic0]);
+     let mut topic=web3::ethabi::TopicFilter::default(); 
+     let topic0:ethcontract::TransactionHash="0xb3d987963d01b2f68493b4bdb130988f157ea43070d4ad840fee0466ed9370d9".parse().unwrap();
+    // 👆 this is for event: NameRegistered (string name, index_topic_1 bytes32 label, index_topic_2 address owner, uint256 baseCost, uint256 premium, uint256 expires)
 
-    let mut filter:LogFilterBuilder<ethcontract::Http> = LogFilterBuilder::new(my_web3)
+    //  topic.topic0=Topic::OneOf(vec![topic0]);
+    //  let  topic0=Topic::This(topic0);
+     
+
+    let mut filter:ethcontract::log::LogFilterBuilder<ethcontract::Http> = LogFilterBuilder::new(my_web3)
     .from_block(BlockNumber::Number(strblc))
     .to_block(BlockNumber::Number(endblc))
     .address(vec![addr])
     .block_page_size(100)
     .limit(10)
-    .poll_interval(core::time::Duration::new(1, 0));
-    // .topic0(Topic::OneOf(vec![topic0]))
-    // .topic1(Topic::OneOf(...))
-    // .topic2(Topic::OneOf(...))
-    // .topic3(Topic::OneOf(...))
+    .poll_interval(core::time::Duration::new(1, 0))
+    .topic0(Topic::This(topic0))
+    ;
 
 
     // we have to create topc0,topic1,topic2 and topic3 to make it specific to events we want 
@@ -142,7 +145,18 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
 
         let logs=filter.past_logs().await.unwrap();
-        println!("{:?}",logs);
+        if logs.len()==0
+{
+    println!("Empty");
+
+}   else{
+
+    for log in logs{
+        println!("{:?}",log);
+        println!("-----------------------------------------------NEXT!-----------------------------------------------");
+        
+    }
+}     
 
         exit(1);
 
