@@ -1058,7 +1058,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c8556dce50fbb89c2f3a8e5e7c5199ada9d8390c1177b30960bce6b6350586f7"
 dependencies = [
  "arrayvec",
- "ethcontract-common",
+ "ethcontract-common 0.23.0",
  "ethcontract-derive",
  "futures",
  "futures-timer",
@@ -1071,7 +1071,7 @@ dependencies = [
  "serde_json",
  "thiserror",
  "uint",
- "web3",
+ "web3 0.18.0",
  "zeroize",
 ]
 
@@ -1088,7 +1088,23 @@ dependencies = [
  "serde_json",
  "thiserror",
  "tiny-keccak",
- "web3",
+ "web3 0.18.0",
+]
+
+[[package]]
+name = "ethcontract-common"
+version = "0.25.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "742bc83515d431a92e6c5978d95e02076e494cfe05949717bc7f8340812823f4"
+dependencies = [
+ "ethabi 18.0.0",
+ "hex",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "thiserror",
+ "tiny-keccak",
+ "web3 0.19.0",
 ]
 
 [[package]]
@@ -1098,7 +1114,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "942653d82ad2ade8fcf25dc065516653d1c965cf6c1982de5cc079fdd6dba93c"
 dependencies = [
  "anyhow",
- "ethcontract-common",
+ "ethcontract-common 0.23.0",
  "ethcontract-generate",
  "proc-macro2",
  "quote",
@@ -1114,7 +1130,7 @@ dependencies = [
  "Inflector",
  "anyhow",
  "curl",
- "ethcontract-common",
+ "ethcontract-common 0.23.0",
  "proc-macro2",
  "quote",
  "syn 1.0.109",
@@ -2331,6 +2347,7 @@ dependencies = [
  "chrono",
  "env_logger",
  "ethcontract",
+ "ethcontract-common 0.25.2",
  "ethers",
  "eval",
  "eyre 0.3.10",
@@ -2345,7 +2362,7 @@ dependencies = [
  "sqlx",
  "tokio",
  "url",
- "web3",
+ "web3 0.18.0",
 ]
 
 [[package]]
@@ -4675,6 +4692,30 @@ dependencies = [
  "tokio-util 0.6.10",
  "url",
  "web3-async-native-tls",
+]
+
+[[package]]
+name = "web3"
+version = "0.19.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5388522c899d1e1c96a4c307e3797e0f697ba7c77dd8e0e625ecba9dd0342937"
+dependencies = [
+ "arrayvec",
+ "derive_more",
+ "ethabi 18.0.0",
+ "ethereum-types 0.14.1",
+ "futures",
+ "futures-timer",
+ "hex",
+ "idna 0.4.0",
+ "jsonrpc-core",
+ "log",
+ "parking_lot 0.12.1",
+ "pin-project",
+ "rlp",
+ "serde",
+ "serde_json",
+ "tiny-keccak",
 ]
 
 [[package]]

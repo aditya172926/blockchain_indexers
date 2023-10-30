@@ -3,11 +3,14 @@ use env_logger::Env;
 use ethcontract::contract::Instance;
 use ethcontract::{prelude::*, transport, Topic};
 use ethcontract::log::LogFilterBuilder;
-use ethers::abi::{TopicFilter, ethereum_types};
+use ethcontract_common::abi::Event;
+use ethers::abi::{TopicFilter, ethereum_types, EventParam, ParamType};
 use ethers::providers::Provider;
 use ethers::types::{Filter, H256, U64};
+use ethers::utils::from_bytes_to_h256;
 use futures::join;
 use futures::stream::StreamExt;
+use std::str;
 use hex::ToHex;
 use log::{debug, error, info, warn};
 use mongodb::bson::document::ValueAccessError;
@@ -152,7 +155,74 @@ async fn main() -> Result<(), Box<dyn Error>> {
 }   else{
 
     for log in logs{
-        println!("{:?}",log);
+        println!("{:?}",log.topics);
+        let mut c_vec: Vec<ethers::types::H256>=vec![];
+        let mut txn_topics=log.topics;
+        // for txn_topic in txn_topics{
+        //     let topic_Str=txn_topic.as_fixed_bytes();
+        //     let c:ethers::types::H256=H256::from(topic_Str);
+        //     c_vec.push(c);
+        // }
+        println!("{:?}",c_vec);
+        let txn_data=log.data.0;
+        println!("{:?}",txn_data);
+
+
+        let logData:ethcontract::contract::RawLog=ethcontract::contract::RawLog{
+            topics:txn_topics,
+            data:txn_data
+        };
+        // NameRegistered (string name, index_topic_1 bytes32 label, index_topic_2 address owner, uint256 baseCost, uint256 premium, uint256 expires)
+        let mut param_vec:Vec<web3::ethabi::EventParam>=vec![];
+        let e1=web3::ethabi::EventParam{
+            name:String::from("name"),
+            kind:web3::ethabi::ParamType::String,
+            indexed:false
+        };
+        let e2=web3::ethabi::EventParam{
+            name:String::from("label"),
+            kind:web3::ethabi::ParamType::FixedBytes(32),
+            indexed:true
+        };
+        let e3=web3::ethabi::EventParam{
+            name:String::from("owner"),
+            kind:web3::ethabi::ParamType::Address,
+            indexed:true
+        };
+        let e4=web3::ethabi::EventParam{
+            name:String::from("baseCost"),
+            kind:web3::ethabi::ParamType::Uint(256),
+            indexed:false
+        };
+        let e5=web3::ethabi::EventParam{
+            name:String::from("premium"),
+            kind:web3::ethabi::ParamType::Uint(256),
+            indexed:false
+        };
+        let e6=web3::ethabi::EventParam{
+            name:String::from("expires"),
+            kind:web3::ethabi::ParamType::Uint(256),
+            indexed:false
+        };
+
+            param_vec.push(e1);
+            param_vec.push(e2);
+            param_vec.push(e3);
+            param_vec.push(e4);
+            param_vec.push(e5);
+            param_vec.push(e6);
+
+        let event:web3::ethabi::Event=web3::ethabi::Event{ 
+            name: String::from("NameRegistered"), 
+            inputs: param_vec, 
+            anonymous: false 
+        };
+        println!("the event: {:?}",event);
+        //  let decoded=event.parse_log_whole(logData).unwrap();
+        let decoded=logData.decode::<String>(&event);
+
+
+        println!("{:?}",decoded);
         println!("-----------------------------------------------NEXT!-----------------------------------------------");
         
     }

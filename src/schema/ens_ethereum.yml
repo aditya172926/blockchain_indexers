@@ -10,7 +10,8 @@ source:
     readAbiFrom: 0x253553366Da8546fC250F225fe3d25d0C782303b
     startBlock: 17125818
     endBlock: 171265818
-    interestedEvents: []
+    interestedEvents:
+      [0xb3d987963d01b2f68493b4bdb130988f157ea43070d4ad840fee0466ed9370d9]
     interestedMethods: [register, renew, registerOnly, reclaim]
     handlersEvents: [__ARRAY_OF_HANDLER_EVENTS_NAME__]
     handlersMethods: handler_ens
