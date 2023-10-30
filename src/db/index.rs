@@ -84,10 +84,10 @@ pub async fn db_meta_store(
                 let filter = doc! {
                     "sources.transaction.chain_id": Bson::Int64(result.source.transaction.chain_id as i64),
                     "document.slug":&result.slug,
-                    "document.id":&result.source.method.params[0].to_string()
+                    "document.id":result.source.method.params[1].to_string()
                 };
 
-                info!("Updating Meta document in the database");
+                info!("Updating Meta document in the database {:?} ", filter);
 
                 // for (key, value) in result.update.unwrap().into_iter() {
                 //     let update = doc! {"$set": {key:value}};
@@ -97,7 +97,8 @@ pub async fn db_meta_store(
                 let update =
                     doc! {"$set": to_bson(&result.update).unwrap(),"$push":{"sources":source_bson}};
 
-                collection.update_one(filter, update, None).await.unwrap();
+                let update_result = collection.update_one(filter, update, None).await.unwrap();
+                info!("\nupdated\n {:?} ", update_result);
             }
         }
     }

@@ -5,7 +5,7 @@ use log::{debug, error, info, warn};
 use crate::{
     handlers::{
         ens_ethereum::handler_ens, lens_profile_polygon::handler_lens_profile,
-        poap_ethereum::handler_poap_ethereum,
+        poap_ethereum::handler_poap_ethereum, ud_ethereum::handler_ud,
     },
     structs::{
         extract::Schema,
@@ -55,6 +55,16 @@ pub async fn utils_meta_indexed(
                 }
             }
         }
+        "handler_ud" => match handler_ud(&transaction_indexed, schema).await {
+            Some(object) => {
+                info!("\n\n meta result {:?}\n\n", object);
+                Some(object)
+            }
+            None => {
+                warn!("lens profile handler returned null");
+                None
+            }
+        },
         // "handler_lens_post" => match handler_lens_post(&transaction_indexed).await {
         //     Some(object) => {
         //         meta_indexed = MetaIndexed {
