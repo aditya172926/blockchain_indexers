@@ -62,7 +62,7 @@ pub async fn db_meta_store(
             Some(object) => {
                 let filter = doc! {
                     "sources.transaction.txn_hash": format!("0x{:x}", &result.source.transaction.txn_hash),
-                    "sources.transaction.chain_id": Bson::Int64(result.source.transaction.chain_id.unwrap() as i64),
+                    // "sources.transaction.chain_id": Bson::Int64(result.source.transaction.chain_id.unwrap() as i64),
                     "document.slug":&object.slug,
                     "document.id":&object.id
                 };

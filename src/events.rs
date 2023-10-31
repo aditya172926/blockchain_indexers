@@ -82,16 +82,16 @@ pub async fn get_history_events(
                 }
             };
         }
-        // if !meta_objects.is_empty() {
-        //     info!("Adding history_events meta_indexed into db...");
-        //     let _ = db_meta_store(&db, &meta_objects).await;
-        // }
+        if !meta_objects.is_empty() {
+            info!("Adding history_events meta_indexed into db...");
+            let _ = db_meta_store(&db, &meta_objects).await;
+        }
     }
-    // let logger: Log = Log {
-    //     slug: schema.slug.to_string(),
-    //     docsLength: meta_objects.len().to_string(),
-    //     blockStart: schema.indexing.startBlock.to_string(),
-    //     blockEnd: schema.indexing.endBlock.to_string(),
-    // };
-    // let _ = db_log_store(&db, logger).await;
+    let logger: Log = Log {
+        slug: schema.slug.to_string(),
+        docsLength: meta_objects.len().to_string(),
+        blockStart: schema.indexing.startBlock.to_string(),
+        blockEnd: schema.indexing.endBlock.to_string(),
+    };
+    let _ = db_log_store(&db, logger).await;
 }
