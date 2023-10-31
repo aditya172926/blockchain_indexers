@@ -12,6 +12,7 @@ struct PoapMeta {
     to: H160,
     tokenId: String,
 }
+
 pub async fn handler(from: H160, to: H160, tokenId: String, slug: String) -> Option<MetaIndexed> {
     let meta_raw: PoapMeta = PoapMeta {
         from: from,
@@ -46,6 +47,46 @@ pub async fn handler(from: H160, to: H160, tokenId: String, slug: String) -> Opt
 
     return Some(meta_indexed);
 }
+
+pub async fn handler_poap_events(
+    transaction_indexed: &TransactionIndexed,
+    schema: &Schema,
+) -> Option<MetaResult> {
+    let transaction_indexed_event = transaction_indexed.event.clone().unwrap();
+    if transaction_indexed_event.name == "Transfer" {
+        let meta_data = handler(
+            transaction_indexed_event.params[0]
+                .clone()
+                .into_address()
+                .unwrap(),
+            transaction_indexed_event.params[1]
+                .clone()
+                .into_address()
+                .unwrap(),
+            transaction_indexed_event.params[2]
+                .clone()
+                .into_uint()
+                .unwrap()
+                .to_string(),
+            schema.slug.clone(),
+        )
+        .await;
+
+        let result: MetaResult = MetaResult {
+            id: transaction_indexed_event.params[2].to_string(),
+            owner: transaction_indexed_event.params[1].to_string(),
+            slug: schema.slug.clone(),
+            insert: meta_data,
+            update: None,
+            source: transaction_indexed.clone(),
+        };
+        info!("result from handler poap  :  {:?}", result);
+        return Some(result);
+    } else {
+        None
+    }
+}
+
 pub async fn handler_poap_ethereum(
     transaction_indexed: &TransactionIndexed,
     schema: &Schema,

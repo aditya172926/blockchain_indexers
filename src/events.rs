@@ -1,12 +1,13 @@
 use crate::{
-    db::index::{db_meta_store, db_log_store},
+    db::index::{db_log_store, db_meta_store},
     structs::{
         contracts::{ContractAbi, ContractMetaData},
         extract::{Db, Schema},
-        meta::MetaResult,
-        transactions::{Transaction, TransactionEvent, TransactionIndexed}, 
         log::Log,
-    }, utils::meta::utils_meta_from_events,
+        meta::MetaResult,
+        transactions::{Transaction, TransactionEvent, TransactionIndexed},
+    },
+    utils::meta::utils_meta_from_events,
 };
 use ethers::{
     contract::ContractInstance,
@@ -68,7 +69,8 @@ pub async fn get_history_events(
                         event: Some(transaction_event),
                     };
 
-                    let object: Option<MetaResult> = utils_meta_from_events(&schema, &transaction_indexed).await;
+                    let object: Option<MetaResult> =
+                        utils_meta_from_events(&schema, &transaction_indexed).await;
                     meta_objects.push(object.unwrap());
                     info!("\n\ntransaction_indexed -> {:?}\n\n", transaction_indexed);
                 }
@@ -82,11 +84,11 @@ pub async fn get_history_events(
             let _ = db_meta_store(&db, &meta_objects).await;
         }
     }
-    let logger: Log = Log {
-        slug: schema.slug.to_string(),
-        docsLength: meta_objects.len().to_string(),
-        blockStart: schema.indexing.startBlock.to_string(),
-        blockEnd: schema.indexing.endBlock.to_string(),
-    };
-    let _ = db_log_store(&db, logger).await;
+    // let logger: Log = Log {
+    //     slug: schema.slug.to_string(),
+    //     docsLength: meta_objects.len().to_string(),
+    //     blockStart: schema.indexing.startBlock.to_string(),
+    //     blockEnd: schema.indexing.endBlock.to_string(),
+    // };
+    // let _ = db_log_store(&db, logger).await;
 }
