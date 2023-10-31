@@ -50,19 +50,20 @@ pub async fn handler_poap_ethereum(
     transaction_indexed: &TransactionIndexed,
     schema: &Schema,
 ) -> Option<MetaResult> {
-    if transaction_indexed.method.name == "transferFrom"
-        || transaction_indexed.method.name == "safeTransferFrom"
+    let transaction_indexed_method = transaction_indexed.method.clone().unwrap();
+    if transaction_indexed_method.name == "transferFrom"
+        || transaction_indexed_method.name == "safeTransferFrom"
     {
         let meta_data = handler(
-            transaction_indexed.method.params[0]
+            transaction_indexed_method.params[0]
                 .clone()
                 .into_address()
                 .unwrap(),
-            transaction_indexed.method.params[1]
+            transaction_indexed_method.params[1]
                 .clone()
                 .into_address()
                 .unwrap(),
-            transaction_indexed.method.params[2]
+            transaction_indexed_method.params[2]
                 .clone()
                 .into_uint()
                 .unwrap()
@@ -72,8 +73,8 @@ pub async fn handler_poap_ethereum(
         .await;
 
         let result: MetaResult = MetaResult {
-            id: transaction_indexed.method.params[2].to_string(),
-            owner: transaction_indexed.method.params[1].to_string(),
+            id: transaction_indexed_method.params[2].to_string(),
+            owner: transaction_indexed_method.params[1].to_string(),
             slug: schema.slug.clone(),
             insert: meta_data,
             update: None,

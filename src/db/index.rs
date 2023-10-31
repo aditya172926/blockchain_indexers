@@ -84,7 +84,7 @@ pub async fn db_meta_store(
                 let filter = doc! {
                     "sources.transaction.chain_id": Bson::Int64(result.source.transaction.chain_id.unwrap() as i64),
                     "document.slug":&result.slug,
-                    "document.id":&result.source.method.unwrap().params[0].to_string()
+                    "document.id":&result.source.method.clone().unwrap().params[0].to_string()
                 };
 
                 info!("Updating Meta document in the database");

@@ -73,8 +73,9 @@ pub async fn handler_lens_profile(
     transaction_indexed: &TransactionIndexed,
     schema: &Schema,
 ) -> Option<MetaResult> {
-    if transaction_indexed.method.name == "proxyCreateProfile" {
-        let params_list = transaction_indexed.method.params[0]
+    let transaction_indexed_method = transaction_indexed.method.clone().unwrap();
+    if transaction_indexed_method.name == "proxyCreateProfile" {
+        let params_list = transaction_indexed_method.params[0]
             .clone()
             .into_tuple()
             .unwrap();
@@ -97,8 +98,8 @@ pub async fn handler_lens_profile(
             source: transaction_indexed.clone(),
         };
         return Some(result);
-    } else if transaction_indexed.method.name == "setProfileImageURI" {
-        let params_list = transaction_indexed.method.params[0]
+    } else if transaction_indexed_method.name == "setProfileImageURI" {
+        let params_list = transaction_indexed_method.params[0]
             .clone()
             .into_tuple()
             .unwrap();
@@ -114,7 +115,7 @@ pub async fn handler_lens_profile(
         ]);
         let result = MetaResult {
             id: params_list[0].to_string(),
-            owner: transaction_indexed.transaction.from.to_string(),
+            owner: transaction_indexed.transaction.from.unwrap().to_string(),
             slug: schema.slug.clone(),
             insert: None,
             update: Some(update_obj),

@@ -55,27 +55,6 @@ pub async fn utils_meta_indexed(
                 }
             }
         }
-        // "handler_lens_post" => match handler_lens_post(&transaction_indexed).await {
-        //     Some(object) => {
-        //         meta_indexed = MetaIndexed {
-        //             owner: object.clone().modified.unwrap().owner.unwrap(),
-        //             id: object.clone().modified.unwrap().id.unwrap(),
-        //             slug: schema.slug.clone(),
-        //             data: object.clone(),
-        //             createdAt: transaction_indexed.clone().timestamp,
-        //             updatedAt: String::from(""),
-        //             sources: vec![transaction_indexed],
-        //         };
-        //         Some(meta_indexed)
-        //     }
-        //     None => {
-        //         warn!("handler returned null");
-        //         None
-        //     }
-        // },
         _ => return Some(meta_result),
     }
-    // let meta_indexed: Option<MetaIndexed> =
-    // info!("\nmeta indexed {:?}\n", meta_indexed);
-    // meta_indexed
 }

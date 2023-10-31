@@ -1,12 +1,18 @@
-use crate::structs::{
-    contracts::{ContractAbi, ContractMetaData},
-    extract::{Db, Schema},
-    transactions::TransactionEvent,
-    meta::MetaResult
+use crate::{
+    db::index::{db_meta_store, db_log_store},
+    structs::{
+        contracts::{ContractAbi, ContractMetaData},
+        extract::{Db, Schema},
+        meta::MetaResult,
+        transactions::{Transaction, TransactionEvent, TransactionIndexed}, 
+        log::Log,
+    },
 };
-use ethers::contract::ContractInstance;
-use ethers::providers::{Http, Middleware, Provider};
-use ethers::types::{BlockNumber, Filter, ValueOrArray, H256};
+use ethers::{
+    contract::ContractInstance,
+    providers::{Http, Middleware, Provider},
+    types::{BlockNumber, Filter, ValueOrArray},
+};
 use log::{debug, error, info, warn};
 use std::sync::Arc;
 
@@ -43,12 +49,41 @@ pub async fn get_history_events(
                         name: event.name.clone(),
                         params: inputs,
                     };
-                    info!("\n\ntransaction_event -> {:?}\n\n", transaction_event);
+                    let transaction_struct: Transaction = Transaction {
+                        txn_hash: log.transaction_hash.unwrap(),
+                        block_hash: None,
+                        block_number: None,
+                        contract_address: None,
+                        chain_id: None,
+                        gas_used: None,
+                        gas_price: None,
+                        from: None,
+                        to: None,
+                    };
+
+                    let transcation_indexed: TransactionIndexed = TransactionIndexed {
+                        timestamp: None,
+                        transaction: transaction_struct,
+                        method: None,
+                        event: Some(transaction_event),
+                    };
+                    info!("\n\ntransaction_indexed -> {:?}\n\n", transcation_indexed);
                 }
                 Err(error) => {
                     println!("{:?}", error);
                 }
             };
         }
+        if !meta_objects.is_empty() {
+            info!("Adding history_events meta_indexed into db...");
+            let _ = db_meta_store(&db, &meta_objects).await;
+        }
     }
+    let logger: Log = Log {
+        slug: schema.slug.to_string(),
+        docsLength: meta_objects.len().to_string(),
+        blockStart: schema.indexing.startBlock.to_string(),
+        blockEnd: schema.indexing.endBlock.to_string(),
+    };
+    let _ = db_log_store(&db, logger).await;
 }
