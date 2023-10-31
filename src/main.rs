@@ -49,6 +49,7 @@ mod handlers {
     pub(crate) mod lens_post;
     pub(crate) mod lens_profile_polygon;
     pub(crate) mod poap_ethereum;
+    pub(crate) mod ud_ethereum;
 }
 
 mod helpers {

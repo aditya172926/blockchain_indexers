@@ -5,7 +5,7 @@ use log::{debug, error, info, warn};
 use crate::{
     handlers::{
         ens_ethereum::handler_ens, lens_profile_polygon::handler_lens_profile,
-        poap_ethereum::handler_poap_ethereum,
+        poap_ethereum::handler_poap_ethereum, ud_ethereum::handler_ud,
     },
     structs::{
         extract::Schema,
