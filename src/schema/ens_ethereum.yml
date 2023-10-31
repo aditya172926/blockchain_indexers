@@ -17,8 +17,8 @@ source:
     handlersEvents: [__ARRAY_OF_HANDLER_EVENTS_NAME__]
     handlersMethods: handler_ens   
 indexing:
-  startBlock: 17125818
-  endBlock: 171265818
+  startBlock: 17127773
+  endBlock: 17128773
 features:
   - vectorize: true
     searchable: true

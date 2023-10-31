@@ -1,5 +1,5 @@
 use env_logger::Env;
-use ethers::contract::{ContractInstance, Contract};
+use ethers::contract::{Contract, ContractInstance};
 use ethers::providers::{Http, Provider};
 use log::{debug, error, info, warn};
 use std::error::Error;
@@ -89,15 +89,21 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let contract_metadata: ContractMetaData = contract_result.0;
     let contract_abi = contract_result.1;
 
-    let contract: ContractInstance<Arc<Provider<Http>>, Provider<Http>> =
-        Contract::new(
-            contract_metadata.contract_address_H160,
-            contract_abi.stat,
-            client,
-        );
+    let contract: ContractInstance<Arc<Provider<Http>>, Provider<Http>> = Contract::new(
+        contract_metadata.contract_address_H160,
+        contract_abi.stat.clone(),
+        client.clone(),
+    );
 
     if &config.mode == "HISTORY_EVENTS" {
-        let _ = events::get_history_events(&db, &schema, &contract_metadata, contract);
+        let _ = events::get_history_events(
+            &db,
+            &client,
+            &schema,
+            &contract_metadata,
+            &contract_abi,
+            contract,
+        ).await;
     } else if &config.mode == "HISTORY_TXN" {
         let _ = transactions::get_history_txns(
             &db,
