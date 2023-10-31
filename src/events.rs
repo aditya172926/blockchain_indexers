@@ -1,11 +1,11 @@
 use crate::{
-    db::index::{db_meta_store, db_log_store},
+    db::index::{db_log_store, db_meta_store},
     structs::{
         contracts::{ContractAbi, ContractMetaData},
         extract::{Db, Schema},
+        log::Log,
         meta::MetaResult,
         transactions::{Transaction, TransactionEvent, TransactionIndexed}, 
-        log::Log,
     }, utils::meta::{utils_meta_indexed},
 };
 use ethers::{
