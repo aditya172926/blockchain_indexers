@@ -8,12 +8,13 @@ source:
     from: 0x5bCF5773BCf1f131A0Cad5c74aa9Be1a80b63c55
     fromHistorical: __CONTRACT_ADRESS_HISTORICAL__
     readAbiFrom:
-    startBlock: __BLOCK_NUMBER_TO_START_FROM__
-    endBlock: __BLOCK_NUMBER_TO_END_ON__
     interestedEvents: []
     interestedMethods: [createSoundAndMints]
     handlersEvents: []
     handlersMethods: []
+indexing:
+    startBlock: __BLOCK_NUMBER_TO_START_FROM__
+    endBlock: __BLOCK_NUMBER_TO_END_ON__
 features:
   - vectorize: true
     searchable: true

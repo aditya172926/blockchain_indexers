@@ -5,17 +5,33 @@ description: Lens contract deployed on network Polygon
 source:
   - kind: evm/contract
     networkId: 137
-    from: 0xBA97fc9137b7cbBBC7fcB70a87DA645d917C902F
-    fromHistorical: 0xBA97fc9137b7cbBBC7fcB70a87DA645d917C902F
+    from: 0x1eeC6ecCaA4625da3Fa6Cd6339DBcc2418710E8a
+    fromHistorical: 0x1eeC6ecCaA4625da3Fa6Cd6339DBcc2418710E8a
     readAbiFrom: 0xBA97fc9137b7cbBBC7fcB70a87DA645d917C902F
-    interestedEvents: []
-    interestedMethods:
-      [proxyCreateProfile, transferOwnership, setProfileImageURI, burn]
+    interestedEvents: 
+      - topic0: 0x4e14f57cff7910416f2ef43cf05019b5a97a313de71fec9344be11b9b88fed12
+        name: ANON
+      - topic0: 0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae
+        name: NameRenewed
+    interestedMethods: [proxyCreateProfile, transferOwnership]
+    handlersEvents: []
+    handlersMethods: handler_lens_profile
+  - kind: evm/contract
+    networkId: 137
+    from: 0xDb46d1Dc155634FbC732f92E853b10B288AD5a1d
+    fromHistorical: 0xDb46d1Dc155634FbC732f92E853b10B288AD5a1d
+    readAbiFrom: 0xBA97fc9137b7cbBBC7fcB70a87DA645d917C902F
+    interestedMethods: [setProfileImageURI, burn]
+    interestedEvents: 
+      - topic0: 0xd5a5879cad33c830cc1432c1850107029a09c80c60e9bce1ecd08d24880bd46c
+        name: ANON
+      - topic0: 0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae
+        name: NameRenewed
     handlersEvents: []
     handlersMethods: handler_lens_profile
 indexing:
-  startBlock: 49232442
-  endBlock: 49244775
+  startBlock: 49050800
+  endBlock: 49060151
 features:
   - vectorize: true
     searchable: true

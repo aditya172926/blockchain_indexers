@@ -8,12 +8,14 @@ source:
     from: 0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85
     fromHistorical: 0x253553366Da8546fC250F225fe3d25d0C782303b
     readAbiFrom: 0x253553366Da8546fC250F225fe3d25d0C782303b
-    startBlock: 17127773
-    endBlock: 17128773
-    interestedEvents: [NameRegistered]
+    interestedEvents: 
+      - topic0: 0x69e37f151eb98a09618ddaa80c8cfaf1ce5996867c489f45b555b412271ebf27
+        name: NameRegistered
+      - topic0: 0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae
+        name: NameRenewed
     interestedMethods: [register, renew, registerOnly, reclaim]
     handlersEvents: [__ARRAY_OF_HANDLER_EVENTS_NAME__]
-    handlersMethods: handler_ens
+    handlersMethods: handler_ens   
 indexing:
   startBlock: 17125818
   endBlock: 171265818

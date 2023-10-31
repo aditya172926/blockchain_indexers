@@ -140,7 +140,7 @@ pub async fn get_txns(
     }
 }
 
-pub async fn get_history(
+pub async fn get_history_txns(
     db: &Db,
     schema: &Schema,
     contract_metadata: &ContractMetaData,
@@ -160,8 +160,8 @@ pub async fn get_history(
         .unwrap();
 
     let params = TxListParams {
-        start_block: contract_metadata.start_block,
-        end_block: contract_metadata.end_block,
+        start_block: schema.indexing.startBlock,
+        end_block: schema.indexing.endBlock,
         page: 0,
         offset: 0,
         sort: Sort::Asc,

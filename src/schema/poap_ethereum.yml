@@ -8,7 +8,6 @@ source:
     from: 0x22c1f6050e56d2876009903609a2cc3fef83b415
     fromHistorical: 0x22c1f6050e56d2876009903609a2cc3fef83b415
     readAbiFrom: 0x4e90495F66FB04A5fBA401967aBD607E2ea0Ab46
-
     interestedEvents: []
     interestedMethods: [transferFrom, safeTransferFrom]
     handlersEvents: []
@@ -16,7 +15,6 @@ source:
 indexing:
   startBlock: 18406970
   endBlock: 18440880
-
 features:
   - vectorize: true
     searchable: true

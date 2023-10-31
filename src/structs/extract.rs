@@ -4,6 +4,7 @@ use crate::structs::meta::{self};
 use crate::structs::transactions::TransactionIndexed;
 use serde::{Deserialize, Serialize};
 
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Meta {
     pub meta_title: String,
@@ -42,13 +43,19 @@ pub struct MetaImage {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct SchemaEvent {
+    pub topic0: String,
+    pub name: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Source {
     pub kind: String,
     pub networkId: u64,
     pub from: String,
     pub fromHistorical: String,
     pub readAbiFrom: String,
-    pub interestedEvents: Vec<String>,
+    pub interestedEvents: Vec<SchemaEvent>,
     pub interestedMethods: Vec<String>,
     pub handlersEvents: Vec<String>,
     pub handlersMethods: String,
