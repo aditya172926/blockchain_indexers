@@ -264,7 +264,23 @@ pub async fn handler_ens(
                         source: transaction_indexed.clone(),
                     };
                     return Some(result);
-                }else{
+                }else if transaction_event.name.to_string()=="Transfer"{
+                    let mut update_obj = HashMap::new();
+                    update_obj.insert(
+                        String::from("document.raw.owner"),
+                        transaction_event.params[1].to_string(),
+                    );
+                    let result = MetaResult {
+                        id: transaction_event.params[0].to_string(),
+                        owner: transaction_event.params[1].to_string(),
+                        slug: schema.slug.clone(),
+                        insert: None,
+                        update: Some(update_obj),
+                        source: transaction_indexed.clone(),
+                    };
+                    return Some(result);
+                }
+                else{
                     return None;
                 }
             }

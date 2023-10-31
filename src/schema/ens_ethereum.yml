@@ -13,12 +13,25 @@ source:
         name: NameRegistered
       - topic0: 0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae
         name: NameRenewed
+      - topic0: 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef
+        name: Transfer
     interestedMethods: [register, renew, registerOnly, reclaim]
     handlersEvents: handler_ens
     handlersMethods: handler_ens
+  - kind: evm/contract
+    networkId: 1
+    from: 0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85
+    fromHistorical: 0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85
+    readAbiFrom: 0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85
+    interestedEvents:
+      - topic0: 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef
+        name: Transfer
+    interestedMethods: [TransferFrom, SafeTransferFrom]
+    handlersEvents: handler_ens
+    handlersMethods: handler_ens
 indexing:
-  startBlock: 18469865
-  endBlock: 18469865
+  startBlock: 18468584
+  endBlock: 18468584
 features:
   - vectorize: true
     searchable: true
