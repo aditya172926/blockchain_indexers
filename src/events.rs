@@ -6,7 +6,7 @@ use crate::{
         meta::MetaResult,
         transactions::{Transaction, TransactionEvent, TransactionIndexed}, 
         log::Log,
-    },
+    }, utils::meta::utils_meta_from_events,
 };
 use ethers::{
     contract::ContractInstance,
@@ -61,13 +61,16 @@ pub async fn get_history_events(
                         to: None,
                     };
 
-                    let transcation_indexed: TransactionIndexed = TransactionIndexed {
+                    let transaction_indexed: TransactionIndexed = TransactionIndexed {
                         timestamp: None,
                         transaction: transaction_struct,
                         method: None,
                         event: Some(transaction_event),
                     };
-                    info!("\n\ntransaction_indexed -> {:?}\n\n", transcation_indexed);
+
+                    let object: Option<MetaResult> = utils_meta_from_events(&schema, &transaction_indexed).await;
+                    meta_objects.push(object.unwrap());
+                    info!("\n\ntransaction_indexed -> {:?}\n\n", transaction_indexed);
                 }
                 Err(error) => {
                     println!("{:?}", error);

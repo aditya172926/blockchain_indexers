@@ -14,7 +14,7 @@ source:
       - topic0: 0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae
         name: NameRenewed
     interestedMethods: [register, renew, registerOnly, reclaim]
-    handlersEvents: [__ARRAY_OF_HANDLER_EVENTS_NAME__]
+    handlersEvents: handler_ens
     handlersMethods: handler_ens   
 indexing:
   startBlock: 18467022

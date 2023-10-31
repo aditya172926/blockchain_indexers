@@ -27,7 +27,7 @@ source:
         name: ANON
       - topic0: 0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae
         name: NameRenewed
-    handlersEvents: []
+    handlersEvents: handler_lens_profile
     handlersMethods: handler_lens_profile
 indexing:
   startBlock: 49050800

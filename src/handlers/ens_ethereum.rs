@@ -1,11 +1,12 @@
 use ethers::types::H160;
 use std::collections::HashMap;
-use web3::contract::ens::Ens;
+use std::process::exit;
+use log::{debug, error, info, warn};
 
-use crate::structs::extract::{Owner, Schema};
-use crate::structs::index::MethodParam;
+use crate::structs::extract::Schema;
 use crate::structs::meta::{Meta, MetaIndexed, MetaResult};
 use crate::structs::transactions::TransactionIndexed;
+
 #[derive(Debug)]
 struct EnsMeta {
     name: String,
@@ -78,7 +79,13 @@ pub async fn handler_ens(
     transaction_indexed: &TransactionIndexed,
     schema: &Schema,
 ) -> Option<MetaResult> {
-    let transaction_indexed_method = transaction_indexed.method.clone().unwrap();
+    let transaction_indexed_method = match transaction_indexed.method.clone() {
+        Some(method) => method,
+        None => {
+            error!("Transaction Indexed Method returned None");
+            exit(1);
+        }
+    };
     if transaction_indexed_method.name == "register"
         || transaction_indexed_method.name == "registerOnly"
     {

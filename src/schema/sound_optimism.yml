@@ -10,8 +10,8 @@ source:
     readAbiFrom:
     interestedEvents: []
     interestedMethods: [createSoundAndMints]
-    handlersEvents: []
-    handlersMethods: []
+    handlersEvents: handler_sound
+    handlersMethods: handler_sound
 indexing:
     startBlock: __BLOCK_NUMBER_TO_START_FROM__
     endBlock: __BLOCK_NUMBER_TO_END_ON__

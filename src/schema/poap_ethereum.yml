@@ -10,7 +10,7 @@ source:
     readAbiFrom: 0x4e90495F66FB04A5fBA401967aBD607E2ea0Ab46
     interestedEvents: []
     interestedMethods: [transferFrom, safeTransferFrom]
-    handlersEvents: []
+    handlersEvents: handler_poap_ethereum
     handlersMethods: handler_poap_ethereum
 indexing:
   startBlock: 18406970

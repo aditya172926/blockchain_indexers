@@ -10,8 +10,8 @@ source:
     readAbiFrom:
     interestedEvents: []
     interestedMethods: [setOwner, transferFrom, safeTransferFrom]
-    handlersEvents: []
-    handlersMethods: []
+    handlersEvents: handler_ud
+    handlersMethods: handler_ud
 indexing:
     startBlock: __BLOCK_NUMBER_TO_START_FROM__
     endBlock: __BLOCK_NUMBER_TO_END_ON__

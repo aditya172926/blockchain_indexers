@@ -57,7 +57,7 @@ pub struct Source {
     pub readAbiFrom: String,
     pub interestedEvents: Vec<SchemaEvent>,
     pub interestedMethods: Vec<String>,
-    pub handlersEvents: Vec<String>,
+    pub handlersEvents: String,
     pub handlersMethods: String,
 }
 
