@@ -31,20 +31,21 @@ pub async fn utils_transaction_indexed(
     let transaction_struct: crate::structs::transactions::Transaction =
         crate::structs::transactions::Transaction {
             block_hash: decoded_txn_data.1.block_hash,
-            block_number: block_number,
-            contract_address: contract_metadata.contract_address.clone().to_owned(),
-            chain_id: contract_metadata.chain_id,
+            block_number: Some(block_number),
+            contract_address: Some(contract_metadata.contract_address.clone().to_owned()),
+            chain_id: Some(contract_metadata.chain_id),
             gas_used: decoded_txn_data.1.gas_used,
             gas_price: decoded_txn_data.1.effective_gas_price,
-            from: decoded_txn_data.1.from,
+            from: Some(decoded_txn_data.1.from),
             to: decoded_txn_data.1.to,
             txn_hash: decoded_txn_data.1.transaction_hash,
         };
 
     let transaction_indexed: TransactionIndexed = TransactionIndexed {
-        timestamp: ts,
+        timestamp: Some(ts),
         transaction: transaction_struct,
-        method: decoded_txn_data.0.clone(),
+        method: Some(decoded_txn_data.0.clone()),
+        event: None,
     };
     info!("\ntransaction Indexed = {:?} \n", transaction_indexed);
     transaction_indexed

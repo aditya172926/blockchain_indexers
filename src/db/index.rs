@@ -64,7 +64,7 @@ pub async fn db_meta_store(
             Some(object) => {
                 let filter = doc! {
                     "sources.transaction.txn_hash": format!("0x{:x}", &result.source.transaction.txn_hash),
-                    "sources.transaction.chain_id": Bson::Int64(result.source.transaction.chain_id as i64),
+                    "sources.transaction.chain_id": Bson::Int64(result.source.transaction.chain_id.unwrap() as i64),
                     "document.slug":&object.slug,
                     "document.id":&object.id
                 };
@@ -82,9 +82,9 @@ pub async fn db_meta_store(
             }
             None => {
                 let filter = doc! {
-                    "sources.transaction.chain_id": Bson::Int64(result.source.transaction.chain_id as i64),
+                    "sources.transaction.chain_id": Bson::Int64(result.source.transaction.chain_id.unwrap() as i64),
                     "document.slug":&result.slug,
-                    "document.id":&result.source.method.params[0].to_string()
+                    "document.id":&result.source.method.unwrap().params[0].to_string()
                 };
 
                 info!("Updating Meta document in the database");
