@@ -92,7 +92,7 @@ pub async fn utils_meta_from_events(
         //         None
         //     }
         // },
-        "handler_poap_ethereum" => match handler_poap_events(&transaction_indexed, schema).await {
+        "handler_poap_events" => match handler_poap_events(&transaction_indexed, schema).await {
             Some(object) => {
                 info!("\n\n meta result {:?}\n\n", object);
                 Some(object)

@@ -71,18 +71,21 @@ pub async fn get_history_events(
 
                     let object: Option<MetaResult> =
                         utils_meta_from_events(&schema, &transaction_indexed).await;
-                    meta_objects.push(object.unwrap());
-                    info!("\n\ntransaction_indexed -> {:?}\n\n", transaction_indexed);
+                    meta_objects.push(object.clone().unwrap());
+                    info!(
+                        "\n\ntransaction_indexed -> {:?}\n{:?}\n",
+                        transaction_indexed, object
+                    );
                 }
                 Err(error) => {
                     println!("{:?}", error);
                 }
             };
         }
-        if !meta_objects.is_empty() {
-            info!("Adding history_events meta_indexed into db...");
-            let _ = db_meta_store(&db, &meta_objects).await;
-        }
+        // if !meta_objects.is_empty() {
+        //     info!("Adding history_events meta_indexed into db...");
+        //     let _ = db_meta_store(&db, &meta_objects).await;
+        // }
     }
     // let logger: Log = Log {
     //     slug: schema.slug.to_string(),
