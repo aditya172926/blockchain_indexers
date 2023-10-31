@@ -3,13 +3,10 @@ use ethers::contract::{Contract, ContractInstance};
 use ethers::providers::{Http, Provider};
 use log::{debug, error, info, warn};
 use std::error::Error;
-use std::process::exit;
 use std::string::String;
 use std::sync::Arc;
 use utils::db::utils_db;
 use utils::reader;
-
-use crate::structs::log::Log;
 use crate::structs::{
     contracts::{ContractAbi, ContractMetaData},
     extract::{Config, Schema},

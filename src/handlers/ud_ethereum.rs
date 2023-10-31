@@ -1,9 +1,6 @@
 use ethers::types::H160;
 use std::collections::HashMap;
-use web3::contract::ens::Ens;
-
-use crate::structs::extract::{Owner, Schema};
-use crate::structs::index::MethodParam;
+use crate::structs::extract::Schema;
 use crate::structs::meta::{Meta, MetaIndexed, MetaResult};
 use crate::structs::transactions::TransactionIndexed;
 #[derive(Debug)]
