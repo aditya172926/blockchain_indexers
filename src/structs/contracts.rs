@@ -20,6 +20,12 @@ pub struct ContractEvent {
     pub name: String,
 }
 
+pub struct ContractEventMap {
+    topics: Vec<H256>,
+    map: HashMap<String, String>,
+    events: Vec<ContractEvent>,
+}
+
 #[derive(Clone, Debug)]
 pub struct ContractMetaData {
     pub contract_address: String,
@@ -30,7 +36,7 @@ pub struct ContractMetaData {
     pub read_abi_from_H160: H160,
     pub chain_id: u64,
     pub method_of_interest: Vec<std::string::String>,
-    pub events_of_interest: Vec<ContractEvent>
+    pub events_of_interest: Vec<ContractEvent>,
 }
 
 #[derive(Debug)]
