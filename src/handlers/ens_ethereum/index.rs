@@ -50,7 +50,7 @@ pub async fn handler_ens(
                 return handler::handler_event_renew_ens_by_controller(transaction_indexed, schema)
                     .await;
             } else if transaction_event.name.to_string() == "Transfer" {
-                return handler::handler_event_transfer_ens(
+                return handler::handler_event_transfer_ens_by_base(
                     transaction_indexed,
                     transaction_event.clone(),
                     schema,

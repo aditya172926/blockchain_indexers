@@ -247,7 +247,7 @@ pub async fn handler_event_renew_ens_by_controller(
     return Some(result);
 }
 
-pub async fn handler_event_transfer_ens(
+pub async fn handler_event_transfer_ens_by_base(
     transaction_indexed: &TransactionIndexed,
     transaction_event: TransactionEvent,
     schema: &Schema,
@@ -275,5 +275,56 @@ pub async fn handler_event_transfer_ens(
         source: transaction_indexed.clone(),
     };
     println!("{:?}", result);
+    return Some(result);
+}
+
+pub async fn handler_event_register_ens_by_base(
+    transaction_indexed: &TransactionIndexed,
+    transaction_event: TransactionEvent,
+    schema: &Schema,
+) -> Option<MetaResult> {
+    let mut meta_raw: HashMap<String, String> = HashMap::from([
+        (String::from("id"), transaction_event.params[0].to_string()),
+        (
+            String::from("owner"),
+            format!(
+                "{}{}",
+                "0x",
+                transaction_indexed.event.as_ref().unwrap().params[1].to_string()
+            ),
+        ),
+        (
+            String::from("expires"),
+            transaction_event.params[2].to_string(),
+        ),
+    ]);
+
+    let meta_modified: Meta = Meta {
+        id: Some(meta_raw["id"].clone()),
+        owner: Some(meta_raw["owner"].parse::<H160>().unwrap()),
+        title: Some("".to_string()),
+        image: Some("".to_string()),
+        content: None,
+    };
+
+    let meta_indexed = MetaIndexed {
+        owner: meta_raw["owner"].parse::<H160>().unwrap(),
+        id: meta_raw["id"].clone(),
+        slug: schema.slug.clone(),
+        raw: meta_raw,
+        modified: Some(meta_modified),
+        //TODO: Fix these values
+        createdAt: "".to_string(),
+        updatedAt: "".to_string(),
+    };
+
+    let result: MetaResult = MetaResult {
+        id: transaction_event.params[0].to_string(),
+        owner: transaction_event.params[1].to_string(),
+        slug: schema.slug.clone(),
+        insert: Some(meta_indexed),
+        update: None,
+        source: transaction_indexed.clone(),
+    };
     return Some(result);
 }
