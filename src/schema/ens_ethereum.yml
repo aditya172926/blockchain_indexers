@@ -22,6 +22,8 @@ source:
     fromHistorical: 0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85
     readAbiFrom: 0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85
     interestedEvents:
+      - topic0: 0xb3d987963d01b2f68493b4bdb130988f157ea43070d4ad840fee0466ed9370d9
+        name: NameRegistered
       - topic0: 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef
         name: Transfer
     interestedMethods: [TransferFrom, SafeTransferFrom]

@@ -1,3 +1,8 @@
+use crate::structs::{
+    contracts::{ContractAbi, ContractMetaData},
+    extract::{Config, Schema},
+    networks::NetworkStruct,
+};
 use env_logger::Env;
 use ethers::contract::{Contract, ContractInstance};
 use ethers::providers::{Http, Provider};
@@ -7,11 +12,6 @@ use std::string::String;
 use std::sync::Arc;
 use utils::db::utils_db;
 use utils::reader;
-use crate::structs::{
-    contracts::{ContractAbi, ContractMetaData},
-    extract::{Config, Schema},
-    networks::NetworkStruct,
-};
 
 // use crate::handlers::ens_ethereum::handler_ens;
 
@@ -45,7 +45,7 @@ mod handlers {
     pub(crate) mod ens_ethereum;
     pub(crate) mod lens_post;
     pub(crate) mod lens_profile_polygon;
-    pub(crate) mod poap_ethereum;
+    // pub(crate) mod poap_ethereum;
     pub(crate) mod ud_ethereum;
 }
 
@@ -101,7 +101,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
             &contract_metadata,
             &contract_abi,
             contract,
-        ).await;
+        )
+        .await;
     } else if &config.mode == "HISTORY_TXN" {
         let _ = transactions::get_history_txns(
             &db,
