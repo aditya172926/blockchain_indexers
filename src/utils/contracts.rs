@@ -1,30 +1,64 @@
+use crate::structs::{
+    contracts::{ContractAbi, ContractEvent, ContractMetaData},
+    extract::{Config, Schema},
+};
 use ethers::abi::{Abi, Function, Token};
-use ethers::types::H256;
-use crate::structs::{extract::{Schema, Config}, contracts::{ContractAbi, ContractEvent, ContractMetaData}};
+use ethers::types::{H160, H256};
 use log::{debug, error, info, warn};
 use std::fs;
 use std::string::String;
 
-pub async fn utils_contract_data(config:&Config,schema: &Schema) -> (ContractMetaData, ContractAbi) {
-
+pub async fn utils_contract_data(
+    config: &Config,
+    schema: &Schema,
+) -> (ContractMetaData, ContractAbi) {
     let mut interested_events: Vec<ContractEvent> = vec![];
+    let mut interested_events_map: HashMap = HashMap::new();
+    let mut interested_event_topics: Vec<H256> = vec![];
 
     for event in schema.source[config.sourceIndex].interestedEvents.iter() {
         let topic: H256 = event.topic0.parse().unwrap();
-        let e : ContractEvent = ContractEvent{topic0: topic, name: event.name.clone()};
+        let e: ContractEvent = ContractEvent {
+            topic0: topic,
+            name: event.name.clone(),
+        };
+        interested_event_topics.push(topic);
+        interested_events_map.insert(topic, event.name.clone());
         interested_events.push(e);
+    }
+
+    let contract_events = ConractEventMap = ContractEventMap {
+        topics : interested_event_topics,
+
+        map: interested_event_map,
+        events: interested_events,
     }
 
     let contract_metadata: ContractMetaData = ContractMetaData {
         contract_address: schema.source[config.sourceIndex].from.to_owned(),
-        contract_address_H160: schema.source[config.sourceIndex].from.to_owned().parse().unwrap(),
+        contract_address_H160: schema.source[config.sourceIndex]
+            .from
+            .to_owned()
+            .parse()
+            .unwrap(),
         contract_address_historical: schema.source[config.sourceIndex].fromHistorical.to_owned(),
-        contract_address_historical_H160: schema.source[config.sourceIndex].fromHistorical.to_owned().parse().unwrap(),
+        contract_address_historical_H160: schema.source[config.sourceIndex]
+            .fromHistorical
+            .to_owned()
+            .parse()
+            .unwrap(),
         read_abi_from: schema.source[config.sourceIndex].readAbiFrom.to_owned(),
-        read_abi_from_H160: schema.source[config.sourceIndex].readAbiFrom.to_owned().parse().unwrap(),
+        read_abi_from_H160: schema.source[config.sourceIndex]
+            .readAbiFrom
+            .to_owned()
+            .parse()
+            .unwrap(),
         chain_id: schema.source[config.sourceIndex].networkId.to_owned(),
-        method_of_interest: schema.source[config.sourceIndex].interestedMethods.to_owned(),
-        events_of_interest: interested_events,
+        method_of_interest: schema.source[config.sourceIndex]
+            .interestedMethods
+            .to_owned(),
+        events_of_interest: contract_events,
+        events_of_interest_topics: interested_event_topics
     };
 
     let contract_abi_string: String = utils_contract_abi(&contract_metadata).await;
