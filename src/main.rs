@@ -10,8 +10,9 @@ use log::{debug, error, info, warn};
 use std::error::Error;
 use std::string::String;
 use std::sync::Arc;
-use utils::db::utils_db;
+use structs::contracts::ContractIndexed;
 use utils::reader;
+use utils::{contracts::utils_contract_list, db::utils_db};
 
 // use crate::handlers::ens_ethereum::handler_ens;
 
@@ -81,45 +82,29 @@ async fn main() -> Result<(), Box<dyn Error>> {
         Provider::<Http>::try_from(&network_metadata.network_rpc_url).unwrap();
     let client: Arc<Provider<Http>> = Arc::new(provider);
 
-    let contract_result: (ContractMetaData, ContractAbi) =
-        utils::contracts::utils_contract_data(&config, &schema).await;
-
-    let contract_metadata: ContractMetaData = contract_result.0;
-    let contract_abi = contract_result.1;
-
-    let contract: ContractInstance<Arc<Provider<Http>>, Provider<Http>> = Contract::new(
-        contract_metadata.contract_address_H160,
-        contract_abi.stat.clone(),
-        client.clone(),
-    );
+    let mut contracts: Vec<ContractIndexed> = utils_contract_list(&client, &schema).await;
 
     if &config.mode == "HISTORY_EVENTS" {
-        let _ = events::get_history_events(
-            &db,
-            &client,
-            &schema,
-            &contract_metadata,
-            &contract_abi,
-            contract,
-        )
-        .await;
-    } else if &config.mode == "HISTORY_TXN" {
-        let _ = transactions::get_history_txns(
-            &db,
-            &schema,
-            &contract_metadata,
-            &network_metadata,
-            &contract_abi,
-        )
-        .await;
+        let _ = events::get_history_events(&db, &client, &schema, &mut contracts).await;
     }
+
+    // else if &config.mode == "HISTORY_TXN" {
+    //     let _ = transactions::get_history_txns(
+    //         &db,
+    //         &schema,
+    //         &contract.data,
+    //         &network_metadata,
+    //         &contract.abi,
+    //     )
+    //     .await;
+    // }
     // else if &config.mode == "LIVE_TXN" {
     //     let _ = transactions::get_txns(
     //         &db,
     //         &schema,
-    //         &contract_abi,
-    //         &contract_instance,
-    //         contract_metadata,
+    //         &contract.abi,
+    //         &contract.instance,
+    //         contract.data,
     //         &network_metadata,
     //     )
     //     .await;

@@ -1,22 +1,39 @@
 use crate::structs::{
-    contracts::{ContractAbi, ContractEvent, ContractMetaData},
+    contracts::{ContractAbi, ContractEvent, ContractEventMap, ContractIndexed, ContractMetaData},
     extract::{Config, Schema},
 };
 use ethers::abi::{Abi, Function, Token};
+use ethers::contract::{Contract, ContractInstance};
+use ethers::providers::{Http, Provider};
 use ethers::types::{H160, H256};
 use log::{debug, error, info, warn};
-use std::fs;
-use std::string::String;
+use std::{collections::HashMap, fs};
+use std::{string::String, sync::Arc};
+
+pub async fn utils_contract_list(
+    client: &Arc<Provider<Http>>,
+    schema: &Schema,
+) -> Vec<ContractIndexed> {
+    let mut contracts: Vec<ContractIndexed> = vec![];
+    let length: usize = schema.source.len();
+
+    for i in 0..length {
+        let contract: ContractIndexed = utils_contract_data(&client, i, &schema).await;
+        contracts.push(contract);
+    }
+    return contracts;
+}
 
 pub async fn utils_contract_data(
-    config: &Config,
+    client: &Arc<Provider<Http>>,
+    sourceIndex: usize,
     schema: &Schema,
-) -> (ContractMetaData, ContractAbi) {
+) -> ContractIndexed {
     let mut interested_events: Vec<ContractEvent> = vec![];
-    let mut interested_events_map: HashMap = HashMap::new();
+    let mut interested_events_map: HashMap<H256, String> = HashMap::new();
     let mut interested_event_topics: Vec<H256> = vec![];
 
-    for event in schema.source[config.sourceIndex].interestedEvents.iter() {
+    for event in schema.source[sourceIndex].interestedEvents.iter() {
         let topic: H256 = event.topic0.parse().unwrap();
         let e: ContractEvent = ContractEvent {
             topic0: topic,
@@ -27,38 +44,30 @@ pub async fn utils_contract_data(
         interested_events.push(e);
     }
 
-    let contract_events = ConractEventMap = ContractEventMap {
-        topics : interested_event_topics,
-
-        map: interested_event_map,
+    let contract_events: ContractEventMap = ContractEventMap {
+        topics: interested_event_topics,
+        map: interested_events_map,
         events: interested_events,
-    }
+    };
 
     let contract_metadata: ContractMetaData = ContractMetaData {
-        contract_address: schema.source[config.sourceIndex].from.to_owned(),
-        contract_address_H160: schema.source[config.sourceIndex]
-            .from
-            .to_owned()
-            .parse()
-            .unwrap(),
-        contract_address_historical: schema.source[config.sourceIndex].fromHistorical.to_owned(),
-        contract_address_historical_H160: schema.source[config.sourceIndex]
+        contract_address: schema.source[sourceIndex].from.to_owned(),
+        contract_address_H160: schema.source[sourceIndex].from.to_owned().parse().unwrap(),
+        contract_address_historical: schema.source[sourceIndex].fromHistorical.to_owned(),
+        contract_address_historical_H160: schema.source[sourceIndex]
             .fromHistorical
             .to_owned()
             .parse()
             .unwrap(),
-        read_abi_from: schema.source[config.sourceIndex].readAbiFrom.to_owned(),
-        read_abi_from_H160: schema.source[config.sourceIndex]
+        read_abi_from: schema.source[sourceIndex].readAbiFrom.to_owned(),
+        read_abi_from_H160: schema.source[sourceIndex]
             .readAbiFrom
             .to_owned()
             .parse()
             .unwrap(),
-        chain_id: schema.source[config.sourceIndex].networkId.to_owned(),
-        method_of_interest: schema.source[config.sourceIndex]
-            .interestedMethods
-            .to_owned(),
+        chain_id: schema.source[sourceIndex].networkId.to_owned(),
+        method_of_interest: schema.source[sourceIndex].interestedMethods.to_owned(),
         events_of_interest: contract_events,
-        events_of_interest_topics: interested_event_topics
     };
 
     let contract_abi_string: String = utils_contract_abi(&contract_metadata).await;
@@ -69,7 +78,20 @@ pub async fn utils_contract_data(
         raw: abi_json,
         stat: abi_static,
     };
-    return (contract_metadata, contract_abi);
+
+    let contract_instance: ContractInstance<Arc<Provider<Http>>, Provider<Http>> = Contract::new(
+        contract_metadata.contract_address_H160,
+        contract_abi.stat.clone(),
+        client.clone(),
+    );
+
+    let contract_indexed: ContractIndexed = ContractIndexed {
+        data: contract_metadata,
+        abi: contract_abi,
+        instance: contract_instance,
+    };
+
+    return contract_indexed;
 }
 
 pub async fn utils_contract_abi(contract_metadata: &ContractMetaData) -> String {

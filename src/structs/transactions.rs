@@ -30,7 +30,7 @@ pub struct Transaction {
     pub gas_price: Option<U256>,
     pub from: Option<H160>,
     pub to: Option<H160>,
-    pub txn_hash: H256,
+    pub txn_hash: Option<String>,
     // pub status: Option<U64>
 }
 
@@ -39,5 +39,5 @@ pub struct TransactionIndexed {
     pub timestamp: Option<String>,
     pub transaction: Transaction,
     pub method: Option<TransactionMethod>,
-    pub event: Option<TransactionEvent>,
+    pub events: Option<Vec<TransactionEvent>>,
 }

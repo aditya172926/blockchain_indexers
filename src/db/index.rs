@@ -61,7 +61,7 @@ pub async fn db_meta_store(
         match &result.insert {
             Some(object) => {
                 let filter = doc! {
-                    "sources.transaction.txn_hash": format!("0x{:x}", &result.source.transaction.txn_hash),
+                    "sources.transaction.txn_hash": format!("{:?}", &result.source.as_ref().unwrap().transaction.txn_hash),
                     // "sources.transaction.chain_id": Bson::Int64(result.source.transaction.chain_id.unwrap() as i64),
                     "document.slug":&object.slug,
                     "document.id":&object.id
@@ -80,9 +80,9 @@ pub async fn db_meta_store(
             }
             None => {
                 let filter = doc! {
-                    "sources.transaction.chain_id": Bson::Int64(result.source.transaction.chain_id.unwrap() as i64),
                     "document.slug":&result.slug,
-                    "document.id":&result.source.method.clone().unwrap().params[0].to_string()
+                    // "document.id":&result.id
+                    "sources.transaction.txn_hash": format!("{:?}", &result.source.as_ref().unwrap().transaction.txn_hash),
                 };
                 let source = &result.source;
                 let source_bson: Bson = to_bson(&source).unwrap();

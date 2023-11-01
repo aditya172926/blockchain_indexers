@@ -1,6 +1,10 @@
+use ethers::contract::{Contract, ContractInstance};
 use ethers::core::abi::Abi;
+use ethers::providers::{Http, Provider};
 use ethers::types::{H160, H256};
 use serde::Serialize;
+use std::collections::HashMap;
+use std::sync::Arc;
 
 #[derive(Serialize)]
 pub struct ContractData {
@@ -20,10 +24,11 @@ pub struct ContractEvent {
     pub name: String,
 }
 
+#[derive(Clone, Debug)]
 pub struct ContractEventMap {
-    topics: Vec<H256>,
-    map: HashMap<String, String>,
-    events: Vec<ContractEvent>,
+    pub topics: Vec<H256>,
+    pub map: HashMap<H256, String>,
+    pub events: Vec<ContractEvent>,
 }
 
 #[derive(Clone, Debug)]
@@ -36,12 +41,19 @@ pub struct ContractMetaData {
     pub read_abi_from_H160: H160,
     pub chain_id: u64,
     pub method_of_interest: Vec<std::string::String>,
-    pub events_of_interest: Vec<ContractEvent>,
+    pub events_of_interest: ContractEventMap,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ContractAbi {
     pub string: String,
     pub raw: web3::ethabi::Contract,
     pub stat: Abi,
+}
+
+#[derive(Clone, Debug)]
+pub struct ContractIndexed {
+    pub data: ContractMetaData,
+    pub abi: ContractAbi,
+    pub instance: ContractInstance<Arc<Provider<Http>>, Provider<Http>>,
 }

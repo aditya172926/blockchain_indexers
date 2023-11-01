@@ -38,14 +38,14 @@ pub async fn utils_transaction_indexed(
             gas_price: decoded_txn_data.1.effective_gas_price,
             from: Some(decoded_txn_data.1.from),
             to: decoded_txn_data.1.to,
-            txn_hash: decoded_txn_data.1.transaction_hash,
+            txn_hash: Some(decoded_txn_data.1.transaction_hash.to_string()),
         };
 
     let transaction_indexed: TransactionIndexed = TransactionIndexed {
         timestamp: Some(ts),
         transaction: transaction_struct,
         method: Some(decoded_txn_data.0.clone()),
-        event: None,
+        events: None,
     };
     info!("\ntransaction Indexed = {:?} \n", transaction_indexed);
     transaction_indexed

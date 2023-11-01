@@ -77,7 +77,7 @@ pub async fn handler_txn_register_ens(
         slug: schema.slug.clone(),
         insert: Some(meta_indexed),
         update: None,
-        source: transaction_indexed.clone(),
+        source: Some(transaction_indexed.clone()),
     };
     return Some(result);
 }
@@ -98,7 +98,7 @@ pub async fn handler_txn_renew_ens(
         slug: schema.slug.clone(),
         insert: None,
         update: Some(update_obj),
-        source: transaction_indexed.clone(),
+        source: Some(transaction_indexed.clone()),
     };
     return Some(result);
 }
@@ -129,7 +129,7 @@ pub async fn handler_txn_reclaim_ens(
         slug: schema.slug.clone(),
         insert: None,
         update: Some(update_obj),
-        source: transaction_indexed.clone(),
+        source: Some(transaction_indexed.clone()),
     };
     return Some(result);
 }
@@ -142,11 +142,10 @@ pub async fn handler_txn_reclaim_ens(
         expires: uint256
 **/
 pub async fn handler_event_register_ens_by_controller(
-    transaction_indexed: &TransactionIndexed,
+    transaction_event: &TransactionEvent,
     schema: &Schema,
 ) -> Option<MetaResult> {
     let x = String::from("0x");
-    let transaction_event = transaction_indexed.event.to_owned().unwrap();
     let mut meta_raw: HashMap<String, String> = HashMap::from([
         (
             String::from("name"),
@@ -158,11 +157,7 @@ pub async fn handler_event_register_ens_by_controller(
         ),
         (
             String::from("owner"),
-            format!(
-                "{}{}",
-                "0x",
-                transaction_indexed.event.as_ref().unwrap().params[2].to_string()
-            ),
+            format!("{}{}", "0x", transaction_event.params[2].to_string()),
         ),
         (
             String::from("baseCost"),
@@ -209,16 +204,15 @@ pub async fn handler_event_register_ens_by_controller(
         slug: schema.slug.clone(),
         insert: Some(meta_indexed),
         update: None,
-        source: transaction_indexed.clone(),
+        source: None,
     };
     return Some(result);
 }
 
 pub async fn handler_event_renew_ens_by_controller(
-    transaction_indexed: &TransactionIndexed,
+    transaction_event: &TransactionEvent,
     schema: &Schema,
 ) -> Option<MetaResult> {
-    let transaction_event = transaction_indexed.event.to_owned().unwrap();
     let mut update_obj = HashMap::from([
         (
             String::from("document.raw.label"),
@@ -242,13 +236,12 @@ pub async fn handler_event_renew_ens_by_controller(
         slug: schema.slug.clone(),
         insert: None,
         update: Some(update_obj),
-        source: transaction_indexed.clone(),
+        source: None,
     };
     return Some(result);
 }
 
 pub async fn handler_event_transfer_ens_by_base(
-    transaction_indexed: &TransactionIndexed,
     transaction_event: TransactionEvent,
     schema: &Schema,
 ) -> Option<MetaResult> {
@@ -272,59 +265,30 @@ pub async fn handler_event_transfer_ens_by_base(
         slug: schema.slug.clone(),
         insert: None,
         update: Some(update_obj),
-        source: transaction_indexed.clone(),
+        source: None,
     };
     println!("{:?}", result);
     return Some(result);
 }
 
 pub async fn handler_event_register_ens_by_base(
-    transaction_indexed: &TransactionIndexed,
     transaction_event: TransactionEvent,
     schema: &Schema,
 ) -> Option<MetaResult> {
-    let mut meta_raw: HashMap<String, String> = HashMap::from([
-        (String::from("id"), transaction_event.params[0].to_string()),
-        (
-            String::from("owner"),
-            format!(
-                "{}{}",
-                "0x",
-                transaction_indexed.event.as_ref().unwrap().params[1].to_string()
-            ),
-        ),
-        (
-            String::from("expires"),
-            transaction_event.params[2].to_string(),
-        ),
-    ]);
+    let mut update_obj = HashMap::from([(
+        String::from("document.raw.tokenId"),
+        transaction_event.params[0].to_string(),
+    )]);
+    // ToDo: modified.updatedAt
 
-    let meta_modified: Meta = Meta {
-        id: Some(meta_raw["id"].clone()),
-        owner: Some(meta_raw["owner"].parse::<H160>().unwrap()),
-        title: Some("".to_string()),
-        image: Some("".to_string()),
-        content: None,
-    };
-
-    let meta_indexed = MetaIndexed {
-        owner: meta_raw["owner"].parse::<H160>().unwrap(),
-        id: meta_raw["id"].clone(),
-        slug: schema.slug.clone(),
-        raw: meta_raw,
-        modified: Some(meta_modified),
-        //TODO: Fix these values
-        createdAt: "".to_string(),
-        updatedAt: "".to_string(),
-    };
-
-    let result: MetaResult = MetaResult {
+    let result = MetaResult {
         id: transaction_event.params[0].to_string(),
+        // ToDo: Owner from txn
         owner: transaction_event.params[1].to_string(),
         slug: schema.slug.clone(),
-        insert: Some(meta_indexed),
-        update: None,
-        source: transaction_indexed.clone(),
+        insert: None,
+        update: Some(update_obj),
+        source: None,
     };
     return Some(result);
 }
