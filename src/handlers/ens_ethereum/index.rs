@@ -72,12 +72,11 @@ pub async fn handler_ens(
                     meta_raw.insert("owner".to_string(), event.params[1].to_string());
                     meta_raw.insert("expires".to_string(), event.params[2].to_string());
                 } else if format!("0x{:x}", event.topic0)
-                    == "0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae"
+                    == "0x9b87a00e30f1ac65d898f070f8a3488fe60517182d0a2098e1b4b93a54aa9bd6"
                 {
                     //Source[0].Name renew
-                    meta_raw.insert("label".to_string(), event.params[0].to_string());
-                    meta_raw.insert("baseCost".to_string(), event.params[1].to_string());
-                    meta_raw.insert("expires".to_string(), event.params[2].to_string());
+                    meta_raw.insert("tokenId".to_string(), event.params[0].to_string());
+                    meta_raw.insert("expires".to_string(), event.params[1].to_string());
                 } else if format!("0x{:x}", event.topic0)
                     == "0x69e37f151eb98a09618ddaa80c8cfaf1ce5996867c489f45b555b412271ebf27"
                 {
