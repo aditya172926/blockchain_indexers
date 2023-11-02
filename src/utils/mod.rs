@@ -1,9 +1,6 @@
 mod contracts;
-mod contracts;
-mod contracts;
 mod db;
 mod meta;
-mod networks;
 mod networks;
 mod reader;
 mod transactions;

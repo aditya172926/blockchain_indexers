@@ -37,7 +37,7 @@ pub async fn get_history_events(
         .address(ValueOrArray::Array(vec![
             contracts[0].data.contract_address_historical_H160,
             contracts[1].data.contract_address_historical_H160,
-            contracts[2].data.contract_address_historical_H160,
+            // contracts[2].data.contract_address_historical_H160,
         ]))
         .from_block(BlockNumber::Number(schema.indexing.startBlock.into()))
         .to_block(BlockNumber::Number(schema.indexing.endBlock.into()))
@@ -111,7 +111,7 @@ pub async fn get_history_events(
         //     transaction_indexed
         // );
 
-        let object: Option<MetaResult> = utils_meta_indexed(&schema, transaction_indexed).await;
+        let object: Option<MetaResult> = utils_meta_indexed(&schema, transaction_indexed,&mut *contracts).await;
         // meta_objects.push(object.unwrap());
     }
 
