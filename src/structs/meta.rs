@@ -44,5 +44,5 @@ pub struct MetaResult {
     pub slug: String,
     pub insert: Option<MetaIndexed>,
     pub update: Option<HashMap<String, String>>,
-    pub source: TransactionIndexed,
+    pub source: Option<TransactionIndexed>,
 }

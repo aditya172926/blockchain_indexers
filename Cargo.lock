@@ -189,9 +189,9 @@ checksum = "9e1b586273c5702936fe7b7d6896644d8be71e6314cfe09d3167c95f712589e8"
 
 [[package]]
 name = "base64"
-version = "0.21.2"
+version = "0.21.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "604178f6c5c21f02dc555784810edfb88d34ac2c73b2eae109655649ee73ce3d"
+checksum = "35636a1494ede3b646cc98f74f8e62c773a38a659ebc777a2cf26b9b74171df9"
 
 [[package]]
 name = "base64ct"
@@ -486,7 +486,7 @@ version = "0.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9b949a1c63fb7eb591eb7ba438746326aedf0ae843e51ec92ba6bec5bb382c4f"
 dependencies = [
- "base64 0.21.2",
+ "base64 0.21.5",
  "bech32",
  "bs58",
  "digest 0.10.7",
@@ -1058,7 +1058,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c8556dce50fbb89c2f3a8e5e7c5199ada9d8390c1177b30960bce6b6350586f7"
 dependencies = [
  "arrayvec",
- "ethcontract-common 0.23.0",
+ "ethcontract-common",
  "ethcontract-derive",
  "futures",
  "futures-timer",
@@ -1071,7 +1071,7 @@ dependencies = [
  "serde_json",
  "thiserror",
  "uint",
- "web3 0.18.0",
+ "web3",
  "zeroize",
 ]
 
@@ -1088,23 +1088,7 @@ dependencies = [
  "serde_json",
  "thiserror",
  "tiny-keccak",
- "web3 0.18.0",
-]
-
-[[package]]
-name = "ethcontract-common"
-version = "0.25.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "742bc83515d431a92e6c5978d95e02076e494cfe05949717bc7f8340812823f4"
-dependencies = [
- "ethabi 18.0.0",
- "hex",
- "serde",
- "serde_derive",
- "serde_json",
- "thiserror",
- "tiny-keccak",
- "web3 0.19.0",
+ "web3",
 ]
 
 [[package]]
@@ -1114,7 +1098,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "942653d82ad2ade8fcf25dc065516653d1c965cf6c1982de5cc079fdd6dba93c"
 dependencies = [
  "anyhow",
- "ethcontract-common 0.23.0",
+ "ethcontract-common",
  "ethcontract-generate",
  "proc-macro2",
  "quote",
@@ -1130,7 +1114,7 @@ dependencies = [
  "Inflector",
  "anyhow",
  "curl",
- "ethcontract-common 0.23.0",
+ "ethcontract-common",
  "proc-macro2",
  "quote",
  "syn 1.0.109",
@@ -1334,7 +1318,7 @@ checksum = "56b498fd2a6c019d023e43e83488cd1fb0721f299055975aa6bac8dbf1e95f2c"
 dependencies = [
  "async-trait",
  "auto_impl",
- "base64 0.21.2",
+ "base64 0.21.5",
  "bytes",
  "enr",
  "ethers-core",
@@ -2344,10 +2328,10 @@ dependencies = [
 name = "macha_indexer"
 version = "0.1.0"
 dependencies = [
+ "base64 0.21.5",
  "chrono",
  "env_logger",
  "ethcontract",
- "ethcontract-common 0.25.2",
  "ethers",
  "eval",
  "eyre 0.3.10",
@@ -2362,7 +2346,7 @@ dependencies = [
  "sqlx",
  "tokio",
  "url",
- "web3 0.18.0",
+ "web3",
 ]
 
 [[package]]
@@ -3149,7 +3133,7 @@ version = "0.11.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cde824a14b7c14f85caff81225f411faacc04a2013f41670f41443742b1c1c55"
 dependencies = [
- "base64 0.21.2",
+ "base64 0.21.5",
  "bytes",
  "encoding_rs",
  "futures-core",
@@ -3335,7 +3319,7 @@ version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d194b56d58803a43635bdc398cd17e383d6f71f9182b9a192c127ca42494a59b"
 dependencies = [
- "base64 0.21.2",
+ "base64 0.21.5",
 ]
 
 [[package]]
@@ -4692,30 +4676,6 @@ dependencies = [
  "tokio-util 0.6.10",
  "url",
  "web3-async-native-tls",
-]
-
-[[package]]
-name = "web3"
-version = "0.19.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5388522c899d1e1c96a4c307e3797e0f697ba7c77dd8e0e625ecba9dd0342937"
-dependencies = [
- "arrayvec",
- "derive_more",
- "ethabi 18.0.0",
- "ethereum-types 0.14.1",
- "futures",
- "futures-timer",
- "hex",
- "idna 0.4.0",
- "jsonrpc-core",
- "log",
- "parking_lot 0.12.1",
- "pin-project",
- "rlp",
- "serde",
- "serde_json",
- "tiny-keccak",
 ]
 
 [[package]]

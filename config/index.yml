@@ -1,4 +1,4 @@
 env: DEV
-slug: ens_ethereum
+slug: lens_profile_polygon
 sourceIndex: 0
-mode: HISTORY_TXN
+mode: HISTORY_EVENTS

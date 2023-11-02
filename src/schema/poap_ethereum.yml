@@ -8,12 +8,15 @@ source:
     from: 0x22c1f6050e56d2876009903609a2cc3fef83b415
     fromHistorical: 0x22c1f6050e56d2876009903609a2cc3fef83b415
     readAbiFrom: 0x4e90495F66FB04A5fBA401967aBD607E2ea0Ab46
-    startBlock: 18406981
-    endBlock: 18408219
-    interestedEvents: []
+    interestedEvents:
+      - topic0: 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef
+        name: Transfer
     interestedMethods: [transferFrom, safeTransferFrom]
-    handlersEvents: []
+    handlersEvents: handler_poap_events
     handlersMethods: handler_poap_ethereum
+indexing:
+  startBlock: 18406970
+  endBlock: 18440880
 features:
   - vectorize: true
     searchable: true

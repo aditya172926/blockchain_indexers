@@ -24,5 +24,4 @@ log="0.4.20"
 env_logger="0.10.0"
 serde_yaml="0.9.25"
 eval = "0.4.3"
-ethcontract-common="0.25.2"
-
+base64="0.21.5"

@@ -8,12 +8,13 @@ source:
     from: 0xDb46d1Dc155634FbC732f92E853b10B288AD5a1d
     fromHistorical: 0xDb46d1Dc155634FbC732f92E853b10B288AD5a1d
     readAbiFrom: 0xBA97fc9137b7cbBBC7fcB70a87DA645d917C902F
-    startBlock: 49057697
-    endBlock: 49057699
     interestedEvents: []
     interestedMethods: [post, createProfile]
-    handlersEvents: []
+    handlersEvents: handler_lens_post
     handlersMethods: handler_lens_post
+indexing: 
+    startBlock: 49057697
+    endBlock: 49057699
 features:
   - vectorize: true
     searchable: true

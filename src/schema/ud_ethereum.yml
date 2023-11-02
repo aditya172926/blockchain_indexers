@@ -5,15 +5,16 @@ description: Unstoppable domains contract deployed on network Ethereum
 source:
   - kind: evm/contract
     networkId: 1
-    from: 0xD1E5b0FF1287aA9f9A268759062E4Ab08b9Dacbe
-    fromHistorical: __CONTRACT_ADRESS_HISTORICAL__
-    readAbiFrom:
-    startBlock: __BLOCK_NUMBER_TO_START_FROM__
-    endBlock: __BLOCK_NUMBER_TO_END_ON__
+    from: 0x049aba7510f45BA5b64ea9E658E342F904DB358D
+    fromHistorical: 0x049aba7510f45BA5b64ea9E658E342F904DB358D
+    readAbiFrom: 0xcd451149ffa9d059030528917842bce14327dfd6
     interestedEvents: []
     interestedMethods: [setOwner, transferFrom, safeTransferFrom]
     handlersEvents: []
-    handlersMethods: []
+    handlersMethods: handler_ud
+indexing:
+  startBlock: 18438862
+  endBlock: 18438892
 features:
   - vectorize: true
     searchable: true

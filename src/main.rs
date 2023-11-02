@@ -1,35 +1,18 @@
+use crate::structs::{
+    contracts::{ContractAbi, ContractMetaData},
+    extract::{Config, Schema},
+    networks::NetworkStruct,
+};
 use env_logger::Env;
-// use hex_literal::hex;
-use ethcontract::contract::Instance;
-use ethcontract::{prelude::*, transport, Topic};
-use ethcontract::log::LogFilterBuilder;
-use ethcontract_common::abi::Event;
-use ethers::abi::{TopicFilter, ethereum_types, EventParam, ParamType};
-use ethers::providers::Provider;
-use ethers::types::{Filter, H256, U64};
-use ethers::utils::from_bytes_to_h256;
-use futures::join;
-use futures::stream::StreamExt;
-use std::str;
-use hex::ToHex;
+use ethers::contract::{Contract, ContractInstance};
+use ethers::providers::{Http, Provider};
 use log::{debug, error, info, warn};
-use mongodb::bson::document::ValueAccessError;
-use mongodb::bson::Document;
-use std::collections::HashSet;
 use std::error::Error;
-use std::fs;
-use std::process::exit;
 use std::string::String;
 use std::sync::Arc;
-use structs::contracts::ContractAbi;
-use utils::db::utils_db;
-use utils::index::utils_contract_instance;
+use structs::contracts::ContractIndexed;
 use utils::reader;
-use web3::transports::{Http, http};
-use web3::Web3;
-
-use crate::structs::extract::Config;
-use crate::structs::log::Log;
+use utils::{contracts::utils_contract_list, db::utils_db};
 
 // use crate::handlers::ens_ethereum::handler_ens;
 
@@ -47,6 +30,7 @@ mod utils {
     pub(crate) mod transactions;
 }
 mod transactions;
+
 mod structs {
     pub(crate) mod contracts;
     pub(crate) mod extract;
@@ -63,24 +47,26 @@ mod handlers {
     pub(crate) mod ens_ethereum;
     pub(crate) mod lens_post;
     pub(crate) mod lens_profile_polygon;
-    pub(crate) mod poap_ethereum;
+    // pub(crate) mod poap_ethereum;
+    pub(crate) mod ud_ethereum;
+    // mod lens_profile_polygon;
 }
 
 mod helpers {
     pub(crate) mod erc721;
     pub(crate) mod url;
 }
-use ethers::contract::{EthEvent, self};
+mod events;
+use ethers::contract::{self, EthEvent};
+
 #[derive(Debug, Clone, EthEvent, Copy)]
 pub struct Transfer {
     #[ethevent(indexed)]
-    pub from:ethers::types::Address,
+    pub from: ethers::types::Address,
     #[ethevent(indexed)]
-    pub to:ethers::types::Address,
-    pub tokenId:ethers::types::U256
+    pub to: ethers::types::Address,
+    pub tokenId: ethers::types::U256,
 }
-
-
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -88,206 +74,39 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let f = std::fs::File::open(String::from("config/index.yml")).expect("Could not open file.");
     let config: Config = serde_yaml::from_reader(f).expect("Could not read values.");
-
-    info!("after parsing index json {} ", config.env.to_string());
-
     let db = utils_db(config.env.to_string()).await;
 
-    let schema: structs::extract::Schema =
-        reader::utils_schema(String::from(config.slug.to_string()));
-
-    let network_metadata: structs::networks::NetworkStruct =
+    let schema: Schema = reader::utils_schema(String::from(config.slug.to_string()));
+    let network_metadata: NetworkStruct =
         utils::networks::utils_network_data(schema.source[0].networkId).unwrap();
 
-    let contract_result: (structs::contracts::ContractMetaData, ContractAbi) =
-        utils::contracts::utils_contract_data(&config,&schema).await;
+    let provider: Provider<Http> =
+        Provider::<Http>::try_from(&network_metadata.network_rpc_url).unwrap();
+    let client: Arc<Provider<Http>> = Arc::new(provider);
 
-    let contract_metadata: structs::contracts::ContractMetaData = contract_result.0;
-    let contract_abi: structs::contracts::ContractAbi = contract_result.1;
+    let mut contracts: Vec<ContractIndexed> = utils_contract_list(&client, &schema).await;
 
-    let transport: Http = Http::new(&network_metadata.network_rpc_url)?;
-    let my_web3: Web3<Http> = Web3::new(transport);
-    
-
-    
-    let contract_address_h160: H160 = contract_metadata.contract_address.parse().unwrap();
-    let read_abi_from_h160: H160 = contract_metadata.read_abi_from.parse().unwrap();
-    let contract_instance: Instance<Http> =
-    utils_contract_instance(my_web3.clone(), contract_abi.raw.clone(), contract_address_h160);
-
-    let strblc=web3::types::U64::from(18447805);
-    let endblc=web3::types::U64::from(18447807);
-     let addr:ethcontract::prelude::Address="0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85".parse()?;
-
-    //example of how to be create a topic
-     let mut topic=web3::ethabi::TopicFilter::default(); 
-     let topic0:ethcontract::TransactionHash="0xb3d987963d01b2f68493b4bdb130988f157ea43070d4ad840fee0466ed9370d9".parse().unwrap();
-    // 👆 this is for event: NameRegistered (string name, index_topic_1 bytes32 label, index_topic_2 address owner, uint256 baseCost, uint256 premium, uint256 expires)
-
-    //  topic.topic0=Topic::OneOf(vec![topic0]);
-    //  let  topic0=Topic::This(topic0);
-     
-
-    let mut filter:ethcontract::log::LogFilterBuilder<ethcontract::Http> = LogFilterBuilder::new(my_web3)
-    .from_block(BlockNumber::Number(strblc))
-    .to_block(BlockNumber::Number(endblc))
-    .address(vec![addr])
-    .block_page_size(100)
-    .limit(10)
-    .poll_interval(core::time::Duration::new(1, 0))
-    .topic0(Topic::This(topic0))
-    ;
-
-
-    // we have to create topc0,topic1,topic2 and topic3 to make it specific to events we want 
-    // LogFilterBuilder: https://docs.rs/ethcontract/latest/ethcontract/log/struct.LogFilterBuilder.html
-    //Topic enum: https://docs.rs/ethabi/18.0.0/ethabi/enum.Topic.html
-    // example for topics: https://ethereum.stackexchange.com/questions/132794/erc20-event-listener-in-rust-programming
-
-
-
-
-        let logs=filter.past_logs().await.unwrap();
-        if logs.len()==0
-{
-    println!("Empty");
-
-}   else{
-
-    for log in logs{
-        println!("{:?}",log.topics);
-        let mut c_vec: Vec<ethers::types::H256>=vec![];
-        let mut txn_topics=log.topics;
-        // for txn_topic in txn_topics{
-        //     let topic_Str=txn_topic.as_fixed_bytes();
-        //     let c:ethers::types::H256=H256::from(topic_Str);
-        //     c_vec.push(c);
-        // }
-        println!("{:?}",c_vec);
-        let txn_data=log.data.0;
-        println!("{:?}",txn_data);
-
-
-        let logData:ethcontract::contract::RawLog=ethcontract::contract::RawLog{
-            topics:txn_topics,
-            data:txn_data
-        };
-        // NameRegistered (string name, index_topic_1 bytes32 label, index_topic_2 address owner, uint256 baseCost, uint256 premium, uint256 expires)
-        let mut param_vec:Vec<web3::ethabi::EventParam>=vec![];
-        let e1=web3::ethabi::EventParam{
-            name:String::from("name"),
-            kind:web3::ethabi::ParamType::String,
-            indexed:false
-        };
-        let e2=web3::ethabi::EventParam{
-            name:String::from("label"),
-            kind:web3::ethabi::ParamType::FixedBytes(32),
-            indexed:true
-        };
-        let e3=web3::ethabi::EventParam{
-            name:String::from("owner"),
-            kind:web3::ethabi::ParamType::Address,
-            indexed:true
-        };
-        let e4=web3::ethabi::EventParam{
-            name:String::from("baseCost"),
-            kind:web3::ethabi::ParamType::Uint(256),
-            indexed:false
-        };
-        let e5=web3::ethabi::EventParam{
-            name:String::from("premium"),
-            kind:web3::ethabi::ParamType::Uint(256),
-            indexed:false
-        };
-        let e6=web3::ethabi::EventParam{
-            name:String::from("expires"),
-            kind:web3::ethabi::ParamType::Uint(256),
-            indexed:false
-        };
-
-            param_vec.push(e1);
-            param_vec.push(e2);
-            param_vec.push(e3);
-            param_vec.push(e4);
-            param_vec.push(e5);
-            param_vec.push(e6);
-
-        let event:web3::ethabi::Event=web3::ethabi::Event{ 
-            name: String::from("NameRegistered"), 
-            inputs: param_vec, 
-            anonymous: false 
-        };
-        println!("the event: {:?}",event);
-        //  let decoded=event.parse_log_whole(logData).unwrap();
-        let decoded=logData.decode::<String>(&event);
-
-
-        println!("{:?}",decoded);
-        println!("-----------------------------------------------NEXT!-----------------------------------------------");
-        
+    if &config.mode == "HISTORY_EVENTS" {
+        let _ = events::get_history_events(&db, &client, &schema, &mut contracts).await;
     }
-}     
 
-        exit(1);
-
-    // let client=Provider::<ethers::providers::Http>::try_from("https://eth-mainnet.g.alchemy.com/v2/wiflVw_lj8Lx6x6n0GYWEMhQgMqnFW8x").unwrap();
-   
-    // let abi=contract_result.1.string;
-    // let c_abi: ethers::core::abi::Abi = serde_json::from_str(&abi).unwrap();
-    // let contract =ethers::contract::Contract::new(addr,c_abi,Arc::new(client));
-    // // let txn_event=contract.event_for_name::<ValueChanged>("Transfer").unwrap();
-
-    
-
-    // let logs = contract
-    // .event()
-    // .from_block(strblc).to_block(endblc)
-    // .query()
-    // .await;
-
-    // println!("{:?}", logs);
-
-
-//     let ev = contract.event::<ValueChanged>().from_block(17125818).to_block(171265819);
-
-
-//     let mut log_stream=Box::pin(ev.stream().await.unwrap());
-//     // println!("The stream:{:?}",);
-
-// //     while let Some(Ok(approval)) = log_stream.next().await {
-// //         println!("Event caught:{:?}",approval);
-// //    }
-// loop {
-
-//    match logs.next().await {
-
-//             Ok(ev) => {println!("New event: {:?}", ev)},
-//             Err(e) => {println!("Error: {:?}", e)},
-//     }
-// }
-
-
-
-        // let my_event = contract.event::<ValueChanged>();
-        // let watcher=my_event::watcher().from_block(5).to_block(10);
-        // let stream=
-
-    // if &config.mode == "HISTORY_TXN" {
-    //     let _ = transactions::get_history(
+    // else if &config.mode == "HISTORY_TXN" {
+    //     let _ = transactions::get_history_txns(
     //         &db,
     //         &schema,
-    //         &contract_metadata,
+    //         &contract.data,
     //         &network_metadata,
-    //         &contract_abi,
+    //         &contract.abi,
     //     )
     //     .await;
-    // } else if &config.mode == "LIVE_TXN" {
+    // }
+    // else if &config.mode == "LIVE_TXN" {
     //     let _ = transactions::get_txns(
     //         &db,
     //         &schema,
-    //         &contract_abi,
-    //         &contract_instance,
-    //         contract_metadata,
+    //         &contract.abi,
+    //         &contract.instance,
+    //         contract.data,
     //         &network_metadata,
     //     )
     //     .await;
