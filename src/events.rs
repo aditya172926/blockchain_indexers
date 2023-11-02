@@ -28,8 +28,8 @@ pub async fn get_history_events(
     let mut txn_objects: HashMap<String, Vec<TransactionEvent>> = HashMap::new();
 
     let mut meta_objects: Vec<MetaResult> = Vec::new();
-    let mut topics: Vec<H256>;
-    for c in contracts {
+    let mut topics: Vec<H256> = vec![];
+    for c in contracts.clone() {
         topics.append(&mut c.data.events_of_interest.topics.clone());
     }
     // info!("topis : {:?}", topics);
