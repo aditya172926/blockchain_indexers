@@ -14,7 +14,7 @@ use ethers::{
     abi::Hash,
     contract::ContractInstance,
     providers::{Http, Middleware, Provider},
-    types::{BlockNumber, Bytes, Filter, ValueOrArray},
+    types::{BlockNumber, Bytes, Filter, ValueOrArray, H256},
 };
 use log::{debug, error, info, warn};
 use std::{collections::HashMap, fmt::format, sync::Arc};
@@ -28,9 +28,10 @@ pub async fn get_history_events(
     let mut txn_objects: HashMap<String, Vec<TransactionEvent>> = HashMap::new();
 
     let mut meta_objects: Vec<MetaResult> = Vec::new();
-    let mut topics = contracts[0].data.events_of_interest.topics.clone();
-    topics.append(&mut contracts[1].data.events_of_interest.topics.clone());
-    topics.append(&mut contracts[2].data.events_of_interest.topics.clone());
+    let mut topics: Vec<H256>;
+    for c in contracts {
+        topics.append(&mut c.data.events_of_interest.topics.clone());
+    }
     // info!("topis : {:?}", topics);
     let event_filter: Filter = Filter::new()
         .address(ValueOrArray::Array(vec![
