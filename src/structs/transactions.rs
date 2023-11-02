@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use ethers::{
     abi::Token,
     types::{H160, H256, U256},
@@ -18,6 +20,7 @@ pub struct TransactionEvent {
     pub topic0: H256,
     pub name: String,
     pub params: Vec<Token>,
+    pub data: Option<HashMap<String, String>>,
 }
 
 #[derive(Clone, Serialize, Debug, Deserialize, Default)]

@@ -3,12 +3,8 @@ use std::process::exit;
 use log::{debug, error, info, warn};
 
 use crate::{
-    handlers::ens_ethereum::index,
-    structs::{
-        extract::Schema,
-        meta::{MetaIndexed, MetaResult},
-        transactions::TransactionIndexed,
-    },
+    handlers::{ens_ethereum::index, poap_ethereum::index::handler_poap},
+    structs::{extract::Schema, meta::MetaResult, transactions::TransactionIndexed},
 };
 
 pub async fn utils_meta_indexed(
@@ -41,18 +37,16 @@ pub async fn utils_meta_indexed(
         //         None
         //     }
         // },
-        // "handler_poap_ethereum" => {
-        //     match handler_poap_ethereum(&transaction_indexed, schema).await {
-        //         Some(object) => {
-        //             info!("\n\n meta result {:?}\n\n", object);
-        //             Some(object)
-        //         }
-        //         None => {
-        //             warn!("lens profile handler returned null");
-        //             None
-        //         }
-        //     }
-        // }
+        "handler_poap_ethereum" => match handler_poap(&transaction_indexed, schema).await {
+            Some(object) => {
+                info!("\n\n meta result {:?}\n\n", object);
+                Some(object)
+            }
+            None => {
+                warn!("lens profile handler returned null");
+                None
+            }
+        },
         _ => return Some(meta_result),
     }
 }

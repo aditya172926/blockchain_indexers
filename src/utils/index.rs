@@ -1,6 +1,8 @@
 use ethcontract::{Http, Instance, H160};
 use ethers::abi::Token;
+use log::error;
 use reqwest::get;
+use std::collections::HashMap;
 use std::fs::File;
 use std::{collections::HashSet, fs};
 use web3::Web3;
@@ -51,7 +53,7 @@ pub async fn utils_contract_abi(contract_chain_id: &str, contract_address: &str)
     // return response;
 }
 
-pub async fn utils_url_data(param: &str) -> Result<reqwest::Response, reqwest::Error> {
+pub async fn utils_url_data(param: &str) -> Option<serde_json::Value> {
     let mut query = String::new();
     if param.starts_with("ar://") {
         let arweave_id = &param[5..param.len()];
@@ -64,7 +66,23 @@ pub async fn utils_url_data(param: &str) -> Result<reqwest::Response, reqwest::E
     }
 
     let response = get(query).await;
-    response
+
+    match response {
+        Ok(object) => {
+            let url_data = object
+                .text()
+                .await
+                .expect("Error in parsing nft data to string\n");
+
+            let url_data_content =
+                serde_json::from_str(&url_data).expect("error in reading json format");
+            return url_data_content;
+        }
+        Err(error) => {
+            error!("Error in fetching nft data from url {:?}\n\n", error);
+            return None;
+        }
+    };
 }
 
 pub fn utils_interesting_method(

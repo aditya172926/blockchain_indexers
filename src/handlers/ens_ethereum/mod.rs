@@ -1,2 +1,2 @@
-mod handler;
+pub mod handler;
 pub(crate) mod index;
