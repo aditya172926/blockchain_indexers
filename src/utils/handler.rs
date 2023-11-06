@@ -42,7 +42,9 @@ pub async fn handler_data_from_event(
             == "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
     {
         //ENSTransferBase
-        return Some(handler_event_transfer_ens_by_base(event.clone()).await);
+        return Some(
+            handler_event_transfer_ens_by_base(contract.instance.clone(), event.clone()).await,
+        );
     } else if schema.slug == "ens_ethereum"
         && format!("0x{:x}", event.topic0)
             == "0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae"
@@ -61,7 +63,7 @@ pub async fn handler_data_from_event(
             == "0x9b87a00e30f1ac65d898f070f8a3488fe60517182d0a2098e1b4b93a54aa9bd6"
     {
         //ENSRenewBase
-        return Some(handler_event_renew_ens_by_base(&event).await);
+        return Some(handler_event_renew_ens_by_base(contract.instance.clone(), &event).await);
     } else {
         None
     }

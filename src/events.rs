@@ -62,7 +62,7 @@ pub async fn get_history_events(
                             params: inputs.clone(),
                             data: None,
                         };
-                        info!("txn event {:?} ", txn_event);
+                        // info!("txn event {:?} ", txn_event);
                         let txn_data = handler_data_from_event(schema, contract, txn_event.clone())
                             .await
                             .unwrap();
@@ -78,7 +78,7 @@ pub async fn get_history_events(
                                 txn_objects.insert(txn_hash, vec![txn_event.clone()]);
                             }
                         }
-                        info!("txn event is : {:?}", txn_event);
+                        // info!("txn event is : {:?}", txn_event);
                     }
                     Err(error) => {
                         println!("{:?}", error);
@@ -87,7 +87,6 @@ pub async fn get_history_events(
             }
         }
     }
-
     for (key, val) in txn_objects.iter() {
         let transaction_struct: Transaction = Transaction {
             txn_hash: Some(key.to_string()),
@@ -113,14 +112,17 @@ pub async fn get_history_events(
         //     transaction_indexed
         // );
 
-        // let object: Option<MetaResult> = utils_meta_indexed(&schema, transaction_indexed).await;
-        // meta_objects.push(object.unwrap());
+        let object: Option<MetaResult> = utils_meta_indexed(&schema, transaction_indexed).await;
+        meta_objects.push(object.unwrap());
     }
 
-    // if !meta_objects.is_empty() {
-    //     info!("Adding history_events meta_indexed into db...");
-    //     let _ = db_meta_store(&db, &meta_objects).await;
-    // }
+    if !meta_objects.is_empty() {
+        info!(
+            "Adding history_events meta_indexed into db...\n{:?}",
+            meta_objects
+        );
+        // let _ = db_meta_store(&db, &meta_objects).await;
+    }
 
     // let logger: Log = Log {
     //     slug: schema.slug.to_string(),

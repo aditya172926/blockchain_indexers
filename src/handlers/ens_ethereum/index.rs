@@ -40,38 +40,43 @@ pub async fn handler_ens(
         None => {
             let mut meta_raw: HashMap<String, String> = HashMap::new();
 
-            info!(
-                "meta raw is {:?} {:?}",
-                meta_raw, transaction_indexed.transaction.txn_hash
-            );
-            // let meta_modified: Meta = Meta {
-            //     id: Some(meta_raw["name"].clone()),
-            //     owner: Some(meta_raw["owner"].parse::<H160>().unwrap()),
-            //     title: Some(format!("{}.eth", meta_raw["name"])),
-            //     image: Some(meta_raw["image"].clone()),
-            //     content: None,
-            // };
+            println!(" txn indexed : \n{:?}\n\n", transaction_indexed);
+            for event in transaction_indexed.events.as_ref().unwrap() {
+                if let Some(data) = event.data.clone() {
+                    for (key, value) in data.iter() {
+                        meta_raw.insert(key.to_string(), value.to_string());
+                    }
+                }
+            }
+            info!("meta raw is {:?}", meta_raw);
+            let meta_modified: Meta = Meta {
+                id: Some(meta_raw["name"].clone()),
+                owner: Some(meta_raw["owner"].parse::<H160>().unwrap()),
+                title: Some(format!("{}.eth", meta_raw["name"])),
+                image: None,
+                content: None,
+            };
 
-            // let meta_indexed = MetaIndexed {
-            //     owner: meta_raw["owner"].parse::<H160>().unwrap(),
-            //     id: meta_raw["name"].clone(),
-            //     slug: schema.slug.clone(),
-            //     raw: meta_raw,
-            //     modified: Some(meta_modified),
-            //     //TODO: Fix these values
-            //     createdAt: "".to_string(),
-            //     updatedAt: "".to_string(),
-            // };
+            let meta_indexed = MetaIndexed {
+                owner: meta_raw["owner"].parse::<H160>().unwrap(),
+                id: meta_raw["name"].clone(),
+                slug: schema.slug.clone(),
+                raw: meta_raw.clone(),
+                modified: Some(meta_modified),
+                //TODO: Fix these values
+                createdAt: "".to_string(),
+                updatedAt: "".to_string(),
+            };
 
-            // let result: MetaResult = MetaResult {
-            //     id: transaction_event.params[0].to_string(),
-            //     owner: transaction_event.params[2].to_string(),
-            //     slug: schema.slug.clone(),
-            //     insert: Some(meta_indexed),
-            //     update: None,
-            //     source: None,
-            // };
-            return None;
+            let result: MetaResult = MetaResult {
+                id: meta_raw["name"].clone(),
+                owner: meta_raw["owner"].clone(),
+                slug: schema.slug.clone(),
+                insert: Some(meta_indexed),
+                update: None,
+                source: None,
+            };
+            return Some(result);
         }
     }
 }

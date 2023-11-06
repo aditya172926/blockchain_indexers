@@ -13,7 +13,7 @@ pub async fn utils_meta_indexed(
 ) -> Option<MetaResult> {
     // The index should come from config
     let fname = &schema.source[0].handlersMethods;
-    print!("the fname: {}", fname);
+    // print!("the fname: {}", fname);
 
     let mut meta_result: MetaResult = MetaResult::default();
     match fname.as_ref() {
@@ -36,17 +36,17 @@ pub async fn utils_meta_indexed(
         //         warn!("lens profile handler returned null");
         //         None
         //     }
+        // // },
+        // "handler_poap_ethereum" => match handler_poap(&transaction_indexed, schema).await {
+        //     Some(object) => {
+        //         info!("\n\n meta result {:?}\n\n", object);
+        //         Some(object)
+        //     }
+        //     None => {
+        //         warn!("lens profile handler returned null");
+        //         None
+        //     }
         // },
-        "handler_poap_ethereum" => match handler_poap(&transaction_indexed, schema).await {
-            Some(object) => {
-                info!("\n\n meta result {:?}\n\n", object);
-                Some(object)
-            }
-            None => {
-                warn!("lens profile handler returned null");
-                None
-            }
-        },
         _ => return Some(meta_result),
     }
 }
