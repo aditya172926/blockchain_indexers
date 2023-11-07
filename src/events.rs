@@ -31,9 +31,9 @@ pub async fn get_history_events(
     let mut meta_objects: Vec<MetaResult> = Vec::new();
     let mut topics: Vec<H256> = vec![];
     let mut addresses: Vec<ethers::types::H160> = vec![];
-    for c in contracts.clone() {
-        topics.append(&mut c.data.events_of_interest.topics.clone());
-        addresses.push(c.data.contract_address_historical_H160.clone());
+    for contract in contracts.clone() {
+        topics.append(&mut contract.data.events_of_interest.topics.clone());
+        addresses.push(contract.data.contract_address_historical_H160.clone());
     }
     // info!("topis : {:?}", topics);
 

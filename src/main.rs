@@ -84,7 +84,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let client: Arc<Provider<Http>> = Arc::new(provider);
 
     let mut contracts: Vec<ContractIndexed> = utils_contract_list(&client, &schema).await;
-
+ 
     if &config.mode == "HISTORY_EVENTS" {
         let _ = events::get_history_events(&db, &client, &schema, &mut contracts).await;
     }

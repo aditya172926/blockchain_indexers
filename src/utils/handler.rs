@@ -1,8 +1,5 @@
 use std::{collections::HashMap, process::exit};
 
-use ethers::types::H160;
-use log::info;
-
 use crate::{
     handlers::{
         ens_ethereum::handler::{
