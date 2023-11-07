@@ -1,12 +1,9 @@
 use crate::structs::{
-    contracts::{ContractAbi, ContractMetaData},
     extract::{Config, Schema},
     networks::NetworkStruct,
 };
 use env_logger::Env;
-use ethers::contract::{Contract, ContractInstance};
 use ethers::providers::{Http, Provider};
-use log::{debug, error, info, warn};
 use std::error::Error;
 use std::string::String;
 use std::sync::Arc;

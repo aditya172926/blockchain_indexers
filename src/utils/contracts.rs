@@ -5,7 +5,7 @@ use crate::structs::{
 use ethers::abi::{Abi, Function, Token};
 use ethers::contract::{Contract, ContractInstance};
 use ethers::providers::{Http, Provider};
-use ethers::types::{H160, H256};
+use ethers::types::H256;
 use log::{debug, error, info, warn};
 use std::{collections::HashMap, fs};
 use std::{string::String, sync::Arc};
@@ -16,10 +16,10 @@ pub async fn utils_contract_list(
 ) -> Vec<ContractIndexed> {
     let mut contracts: Vec<ContractIndexed> = vec![];
     let length: usize = schema.source.len();
-
     for i in 0..length {
+        info!("The yml source -> {:?}", schema.source[i].interestedEvents);
         let contract: ContractIndexed = utils_contract_data(&client, i, &schema).await;
-        contracts.push(contract);
+        // contracts.push(contract);
     }
     return contracts;
 }
@@ -33,17 +33,7 @@ pub async fn utils_contract_data(
     let mut interested_events_map: HashMap<H256, String> = HashMap::new();
     let mut interested_event_topics: Vec<H256> = vec![];
 
-    for event in schema.source[sourceIndex].interestedEvents.iter() {
-        let topic: H256 = event.topic0.parse().unwrap();
-        let e: ContractEvent = ContractEvent {
-            topic0: topic,
-            name: event.name.clone(),
-        };
-        interested_event_topics.push(topic);
-        interested_events_map.insert(topic, event.name.clone());
-        interested_events.push(e);
-    }
-
+    // get contract abi, get event topics
     let contract_events: ContractEventMap = ContractEventMap {
         topics: interested_event_topics,
         map: interested_events_map,
@@ -71,13 +61,30 @@ pub async fn utils_contract_data(
     };
 
     let contract_abi_string: String = utils_contract_abi(&contract_metadata).await;
-    let abi_json: web3::ethabi::Contract = serde_json::from_str(&contract_abi_string).unwrap();
-    let abi_static: ethers::core::abi::Abi = serde_json::from_str(&contract_abi_string).unwrap();
+    let abi_static: Abi = serde_json::from_str(&contract_abi_string).unwrap();
     let contract_abi: ContractAbi = ContractAbi {
         string: contract_abi_string,
-        raw: abi_json,
         stat: abi_static,
     };
+
+    for event in schema.source[sourceIndex].interestedEvents.iter() {
+        let event_abi = match contract_abi.stat.event(event) {
+            Ok(event_object) => {
+                info!("\n\nThe event object signature is -> {:?}\n\n", event_object.signature());
+                // let topic: H256 = event.topic0.parse().unwrap();
+                // let e: ContractEvent = ContractEvent {
+                //     topic0: topic,
+                //     name: event.name.clone(),
+                // };
+                // interested_event_topics.push(topic);
+                // interested_events_map.insert(topic, event.name.clone());
+                // interested_events.push(e);
+            },
+            Err(error) => {
+                continue;
+            }
+        };
+    }
 
     let contract_instance: ContractInstance<Arc<Provider<Http>>, Provider<Http>> = Contract::new(
         contract_metadata.contract_address_H160,

@@ -47,7 +47,6 @@ pub struct ContractMetaData {
 #[derive(Debug, Clone)]
 pub struct ContractAbi {
     pub string: String,
-    pub raw: web3::ethabi::Contract,
     pub stat: Abi,
 }
 
