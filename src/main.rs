@@ -32,6 +32,7 @@ mod utils {
 }
 mod transactions;
 
+
 mod structs {
     pub(crate) mod contracts;
     pub(crate) mod extract;
