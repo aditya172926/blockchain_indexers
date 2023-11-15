@@ -1,9 +1,8 @@
 use crate::{
     db::index::{db_log_store, db_meta_store},
-    events,
     handlers::poap_ethereum::handler::handler_transfer_poap,
     structs::{
-        contracts::{ContractAbi, ContractIndexed, ContractMetaData},
+        contracts::ContractIndexed,
         extract::{Db, Schema},
         log::Log,
         meta::MetaResult,
@@ -116,7 +115,8 @@ pub async fn get_history_events(
         //     transaction_indexed
         // );
 
-        let object: Option<MetaResult> = utils_meta_indexed(&schema, transaction_indexed,&mut *contracts).await;
+        let object: Option<MetaResult> =
+            utils_meta_indexed(&schema, transaction_indexed, &mut *contracts).await;
         meta_objects.push(object.unwrap());
     }
 
@@ -124,7 +124,7 @@ pub async fn get_history_events(
         info!("Adding history_events meta_indexed into db...");
         let _ = db_meta_store(&db, &meta_objects).await;
     }
-    
+
     let logger: Log = Log {
         slug: schema.slug.to_string(),
         docsLength: meta_objects.len().to_string(),
