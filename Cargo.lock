@@ -189,9 +189,9 @@ checksum = "9e1b586273c5702936fe7b7d6896644d8be71e6314cfe09d3167c95f712589e8"
 
 [[package]]
 name = "base64"
-version = "0.21.2"
+version = "0.21.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "604178f6c5c21f02dc555784810edfb88d34ac2c73b2eae109655649ee73ce3d"
+checksum = "35636a1494ede3b646cc98f74f8e62c773a38a659ebc777a2cf26b9b74171df9"
 
 [[package]]
 name = "base64ct"
@@ -486,7 +486,7 @@ version = "0.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9b949a1c63fb7eb591eb7ba438746326aedf0ae843e51ec92ba6bec5bb382c4f"
 dependencies = [
- "base64 0.21.2",
+ "base64 0.21.5",
  "bech32",
  "bs58",
  "digest 0.10.7",
@@ -1318,7 +1318,7 @@ checksum = "56b498fd2a6c019d023e43e83488cd1fb0721f299055975aa6bac8dbf1e95f2c"
 dependencies = [
  "async-trait",
  "auto_impl",
- "base64 0.21.2",
+ "base64 0.21.5",
  "bytes",
  "enr",
  "ethers-core",
@@ -2328,6 +2328,7 @@ dependencies = [
 name = "macha_indexer"
 version = "0.1.0"
 dependencies = [
+ "base64 0.21.5",
  "chrono",
  "env_logger",
  "ethcontract",
@@ -3132,7 +3133,7 @@ version = "0.11.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cde824a14b7c14f85caff81225f411faacc04a2013f41670f41443742b1c1c55"
 dependencies = [
- "base64 0.21.2",
+ "base64 0.21.5",
  "bytes",
  "encoding_rs",
  "futures-core",
@@ -3318,7 +3319,7 @@ version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d194b56d58803a43635bdc398cd17e383d6f71f9182b9a192c127ca42494a59b"
 dependencies = [
- "base64 0.21.2",
+ "base64 0.21.5",
 ]
 
 [[package]]
