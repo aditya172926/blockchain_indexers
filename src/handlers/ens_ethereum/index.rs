@@ -41,13 +41,13 @@ pub async fn handler_ens(
             let mut meta_raw: HashMap<String, String> = HashMap::new();
 
             println!(" txn indexed : \n{:?}\n\n", transaction_indexed);
-            for event in transaction_indexed.events.as_ref().unwrap() {
-                if let Some(data) = event.data.clone() {
-                    for (key, value) in data.iter() {
-                        meta_raw.insert(key.to_string(), value.to_string());
-                    }
-                }
-            }
+            // for event in transaction_indexed.events.as_ref().unwrap() {
+            //     if let Some(data) = event.data.clone() {
+            //         for (key, value) in data.iter() {
+            //             meta_raw.insert(key.to_string(), value.to_string());
+            //         }
+            //     }
+            // }
             info!("meta raw is {:?}", meta_raw);
             let meta_modified: Meta = Meta {
                 id: Some(meta_raw["name"].clone()),

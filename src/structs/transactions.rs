@@ -23,6 +23,7 @@ pub struct TransactionEvent {
     pub data: Option<HashMap<String, String>>,
 }
 
+
 #[derive(Clone, Serialize, Debug, Deserialize, Default)]
 pub struct Transaction {
     pub block_hash: Option<H256>,
