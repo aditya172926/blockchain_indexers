@@ -176,6 +176,6 @@ pub async fn handler_event_create_profile(
             source: Some(transaction_indexed.clone()),
         };
         println!("FOUND RESULT----------{:?}\n",result);
-    return None;
+    return Some(result);
 }
 

@@ -66,10 +66,10 @@ pub async fn handler_lens_profile(
 
                         let metadata_obj:serde_json::Value=serde_json::from_str(str_metadata).unwrap();
 
-                        // println!("{:?}",metadata_obj);
+                        // println!("THIS IS IT:///////////////{:?}",metadata_obj);
 
                     return handler::handler_event_create_profile(metadata_obj,transaction_indexed,event,schema).await;
-                    return None;
+                    // return None;
                     };
             }            
             None
