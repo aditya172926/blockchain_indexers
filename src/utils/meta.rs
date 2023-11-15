@@ -1,15 +1,20 @@
 use std::process::exit;
 
 use log::{debug, error, info, warn};
-
 use crate::{
-    handlers::{ens_ethereum::index, poap_ethereum::index::handler_poap},
-    structs::{extract::Schema, meta::MetaResult, transactions::TransactionIndexed},
+    handlers::{ens_ethereum::index},
+    structs::{
+        extract::Schema,
+        meta::{MetaIndexed, MetaResult},
+        transactions::TransactionIndexed, contracts::ContractIndexed,
+    },
 };
+use crate::handlers::lens_profile_polygon::index::handler_lens_profile;
 
 pub async fn utils_meta_indexed(
     schema: &Schema,
     transaction_indexed: TransactionIndexed,
+    contracts: &mut Vec<ContractIndexed>,
 ) -> Option<MetaResult> {
     // The index should come from config
     let fname = &schema.source[0].handlersMethods;
@@ -27,26 +32,28 @@ pub async fn utils_meta_indexed(
                 None
             }
         },
-        // "handler_lens_profile" => match handler_lens_profile(&transaction_indexed, schema).await {
-        //     Some(object) => {
-        //         info!("\n\n meta result {:?}\n\n", object);
-        //         Some(object)
+        "handler_lens_profile" => match handler_lens_profile(&transaction_indexed, schema,contracts).await {
+            Some(object) => {
+                info!("\n\n meta result {:?}\n\n", object);
+                Some(object)
+            }
+            None => {
+                warn!("lens profile handler returned null");
+                None
+            }
+        },
+        // "handler_poap_ethereum" => {
+        //     match handler_poap_ethereum(&transaction_indexed, schema).await {
+        //         Some(object) => {
+        //             info!("\n\n meta result {:?}\n\n", object);
+        //             Some(object)
+        //         }
+        //         None => {
+        //             warn!("lens profile handler returned null");
+        //             None
+        //         }
         //     }
-        //     None => {
-        //         warn!("lens profile handler returned null");
-        //         None
-        //     }
-        // // },
-        // "handler_poap_ethereum" => match handler_poap(&transaction_indexed, schema).await {
-        //     Some(object) => {
-        //         info!("\n\n meta result {:?}\n\n", object);
-        //         Some(object)
-        //     }
-        //     None => {
-        //         warn!("lens profile handler returned null");
-        //         None
-        //     }
-        // },
+        // }
         _ => return Some(meta_result),
     }
 }

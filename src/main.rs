@@ -31,6 +31,7 @@ mod utils {
     pub(crate) mod transactions;
 }
 mod transactions;
+
 mod structs {
     pub(crate) mod contracts;
     pub(crate) mod extract;
@@ -47,8 +48,9 @@ mod handlers {
     pub(crate) mod ens_ethereum;
     pub(crate) mod lens_post;
     pub(crate) mod lens_profile_polygon;
-    pub(crate) mod poap_ethereum;
+    // pub(crate) mod poap_ethereum;
     pub(crate) mod ud_ethereum;
+    // mod lens_profile_polygon;
 }
 
 mod helpers {

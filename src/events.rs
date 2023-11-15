@@ -38,7 +38,11 @@ pub async fn get_history_events(
     // info!("topis : {:?}", topics);
 
     let event_filter: Filter = Filter::new()
-        .address(ValueOrArray::Array(addresses))
+        .address(ValueOrArray::Array(vec![
+            contracts[0].data.contract_address_historical_H160,
+            contracts[1].data.contract_address_historical_H160,
+            // contracts[2].data.contract_address_historical_H160,
+        ]))
         .from_block(BlockNumber::Number(schema.indexing.startBlock.into()))
         .to_block(BlockNumber::Number(schema.indexing.endBlock.into()))
         .topic0(ValueOrArray::Array(topics));
@@ -112,23 +116,21 @@ pub async fn get_history_events(
         //     transaction_indexed
         // );
 
-        let object: Option<MetaResult> = utils_meta_indexed(&schema, transaction_indexed).await;
+        let object: Option<MetaResult> = utils_meta_indexed(&schema, transaction_indexed,&mut *contracts).await;
         meta_objects.push(object.unwrap());
     }
 
     if !meta_objects.is_empty() {
-        info!(
-            "Adding history_events meta_indexed into db...\n{:?}",
-            meta_objects
-        );
-        // let _ = db_meta_store(&db, &meta_objects).await;
+        info!("Adding history_events meta_indexed into db...");
+        let _ = db_meta_store(&db, &meta_objects).await;
     }
-
-    // let logger: Log = Log {
-    //     slug: schema.slug.to_string(),
-    //     docsLength: meta_objects.len().to_string(),
-    //     blockStart: schema.indexing.startBlock.to_string(),
-    //     blockEnd: schema.indexing.endBlock.to_string(),
-    // };
-    // let _ = db_log_store(&db, logger).await;
+    
+    let logger: Log = Log {
+        slug: schema.slug.to_string(),
+        docsLength: meta_objects.len().to_string(),
+        blockStart: schema.indexing.startBlock.to_string(),
+        blockEnd: schema.indexing.endBlock.to_string(),
+    };
+    let _ = db_log_store(&db, logger).await;
+    info!("Successfully added to db...");
 }
