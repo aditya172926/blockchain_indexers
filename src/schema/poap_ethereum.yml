@@ -15,8 +15,8 @@ source:
     handlersEvents: handler_poap_events
     handlersMethods: handler_poap_ethereum
 indexing:
-  startBlock: 18406970
-  endBlock: 18440880
+  startBlock: 18425950
+  endBlock: 18476439
 features:
   - vectorize: true
     searchable: true

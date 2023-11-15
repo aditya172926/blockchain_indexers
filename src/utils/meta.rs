@@ -18,7 +18,7 @@ pub async fn utils_meta_indexed(
 ) -> Option<MetaResult> {
     // The index should come from config
     let fname = &schema.source[0].handlersMethods;
-    print!("the fname: {}", fname);
+    // print!("the fname: {}", fname);
 
     let mut meta_result: MetaResult = MetaResult::default();
     match fname.as_ref() {

@@ -23,6 +23,7 @@ mod db {
 mod utils {
     pub(crate) mod contracts;
     pub(crate) mod db;
+    pub(crate) mod handler;
     pub(crate) mod index;
     pub(crate) mod meta;
     pub(crate) mod networks;
