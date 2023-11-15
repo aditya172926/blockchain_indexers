@@ -1,82 +1,84 @@
+use std::{collections::HashMap, process::exit};
+
 use ethers::types::H160;
-use log::{debug, error, info, warn};
-use std::collections::HashMap;
-use std::process::exit;
+use log::info;
 
-use crate::handlers::ens_ethereum::handler;
-use crate::structs::extract::Schema;
-use crate::structs::meta::{self, Meta, MetaIndexed, MetaResult};
-use crate::structs::transactions::{TransactionEvent, TransactionIndexed};
+use crate::{
+    handlers::{
+        ens_ethereum::handler::{
+            handler_event_register_ens_by_base, handler_event_register_ens_by_controller,
+            handler_event_register_ens_by_controller_old, handler_event_renew_ens_by_base,
+            handler_event_renew_ens_by_controller, handler_event_transfer_ens_by_base,
+        },
+        poap_ethereum::handler::handler_transfer_poap,
+    },
+    structs::{
+        contracts::ContractIndexed,
+        extract::Schema,
+        transactions::{TransactionEvent, TransactionIndexed},
+    },
+};
 
-pub async fn handler_ens(
-    transaction_indexed: &TransactionIndexed,
+pub async fn load_ens_event(
     schema: &Schema,
-) -> Option<MetaResult> {
-    match &transaction_indexed.method {
-        Some(transaction_indexed_method) => {
-            if transaction_indexed_method.name == "register"
-                || transaction_indexed_method.name == "registerOnly"
-            {
-                return handler::handler_txn_register_ens(transaction_indexed, schema).await;
-            } else if transaction_indexed_method.name == "renew" {
-                return handler::handler_txn_renew_ens(
-                    transaction_indexed,
-                    transaction_indexed_method,
-                    schema,
-                )
-                .await;
-            } else if transaction_indexed_method.name == "reclaim" {
-                return handler::handler_txn_reclaim_ens(
-                    transaction_indexed,
-                    transaction_indexed_method,
-                    schema,
-                )
-                .await;
-            } else {
-                return None;
-            }
+    contracts: &mut Vec<ContractIndexed>,
+    transaction_indexed: &TransactionIndexed,
+) -> Option<HashMap<String, String>> {
+    let mut meta_raw: HashMap<String, String> = HashMap::new();
+
+    for event in transaction_indexed.events.as_ref().unwrap() {
+        if schema.slug == "ens_ethereum"
+            && format!("0x{:x}", event.topic0)
+                == "0x69e37f151eb98a09618ddaa80c8cfaf1ce5996867c489f45b555b412271ebf27"
+        {
+            // ENSRegisterController
+            handler_event_register_ens_by_controller(&mut meta_raw, &event).await;
         }
 
-        None => {
-            let mut meta_raw: HashMap<String, String> = HashMap::new();
+        if schema.slug == "ens_ethereum"
+            && format!("0x{:x}", event.topic0)
+                == "0xb3d987963d01b2f68493b4bdb130988f157ea43070d4ad840fee0466ed9370d9"
+        {
+            //ENSRegisterBase
+            handler_event_register_ens_by_base(&mut meta_raw, &event).await;
+        }
 
-            println!(" txn indexed : \n{:?}\n\n", transaction_indexed);
-            // for event in transaction_indexed.events.as_ref().unwrap() {
-            //     if let Some(data) = event.data.clone() {
-            //         for (key, value) in data.iter() {
-            //             meta_raw.insert(key.to_string(), value.to_string());
-            //         }
-            //     }
-            // }
-            info!("meta raw is {:?}", meta_raw);
-            let meta_modified: Meta = Meta {
-                id: Some(meta_raw["name"].clone()),
-                owner: Some(meta_raw["owner"].parse::<H160>().unwrap()),
-                title: Some(format!("{}.eth", meta_raw["name"])),
-                image: None,
-                content: None,
-            };
+        if schema.slug == "ens_ethereum"
+            && format!("0x{:x}", event.topic0)
+                == "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"
+        {
+            //ENSTransferBase
+            handler_event_transfer_ens_by_base(&mut meta_raw, event.clone()).await;
+        }
 
-            let meta_indexed = MetaIndexed {
-                owner: meta_raw["owner"].parse::<H160>().unwrap(),
-                id: meta_raw["name"].clone(),
-                slug: schema.slug.clone(),
-                raw: meta_raw.clone(),
-                modified: Some(meta_modified),
-                //TODO: Fix these values
-                createdAt: "".to_string(),
-                updatedAt: "".to_string(),
-            };
+        if schema.slug == "ens_ethereum"
+            && format!("0x{:x}", event.topic0)
+                == "0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae"
+        {
+            // ENSRenewController
+            //ENSRenewByOldController
+            handler_event_renew_ens_by_controller(&mut meta_raw, &event).await;
+        }
 
-            let result: MetaResult = MetaResult {
-                id: meta_raw["name"].clone(),
-                owner: meta_raw["owner"].clone(),
-                slug: schema.slug.clone(),
-                insert: Some(meta_indexed),
-                update: None,
-                source: None,
-            };
-            return Some(result);
+        if schema.slug == "ens_ethereum"
+            && format!("0x{:x}", event.topic0)
+                == "0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f"
+        {
+            // ENSRegisterByOldController
+            handler_event_register_ens_by_controller_old(&mut meta_raw, &event).await;
+        }
+
+        if schema.slug == "ens_ethereum"
+            && format!("0x{:x}", event.topic0)
+                == "0x9b87a00e30f1ac65d898f070f8a3488fe60517182d0a2098e1b4b93a54aa9bd6"
+        {
+            //ENSRenewBase
+            handler_event_renew_ens_by_base(&mut meta_raw, contracts[1].instance.clone(), &event)
+                .await;
         }
     }
+
+    info!("meta raw is : {:?} ", meta_raw);
+
+    None
 }

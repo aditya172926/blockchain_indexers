@@ -1,9 +1,6 @@
 use std::{collections::HashMap, sync::Arc};
 
-use base64::engine::general_purpose;
-use base64::Engine;
 use ethers::{
-    abi::Hash,
     providers::{Http, Provider},
     types::H160,
 };
@@ -84,7 +81,7 @@ pub async fn handler(
     return Some(meta_indexed);
 }
 
-pub async fn handler_txn_create_profile_lens(
+pub async fn handler_txn_post_lens(
     transaction_indexed: &TransactionIndexed,
     schema: &Schema,
 ) -> Option<MetaResult> {
@@ -114,70 +111,82 @@ pub async fn handler_txn_create_profile_lens(
     return Some(result);
 }
 
-pub async fn handler_txn_set_profile_lens(
-    transaction_indexed: &TransactionIndexed,
-    schema: &Schema,
-) -> Option<MetaResult> {
-    let transaction_indexed_method = transaction_indexed.method.clone().unwrap();
-    let params_list = transaction_indexed_method.params[0]
-        .clone()
-        .into_tuple()
-        .unwrap();
-    let update_obj: HashMap<String, String> = HashMap::from([
-        (
-            String::from("document.raw.imageURI"),
-            params_list[1].to_string(),
-        ),
-        (
-            String::from("document.modified.image"),
-            params_list[1].to_string(),
-        ),
-    ]);
-    let result = MetaResult {
-        id: params_list[0].to_string(),
-        owner: transaction_indexed.transaction.from.unwrap().to_string(),
-        slug: schema.slug.clone(),
-        insert: None,
-        update: Some(update_obj),
-        source: Some(transaction_indexed.clone()),
-    };
-    return Some(result);
-}
+// pub async fn handler_txn_create_profile_lens(
+//     transaction_indexed: &TransactionIndexed,
+//     schema: &Schema,
+// ) -> Option<MetaResult> {
+//     let transaction_indexed_method = transaction_indexed.method.clone().unwrap();
+//     let params_list = transaction_indexed_method.params[0]
+//         .clone()
+//         .into_tuple()
+//         .unwrap();
+//     let update_obj: HashMap<String, String> = HashMap::from([
+//         (
+//             String::from("document.raw.imageURI"),
+//             params_list[1].to_string(),
+//         ),
+//         (
+//             String::from("document.modified.image"),
+//             params_list[1].to_string(),
+//         ),
+//     ]);
+//     let result = MetaResult {
+//         id: params_list[0].to_string(),
+//         owner: transaction_indexed.transaction.from.unwrap().to_string(),
+//         slug: schema.slug.clone(),
+//         insert: None,
+//         update: Some(update_obj),
+//         source: Some(transaction_indexed.clone()),
+//     };
+//     return Some(result);
+// }
 
-pub async fn handler_event_create_profile(
-    meta_raw: &mut HashMap<String, String>,
-    create_contract: ethers::contract::ContractInstance<
-        std::sync::Arc<ethers::providers::Provider<ethers::providers::Http>>,
-        ethers::providers::Provider<ethers::providers::Http>,
-    >,
-    event: &TransactionEvent,
-) {
-    let metadata = create_contract
-        .method::<_, String>("tokenURI", event.params[2].clone())
-        .unwrap()
-        .call()
-        .await
-        .unwrap();
+// pub async fn handler_event_create_profile(
+//     metadata: serde_json::Value,
+//     transaction_indexed: &TransactionIndexed,
+//     event: &TransactionEvent,
+//     schema: &Schema,
+// ) -> Option<MetaResult> {
+//     //Transfer (index_topic_1 address from, index_topic_2 address to, index_topic_3 uint256 tokenId)
+//     let mut meta_raw = HashMap::new();
+//     meta_raw.insert("owner".to_string(), event.params[1].to_string());
+//     meta_raw.insert(
+//         "tokenId".to_string(),
+//         event.params[2].clone().into_uint().unwrap().to_string(),
+//     );
+//     meta_raw.insert("imageUri".to_string(), metadata["image"].to_string());
+//     meta_raw.insert(
+//         "description".to_string(),
+//         metadata["description"].to_string(),
+//     );
 
-    let metadata_split: Vec<&str> = metadata.split("64,").collect();
-    let data = metadata_split[1].clone();
+//     let meta_modified: Meta = Meta {
+//         id: Some(metadata["name"].to_string()),
+//         owner: Some(meta_raw["owner"].clone().parse::<H160>().unwrap()),
+//         title: Some(format!("{}.lens", meta_raw["owner"])),
+//         image: Some(meta_raw["imageUri"].clone()),
+//         content: None,
+//     };
 
-    let decoded_metadata = general_purpose::STANDARD.decode(data).unwrap();
-    let str_metadata = std::str::from_utf8(&decoded_metadata).unwrap();
+//     let meta_indexed = MetaIndexed {
+//         owner: meta_raw["owner"].clone().parse::<H160>().unwrap(),
+//         id: metadata["name"].to_string(),
+//         slug: schema.slug.clone(),
+//         raw: meta_raw.clone(),
+//         modified: Some(meta_modified),
+//         //TODO: Fix these values
+//         createdAt: "".to_string(),
+//         updatedAt: "".to_string(),
+//     };
 
-    let metadata_obj: serde_json::Value = serde_json::from_str(str_metadata).unwrap();
-
-    //Transfer (index_topic_1 address from, index_topic_2 address to, index_topic_3 uint256 tokenId)
-
-    meta_raw.insert("owner".to_string(), event.params[1].to_string());
-    meta_raw.insert(
-        "tokenId".to_string(),
-        event.params[2].clone().into_uint().unwrap().to_string(),
-    );
-    meta_raw.insert("imageUri".to_string(), metadata_obj["image"].to_string());
-
-    meta_raw.insert(
-        "description".to_string(),
-        metadata_obj["description"].to_string(),
-    );
-}
+//     let result = MetaResult {
+//         id: metadata["name"].to_string(),
+//         owner: meta_raw["owner"].clone(),
+//         slug: schema.slug.clone(),
+//         insert: Some(meta_indexed),
+//         update: None,
+//         source: Some(transaction_indexed.clone()),
+//     };
+//     println!("FOUND RESULT----------{:?}\n", result);
+//     return Some(result);
+// }

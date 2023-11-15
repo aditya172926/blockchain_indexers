@@ -67,9 +67,10 @@ pub async fn handler_txn_transfer_poap(
 }
 
 pub async fn handler_transfer_poap(
+    meta_raw: &mut HashMap<String, String>,
     contract_instance: ContractInstance<Arc<Provider<Http>>, Provider<Http>>,
     transaction_event: TransactionEvent,
-) -> HashMap<String, String> {
+) {
     let tokenUrl =
         contract_instance.method::<_, String>("tokenURI", transaction_event.params[2].clone());
     let token_url = match tokenUrl {
@@ -93,39 +94,30 @@ pub async fn handler_transfer_poap(
     };
     let token_url_data = utils_url_data(&token_url).await;
 
-    let mut obj: serde_json::Value;
-
-    obj = json!({
-        "from":format!("0x{}", transaction_event.params[0])
-    });
-
-    let mut data: HashMap<String, String> = HashMap::new();
-    data.insert(
+    meta_raw.insert(
         "from".to_string(),
         format!("0x{}", transaction_event.params[0]),
     );
-    data.insert(
+    meta_raw.insert(
         "to".to_string(),
         format!("0x{}", transaction_event.params[1]),
     );
-    data.insert(
+    meta_raw.insert(
         "tokenId".to_string(),
         transaction_event.params[2].to_string(),
     );
-    data.insert("tokenUrl".to_string(), token_url.clone());
+    meta_raw.insert("tokenUrl".to_string(), token_url.clone());
     match token_url_data {
         Some(object) => {
-            data.insert("description".to_string(), object["description"].to_string());
-            data.insert(
+            meta_raw.insert("description".to_string(), object["description"].to_string());
+            meta_raw.insert(
                 "external_url".to_string(),
                 object["external_url"].to_string(),
             );
-            data.insert("home_url".to_string(), object["home_url"].to_string());
-            data.insert("image_url".to_string(), object["image_url"].to_string());
-            data.insert("name".to_string(), object["name"].to_string());
+            meta_raw.insert("home_url".to_string(), object["home_url"].to_string());
+            meta_raw.insert("image_url".to_string(), object["image_url"].to_string());
+            meta_raw.insert("name".to_string(), object["name"].to_string());
         }
         None => {}
     }
-
-    return data;
 }

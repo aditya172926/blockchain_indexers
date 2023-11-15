@@ -155,9 +155,9 @@ pub async fn handler_txn_reclaim_ens(
         expires: uint256
 **/
 pub async fn handler_event_register_ens_by_controller(
+    meta_raw: &mut HashMap<String, String>,
     event: &TransactionEvent,
-) -> HashMap<String, String> {
-    let mut meta_raw: HashMap<String, String> = HashMap::new();
+) {
     meta_raw.insert("name".to_string(), event.params[0].to_string());
     meta_raw.insert("label".to_string(), event.params[1].to_string());
     meta_raw.insert(
@@ -167,13 +167,12 @@ pub async fn handler_event_register_ens_by_controller(
     meta_raw.insert("baseCost".to_string(), event.params[3].to_string());
     meta_raw.insert("premium".to_string(), event.params[4].to_string());
     meta_raw.insert("expires".to_string(), event.params[5].to_string());
-    return meta_raw;
 }
 
 pub async fn handler_event_register_ens_by_controller_old(
+    meta_raw: &mut HashMap<String, String>,
     event: &TransactionEvent,
-) -> HashMap<String, String> {
-    let mut meta_raw: HashMap<String, String> = HashMap::new();
+) {
     meta_raw.insert("name".to_string(), event.params[0].to_string());
     meta_raw.insert("label".to_string(), event.params[1].to_string());
     meta_raw.insert(
@@ -182,35 +181,32 @@ pub async fn handler_event_register_ens_by_controller_old(
     );
     meta_raw.insert("baseCost".to_string(), event.params[3].to_string());
     meta_raw.insert("expires".to_string(), event.params[4].to_string());
-    return meta_raw;
 }
 
 pub async fn handler_event_register_ens_by_base(
+    meta_raw: &mut HashMap<String, String>,
     event: &TransactionEvent,
-) -> HashMap<String, String> {
-    let mut meta_raw: HashMap<String, String> = HashMap::new();
+) {
     meta_raw.insert("tokenId".to_string(), event.params[0].to_string());
     meta_raw.insert("owner".to_string(), event.params[1].to_string());
     meta_raw.insert("expires".to_string(), event.params[2].to_string());
-    return meta_raw;
 }
 
 pub async fn handler_event_renew_ens_by_controller(
+    meta_raw: &mut HashMap<String, String>,
     event: &TransactionEvent,
-) -> HashMap<String, String> {
-    let mut meta_raw: HashMap<String, String> = HashMap::new();
+) {
     meta_raw.insert("name".to_string(), event.params[0].to_string());
     meta_raw.insert("label".to_string(), event.params[1].to_string());
     meta_raw.insert("baseCost".to_string(), event.params[2].to_string());
     meta_raw.insert("expires".to_string(), event.params[3].to_string());
-    return meta_raw;
 }
 
 pub async fn handler_event_renew_ens_by_base(
+    meta_raw: &mut HashMap<String, String>,
     contract_instance: ContractInstance<Arc<Provider<Http>>, Provider<Http>>,
     event: &TransactionEvent,
-) -> HashMap<String, String> {
-    let mut meta_raw: HashMap<String, String> = HashMap::new();
+) {
     meta_raw.insert("tokenId".to_string(), event.params[0].to_string());
     meta_raw.insert("expires".to_string(), event.params[1].to_string());
     let tokeId_decimal = U256::from_str_radix(&event.params[0].to_string(), 16).unwrap();
@@ -237,27 +233,22 @@ pub async fn handler_event_renew_ens_by_base(
         }
     };
     meta_raw.insert("owner".to_string(), owner_address);
-
-    return meta_raw;
 }
 
 pub async fn handler_event_renew_ens_by_controller_old(
+    meta_raw: &mut HashMap<String, String>,
     event: TransactionEvent,
-) -> HashMap<String, String> {
-    let mut meta_raw: HashMap<String, String> = HashMap::new();
+) {
     meta_raw.insert("name".to_string(), event.params[0].to_string());
     meta_raw.insert("label".to_string(), event.params[1].to_string());
     meta_raw.insert("baseCost".to_string(), event.params[2].to_string());
     meta_raw.insert("expires".to_string(), event.params[3].to_string());
-    return meta_raw;
 }
 
 pub async fn handler_event_transfer_ens_by_base(
-    contract_instance: ContractInstance<Arc<Provider<Http>>, Provider<Http>>,
+    meta_raw: &mut HashMap<String, String>,
     event: TransactionEvent,
-) -> HashMap<String, String> {
-    let mut meta_raw: HashMap<String, String> = HashMap::new();
-
+) {
     meta_raw.insert("from".to_string(), event.params[0].to_string());
     meta_raw.insert("to".to_string(), event.params[1].to_string());
     meta_raw.insert("tokenId".to_string(), event.params[2].to_string());
@@ -266,6 +257,4 @@ pub async fn handler_event_transfer_ens_by_base(
 
     meta_raw.insert("name".to_string(), name);
     meta_raw.insert("owner".to_string(), event.params[1].to_string());
-
-    return meta_raw;
 }

@@ -15,8 +15,8 @@ source:
     handlersEvents: handler_sound
     handlersMethods: handler_sound
 indexing:
-  startBlock: 110660602
-  endBlock: 110660602
+  startBlock: 110640451
+  endBlock: 110677007
 features:
   - vectorize: true
     searchable: true

@@ -23,7 +23,6 @@ mod db {
 mod utils {
     pub(crate) mod contracts;
     pub(crate) mod db;
-    pub(crate) mod handler;
     pub(crate) mod index;
     pub(crate) mod meta;
     pub(crate) mod networks;
@@ -49,6 +48,7 @@ mod handlers {
     pub(crate) mod lens_post;
     pub(crate) mod lens_profile_polygon;
     pub(crate) mod poap_ethereum;
+    pub(crate) mod sound_optimism;
     pub(crate) mod ud_ethereum;
     // mod lens_profile_polygon;
 }
