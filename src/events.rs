@@ -63,6 +63,8 @@ pub async fn get_history_events(
                             data: None,
                         };
                         // info!("txn event {:?} ", txn_event);
+
+                        // this handler is just creating a raw object
                         let txn_data = handler_data_from_event(schema, contract, txn_event.clone())
                             .await
                             .unwrap();

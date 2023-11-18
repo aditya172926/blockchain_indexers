@@ -19,7 +19,7 @@ pub async fn utils_contract_list(
     for i in 0..length {
         info!("The yml source -> {:?}", schema.source[i].interestedEvents);
         let contract: ContractIndexed = utils_contract_data(&client, i, &schema).await;
-        // contracts.push(contract);
+        contracts.push(contract);
     }
     return contracts;
 }
@@ -34,6 +34,40 @@ pub async fn utils_contract_data(
     let mut interested_event_topics: Vec<H256> = vec![];
 
     // get contract abi, get event topics
+
+    let contract_abi_string: String = utils_contract_abi(
+        schema.source[sourceIndex].readAbiFrom.clone(),
+        schema.source[sourceIndex].networkId,
+    )
+    .await;
+    let abi_static: Abi = serde_json::from_str(&contract_abi_string).unwrap();
+    let contract_abi: ContractAbi = ContractAbi {
+        string: contract_abi_string,
+        stat: abi_static,
+    };
+
+    for event in schema.source[sourceIndex].interestedEvents.iter() {
+        let event_abi = match contract_abi.stat.event(event) {
+            Ok(event_object) => {
+                info!(
+                    "\n\nThe event object signature is -> {:?}\n\n",
+                    event_object
+                );
+                let topic: H256 = event_object.signature();
+                let e: ContractEvent = ContractEvent {
+                    topic0: topic,
+                    name: event_object.name.clone(),
+                };
+                interested_event_topics.push(topic);
+                interested_events_map.insert(topic, event_object.name.clone());
+                interested_events.push(e);
+            }
+            Err(error) => {
+                continue;
+            }
+        };
+    }
+
     let contract_events: ContractEventMap = ContractEventMap {
         topics: interested_event_topics,
         map: interested_events_map,
@@ -60,32 +94,6 @@ pub async fn utils_contract_data(
         events_of_interest: contract_events,
     };
 
-    let contract_abi_string: String = utils_contract_abi(&contract_metadata).await;
-    let abi_static: Abi = serde_json::from_str(&contract_abi_string).unwrap();
-    let contract_abi: ContractAbi = ContractAbi {
-        string: contract_abi_string,
-        stat: abi_static,
-    };
-
-    for event in schema.source[sourceIndex].interestedEvents.iter() {
-        let event_abi = match contract_abi.stat.event(event) {
-            Ok(event_object) => {
-                info!("\n\nThe event object signature is -> {:?}\n\n", event_object.signature());
-                // let topic: H256 = event.topic0.parse().unwrap();
-                // let e: ContractEvent = ContractEvent {
-                //     topic0: topic,
-                //     name: event.name.clone(),
-                // };
-                // interested_event_topics.push(topic);
-                // interested_events_map.insert(topic, event.name.clone());
-                // interested_events.push(e);
-            },
-            Err(error) => {
-                continue;
-            }
-        };
-    }
-
     let contract_instance: ContractInstance<Arc<Provider<Http>>, Provider<Http>> = Contract::new(
         contract_metadata.contract_address_H160,
         contract_abi.stat.clone(),
@@ -101,7 +109,7 @@ pub async fn utils_contract_data(
     return contract_indexed;
 }
 
-pub async fn utils_contract_abi(contract_metadata: &ContractMetaData) -> String {
+pub async fn utils_contract_abi(read_abi_from: String, chain_id: u64) -> String {
     let file: String = fs::read_to_string(r"constants/constants.json")
         .expect("Error in reading the constants.json file");
     let file_data = serde_json::from_str::<serde_json::Value>(&file);
@@ -109,14 +117,14 @@ pub async fn utils_contract_abi(contract_metadata: &ContractMetaData) -> String 
     let mut api: String = String::new();
     match file_data {
         Ok(object) => {
-            api = object[contract_metadata.chain_id.to_string()]["_api"].to_string();
+            api = object[chain_id.to_string()]["_api"].to_string();
         }
         Err(e) => {
             error!("{:?}", e);
         }
     }
 
-    let mut api_url = str::replace(&api, "{}", &contract_metadata.read_abi_from);
+    let mut api_url = str::replace(&api, "{}", &read_abi_from);
     api_url = api_url[1..api_url.len() - 1].to_string();
     // println!("The api_url is {}", api_url);
 
