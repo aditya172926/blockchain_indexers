@@ -19,10 +19,11 @@ pub async fn utils_meta_indexed(
     contracts: &mut Vec<ContractIndexed>,
 ) -> Option<MetaResult> {
     // The index should come from config
-    let fname = &schema.source[0].handlersMethods;
+    let fname: &str = &schema.source[0].handlersMethods;
     // print!("the fname: {}", fname);
 
     let mut meta_result: MetaResult = MetaResult::default();
+    // Some(meta_result)
     match fname.as_ref() {
         "handler_ens" => match index::load_ens_event(schema, contracts, &transaction_indexed).await
         {

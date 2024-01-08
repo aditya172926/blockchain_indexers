@@ -60,11 +60,9 @@ mod helpers {
 mod events;
 use ethers::contract::{self, EthEvent};
 
-#[derive(Debug, Clone, EthEvent, Copy)]
+#[derive(Debug, Clone, Copy)]
 pub struct Transfer {
-    #[ethevent(indexed)]
     pub from: ethers::types::Address,
-    #[ethevent(indexed)]
     pub to: ethers::types::Address,
     pub tokenId: ethers::types::U256,
 }

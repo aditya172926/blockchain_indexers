@@ -1,6 +1,6 @@
 prod:
-  client: mongodb+srv://metaworkdao:c106%40bh1@cluster0.h2imk.mongodb.net/metawork?retryWrites=true&w=majority
+  client: 
   database: macha_node
 dev:
-  client: mongodb+srv://metaworkdao:c106%40bh1@cluster0.h2imk.mongodb.net/metawork?retryWrites=true&w=majority
+  client: 
   database: macha_node
