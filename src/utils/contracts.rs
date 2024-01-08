@@ -1,40 +1,97 @@
+use crate::structs::{
+    contracts::{ContractAbi, ContractEvent, ContractEventMap, ContractIndexed, ContractMetaData},
+    extract::{Config, Schema},
+};
 use ethers::abi::{Abi, Function, Token};
-use ethers::types::H160;
-use mongodb::bson::document::ValueAccessError;
-use mongodb::bson::Document;
-
-use crate::db::{self, index};
-use crate::structs::contracts::ContractAbi;
-use crate::structs::extract::Schema;
-use crate::structs::{contracts::ContractMetaData, networks::NetworkStruct};
+use ethers::contract::{Contract, ContractInstance};
+use ethers::providers::{Http, Provider};
+use ethers::types::{H160, H256};
 use log::{debug, error, info, warn};
-use std::collections::HashSet;
-use std::fs;
-use std::string::String;
+use std::{collections::HashMap, fs};
+use std::{string::String, sync::Arc};
 
-pub async fn utils_contract_data(schema: &Schema) -> (ContractMetaData, ContractAbi) {
-    let contract_metadata: ContractMetaData = ContractMetaData {
-        contract_address: schema.source[0].from.to_owned(),
-        contract_address_historical: schema.source[0].fromHistorical.to_owned(),
-        read_abi_from: schema.source[0].readAbiFrom.to_owned(),
-        chain_id: schema.source[0].networkId.to_owned(),
-        start_block: schema.source[0].startBlock.to_owned(),
-        end_block: schema.source[0].endBlock.to_owned(),
-        method_of_interest: schema.source[0].interestedMethods.to_owned(),
+pub async fn utils_contract_list(
+    client: &Arc<Provider<Http>>,
+    schema: &Schema,
+) -> Vec<ContractIndexed> {
+    let mut contracts: Vec<ContractIndexed> = vec![];
+    let length: usize = schema.source.len();
+
+    for i in 0..length {
+        let contract: ContractIndexed = utils_contract_data(&client, i, &schema).await;
+        contracts.push(contract);
+    }
+    return contracts;
+}
+
+pub async fn utils_contract_data(
+    client: &Arc<Provider<Http>>,
+    sourceIndex: usize,
+    schema: &Schema,
+) -> ContractIndexed {
+    let mut interested_events: Vec<ContractEvent> = vec![];
+    let mut interested_events_map: HashMap<H256, String> = HashMap::new();
+    let mut interested_event_topics: Vec<H256> = vec![];
+
+    for event in schema.source[sourceIndex].interestedEvents.iter() {
+        let topic: H256 = event.topic0.parse().unwrap();
+        let e: ContractEvent = ContractEvent {
+            topic0: topic,
+            name: event.name.clone(),
+        };
+        interested_event_topics.push(topic);
+        interested_events_map.insert(topic, event.name.clone());
+        interested_events.push(e);
+    }
+
+    let contract_events: ContractEventMap = ContractEventMap {
+        topics: interested_event_topics,
+        map: interested_events_map,
+        events: interested_events,
     };
 
-    let mut contract_abi_string: String = utils_contract_abi(&contract_metadata).await;
+    let contract_metadata: ContractMetaData = ContractMetaData {
+        contract_address: schema.source[sourceIndex].from.to_owned(),
+        contract_address_H160: schema.source[sourceIndex].from.to_owned().parse().unwrap(),
+        contract_address_historical: schema.source[sourceIndex].fromHistorical.to_owned(),
+        contract_address_historical_H160: schema.source[sourceIndex]
+            .fromHistorical
+            .to_owned()
+            .parse()
+            .unwrap(),
+        read_abi_from: schema.source[sourceIndex].readAbiFrom.to_owned(),
+        read_abi_from_H160: schema.source[sourceIndex]
+            .readAbiFrom
+            .to_owned()
+            .parse()
+            .unwrap(),
+        chain_id: schema.source[sourceIndex].networkId.to_owned(),
+        method_of_interest: schema.source[sourceIndex].interestedMethods.to_owned(),
+        events_of_interest: contract_events,
+    };
 
-    let abi_json = serde_json::from_str(&contract_abi_string).unwrap();
-    let abi_static: &'static Abi = Box::leak(Box::new(
-        serde_json::from_str(&contract_abi_string).expect("Failed to parse abi"),
-    ));
+    let contract_abi_string: String = utils_contract_abi(&contract_metadata).await;
+    let abi_json: web3::ethabi::Contract = serde_json::from_str(&contract_abi_string).unwrap();
+    let abi_static: ethers::core::abi::Abi = serde_json::from_str(&contract_abi_string).unwrap();
     let contract_abi: ContractAbi = ContractAbi {
         string: contract_abi_string,
         raw: abi_json,
         stat: abi_static,
     };
-    return (contract_metadata, contract_abi);
+
+    let contract_instance: ContractInstance<Arc<Provider<Http>>, Provider<Http>> = Contract::new(
+        contract_metadata.contract_address_H160,
+        contract_abi.stat.clone(),
+        client.clone(),
+    );
+
+    let contract_indexed: ContractIndexed = ContractIndexed {
+        data: contract_metadata,
+        abi: contract_abi,
+        instance: contract_instance,
+    };
+
+    return contract_indexed;
 }
 
 pub async fn utils_contract_abi(contract_metadata: &ContractMetaData) -> String {

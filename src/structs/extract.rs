@@ -1,4 +1,9 @@
+use std::collections::HashMap;
+
+use crate::structs::meta::{self};
+use crate::structs::transactions::TransactionIndexed;
 use serde::{Deserialize, Serialize};
+
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Meta {
@@ -38,18 +43,22 @@ pub struct MetaImage {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct SchemaEvent {
+    pub topic0: String,
+    pub name: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Source {
     pub kind: String,
     pub networkId: u64,
     pub from: String,
     pub fromHistorical: String,
     pub readAbiFrom: String,
-    pub startBlock: u64,
-    pub endBlock: u64,
-    pub interestedEvents: Vec<String>,
+    pub interestedEvents: Vec<SchemaEvent>,
     pub interestedMethods: Vec<String>,
-    pub handlersEvents: Vec<String>,
-    pub handlersMethods: Vec<String>,
+    pub handlersEvents: String,
+    pub handlersMethods: String,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -92,7 +101,14 @@ pub struct Schema {
     pub image: String,
     pub description: String,
     pub source: Vec<Source>,
+    pub indexing: Index,
     pub features: Vec<features>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct Index {
+    pub startBlock: u64,
+    pub endBlock: u64,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -100,6 +116,7 @@ pub struct Config {
     pub env: String,
     pub slug: String,
     pub mode: String,
+    pub sourceIndex: usize,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Db {

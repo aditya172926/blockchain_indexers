@@ -1,3 +1,5 @@
+use std::process::exit;
+
 use crate::structs::contracts::{ContractAbi, ContractMetaData};
 use crate::structs::index::{MethodParam, MethodParamDataType};
 use crate::structs::transactions::{TransactionIndexed, TransactionMethod};
@@ -29,20 +31,21 @@ pub async fn utils_transaction_indexed(
     let transaction_struct: crate::structs::transactions::Transaction =
         crate::structs::transactions::Transaction {
             block_hash: decoded_txn_data.1.block_hash,
-            block_number: block_number,
-            contract_address: contract_metadata.contract_address.clone().to_owned(),
-            chain_id: contract_metadata.chain_id,
+            block_number: Some(block_number),
+            contract_address: Some(contract_metadata.contract_address.clone().to_owned()),
+            chain_id: Some(contract_metadata.chain_id),
             gas_used: decoded_txn_data.1.gas_used,
             gas_price: decoded_txn_data.1.effective_gas_price,
-            from: decoded_txn_data.1.from,
+            from: Some(decoded_txn_data.1.from),
             to: decoded_txn_data.1.to,
-            txn_hash: decoded_txn_data.1.transaction_hash,
+            txn_hash: Some(decoded_txn_data.1.transaction_hash.to_string()),
         };
 
     let transaction_indexed: TransactionIndexed = TransactionIndexed {
-        timestamp: ts,
+        timestamp: Some(ts),
         transaction: transaction_struct,
-        method: decoded_txn_data.0.clone(),
+        method: Some(decoded_txn_data.0.clone()),
+        events: None,
     };
     info!("\ntransaction Indexed = {:?} \n", transaction_indexed);
     transaction_indexed
@@ -61,7 +64,7 @@ pub async fn utils_transaction_decode<'a>(
         .get_transaction(transaction_hash)
         .await
         .expect("Failed to get the transaction");
-    debug!("\n\ntransaction {:?}\n\n", transaction);
+
     let transaction_receipt_result = provider.get_transaction_receipt(transaction_hash).await;
 
     let transaction_receipt = match transaction_receipt_result {
@@ -86,14 +89,17 @@ async fn utils_transaction_method<'a>(
     let input_data: String = transaction.unwrap().input.to_string();
     let method_id: &str = &input_data[2..10];
     let input_data = &input_data[10..]; // extracting the transaction hash
-    info!("Metod id found in txn : {} ", method_id);
+
     if let Some(method) = contract_abi
         .stat
         .functions()
         .into_iter()
         .find(|&f| ethers::utils::hex::encode(f.short_signature()) == method_id)
     {
-        info!("Method Name found in abi: {}", method.name);
+        info!(
+            "Method Name found in abi: {} for method id {}",
+            method.name, method_id
+        );
         let method_name = &method.name;
         let param_result: Vec<Token> =
             utils_transaction_method_params(contract_abi, method_name, input_data).await;
@@ -104,7 +110,7 @@ async fn utils_transaction_method<'a>(
         };
         result
     } else {
-        warn!("Method not found in abi ");
+        warn!("Method not found in abi for method id {}", method_id);
         return TransactionMethod {
             params: Vec::new(),
             name: "".to_string(),

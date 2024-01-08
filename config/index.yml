@@ -1,3 +1,4 @@
 env: DEV
-slug: lens_profile_polygon
-mode: HISTORY_TXN
+slug: sound_optimism
+sourceIndex: 0
+mode: HISTORY_EVENTS

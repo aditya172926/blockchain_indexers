@@ -7,13 +7,31 @@ source:
     networkId: 137
     from: 0x1eeC6ecCaA4625da3Fa6Cd6339DBcc2418710E8a
     fromHistorical: 0x1eeC6ecCaA4625da3Fa6Cd6339DBcc2418710E8a
-    readAbiFrom: 0x1eeC6ecCaA4625da3Fa6Cd6339DBcc2418710E8a
-    startBlock: 49050800
-    endBlock: 49060151
-    interestedEvents: []
-    interestedMethods: [proxyCreateProfile]
-    handlersEvents: []
-    handlersMethods: []
+    readAbiFrom: 0xBA97fc9137b7cbBBC7fcB70a87DA645d917C902F
+    interestedEvents:
+      - topic0: 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef
+        name: Transfer
+      - topic0: 0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae
+        name: NameRenewed
+    interestedMethods: [proxyCreateProfile, transferOwnership]
+    handlersEvents: handler_lens_profile
+    handlersMethods: handler_lens_profile
+  - kind: evm/contract
+    networkId: 137
+    from: 0xDb46d1Dc155634FbC732f92E853b10B288AD5a1d
+    fromHistorical: 0xDb46d1Dc155634FbC732f92E853b10B288AD5a1d
+    readAbiFrom: 0xBA97fc9137b7cbBBC7fcB70a87DA645d917C902F
+    interestedMethods: [setProfileImageURI, burn]
+    interestedEvents:
+      - topic0: 0xd5a5879cad33c830cc1432c1850107029a09c80c60e9bce1ecd08d24880bd46c
+        name: ANON
+      - topic0: 0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef
+        name: Transfer
+    handlersEvents: handler_lens_profile
+    handlersMethods: handler_lens_profile
+indexing:
+  startBlock: 49442591
+  endBlock: 49442592
 features:
   - vectorize: true
     searchable: true
